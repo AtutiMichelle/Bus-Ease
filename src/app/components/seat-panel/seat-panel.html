@@ -19,6 +19,14 @@
           <span class="legend-item"><span class="legend-swatch booked"></span> Booked</span>
         </div>
 
+        <div class="seat-legend class-legend">
+          @for (cls of legendClasses(); track cls) {
+            <span class="legend-item">
+              <span [class]="'legend-swatch class-' + cls.toLowerCase()"></span> {{ cls }}
+            </span>
+          }
+        </div>
+
         <div class="bus-front">
           <span class="door-indicator"><i class="fa-solid fa-door-open" aria-hidden="true"></i> Door</span>
           <span class="front-label">FRONT OF BUS</span>
@@ -36,10 +44,13 @@
                     [class.available]="seat.status === 'available'"
                     [class.selected]="seat.status === 'selected'"
                     [class.booked]="seat.status === 'booked'"
+                    [class]="seat.className ? 'class-' + seat.className.toLowerCase() : ''"
                     [disabled]="seat.status === 'booked'"
+                    [attr.aria-label]="'Seat ' + seat.number + (seat.className ? ', ' + seat.className : '')"
                     (click)="toggleSeat(seat)"
                   >
-                    {{ seat.number }}
+                    <i class="fa-solid fa-couch" aria-hidden="true"></i>
+                    <span class="seat-number">{{ seat.number }}</span>
                   </button>
                 }
               </div>
@@ -54,10 +65,13 @@
                     [class.available]="seat.status === 'available'"
                     [class.selected]="seat.status === 'selected'"
                     [class.booked]="seat.status === 'booked'"
+                    [class]="seat.className ? 'class-' + seat.className.toLowerCase() : ''"
                     [disabled]="seat.status === 'booked'"
+                    [attr.aria-label]="'Seat ' + seat.number + (seat.className ? ', ' + seat.className : '')"
                     (click)="toggleSeat(seat)"
                   >
-                    {{ seat.number }}
+                    <i class="fa-solid fa-couch" aria-hidden="true"></i>
+                    <span class="seat-number">{{ seat.number }}</span>
                   </button>
                 }
               </div>

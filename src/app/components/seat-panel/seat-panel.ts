@@ -6,6 +6,8 @@ import { Bus } from '../../models/bus.model';
 interface UiSeat {
   number: string;
   status: 'available' | 'selected' | 'booked';
+  className?: 'VIP' | 'Business' | 'Normal';
+  price?: number;
 }
 
 @Component({
@@ -23,7 +25,12 @@ export class SeatPanel {
   loading = signal(true);
   errorMessage = signal('');
 
-  totalPrice = computed(() => (this.bus()?.price ?? 0) * this.selectedSeats().length);
+  totalPrice = computed(() => {
+    const fallback = this.bus()?.price ?? 0;
+    return this.seats()
+      .filter((seat) => seat.status === 'selected')
+      .reduce((sum, seat) => sum + (seat.price ?? fallback), 0);
+  });
 
   /** Seats grouped 4 per row so the template can render a real aisle gap between B and C. */
   seatRows = computed(() => {
@@ -33,6 +40,19 @@ export class SeatPanel {
       rows.push(seats.slice(i, i + 4));
     }
     return rows;
+  });
+
+  private static readonly CLASS_RANK: Record<string, number> = { VIP: 0, Business: 1, Normal: 2 };
+
+  /** Distinct classes actually present on this bus's seat map, in VIP/Business/Normal
+   * order, so the legend only ever shows classes a rider could actually pick. */
+  legendClasses = computed(() => {
+    const names = new Set(
+      this.seats()
+        .map((seat) => seat.className)
+        .filter((name): name is NonNullable<typeof name> => !!name),
+    );
+    return Array.from(names).sort((a, b) => (SeatPanel.CLASS_RANK[a] ?? 99) - (SeatPanel.CLASS_RANK[b] ?? 99));
   });
 
   private busService = inject(BusService);
@@ -65,7 +85,9 @@ export class SeatPanel {
     try {
       const [bus, seats] = await Promise.all([this.busService.getById(busId), this.busService.getSeats(busId)]);
       this.bus.set(bus);
-      this.seats.set(seats.map((seat) => ({ number: seat.number, status: seat.status })));
+      this.seats.set(
+        seats.map((seat) => ({ number: seat.number, status: seat.status, className: seat.className, price: seat.price })),
+      );
       if (!bus) {
         this.errorMessage.set('We could not find that bus.');
       }

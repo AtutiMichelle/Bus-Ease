@@ -6,24 +6,13 @@
 
     @if (bus(); as b) {
       <header class="panel-trip">
+        <p class="trip-operator">{{ b.operator }}</p>
         <p class="trip-route">{{ b.from }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i> {{ b.to }}</p>
-        <p class="trip-meta">{{ b.operator }} · {{ b.departureTime }} – {{ b.arrivalTime }} · {{ b.busType }}</p>
+        <p class="trip-meta">{{ b.departureTime }} – {{ b.arrivalTime }} · {{ b.busType }}</p>
       </header>
 
       <div class="panel-body">
         <h2>Choose Your Seats</h2>
-
-        <div class="seat-legend">
-          <span class="legend-item"><span class="legend-swatch available"></span> Available</span>
-          <span class="legend-item"><span class="legend-swatch selected"></span> Selected</span>
-          <span class="legend-item"><span class="legend-swatch booked"></span> Booked</span>
-          <span class="legend-divider" aria-hidden="true"></span>
-          @for (cls of legendClasses(); track cls) {
-            <span class="legend-item">
-              <span [class]="'legend-swatch class-' + cls.toLowerCase()"></span> {{ cls }}
-            </span>
-          }
-        </div>
 
         <div class="bus-front">
           <span class="door-indicator"><i class="fa-solid fa-door-open" aria-hidden="true"></i> Door</span>
@@ -69,6 +58,18 @@
                 }
               </div>
             </div>
+          }
+        </div>
+
+        <div class="seat-legend">
+          <span class="legend-item"><span class="legend-swatch available"></span> Available</span>
+          <span class="legend-item"><span class="legend-swatch selected"></span> Selected</span>
+          <span class="legend-item"><span class="legend-swatch booked"></span> Booked</span>
+          <span class="legend-divider" aria-hidden="true"></span>
+          @for (cls of legendClasses(); track cls) {
+            <span class="legend-item">
+              <span [class]="'legend-swatch class-' + cls.toLowerCase()"></span> {{ cls }}
+            </span>
           }
         </div>
       </div>

@@ -341,15 +341,13 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  width: 180px;
 }
 
 .class-price-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  width: 100%;
+  justify-content: flex-start;
+  gap: 8px;
   box-sizing: border-box;
 }
 
@@ -359,30 +357,33 @@
 
 .class-chip {
   display: inline-block;
-  min-width: 68px;
+  width: 74px;
+  flex-shrink: 0;
   text-align: center;
+  white-space: nowrap;
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   border-radius: 999px;
   padding: 2px 8px;
+  box-sizing: border-box;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
 .chip-vip {
   color: #4a3200;
-  background-color: #f2b632;
+  background-color: #f5a623;
 }
 
 .chip-business {
   color: white;
-  background-color: var(--color-primary, #1a3a6b);
+  background-color: #1e6fd9;
 }
 
 .chip-normal {
   color: white;
-  background-color: #1c7d5a;
+  background-color: #14a35a;
 }
 
 .class-price {

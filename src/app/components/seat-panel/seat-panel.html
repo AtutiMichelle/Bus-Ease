@@ -17,9 +17,7 @@
           <span class="legend-item"><span class="legend-swatch available"></span> Available</span>
           <span class="legend-item"><span class="legend-swatch selected"></span> Selected</span>
           <span class="legend-item"><span class="legend-swatch booked"></span> Booked</span>
-        </div>
-
-        <div class="seat-legend class-legend">
+          <span class="legend-divider" aria-hidden="true"></span>
           @for (cls of legendClasses(); track cls) {
             <span class="legend-item">
               <span [class]="'legend-swatch class-' + cls.toLowerCase()"></span> {{ cls }}
@@ -33,46 +31,41 @@
           <span class="driver-indicator"><i class="fa-solid fa-user" aria-hidden="true"></i> Driver</span>
         </div>
 
+        <ng-template #seatButton let-seat="seat">
+          <button
+            type="button"
+            class="seat"
+            [class.available]="seat.status === 'available'"
+            [class.selected]="seat.status === 'selected'"
+            [class.booked]="seat.status === 'booked'"
+            [class]="seat.className ? 'class-' + seat.className.toLowerCase() : ''"
+            [disabled]="seat.status === 'booked'"
+            [attr.aria-label]="'Seat ' + seat.number + (seat.className ? ', ' + seat.className : '')"
+            (click)="toggleSeat(seat)"
+          >
+            <i class="fa-solid fa-couch" aria-hidden="true"></i>
+            <span class="seat-number">{{ seat.number }}</span>
+          </button>
+        </ng-template>
+
         <div class="seat-rows">
           @for (row of seatRows(); track $index) {
             <div class="seat-row">
               <div class="seat-pair">
-                @for (seat of row.slice(0, 2); track seat.number) {
-                  <button
-                    type="button"
-                    class="seat"
-                    [class.available]="seat.status === 'available'"
-                    [class.selected]="seat.status === 'selected'"
-                    [class.booked]="seat.status === 'booked'"
-                    [class]="seat.className ? 'class-' + seat.className.toLowerCase() : ''"
-                    [disabled]="seat.status === 'booked'"
-                    [attr.aria-label]="'Seat ' + seat.number + (seat.className ? ', ' + seat.className : '')"
-                    (click)="toggleSeat(seat)"
-                  >
-                    <i class="fa-solid fa-couch" aria-hidden="true"></i>
-                    <span class="seat-number">{{ seat.number }}</span>
-                  </button>
+                @for (seat of row.left; track seat.number) {
+                  <ng-container [ngTemplateOutlet]="seatButton" [ngTemplateOutletContext]="{ seat: seat }" />
                 }
               </div>
 
-              <div class="aisle"></div>
+              <div class="aisle">
+                @if (row.middle; as seat) {
+                  <ng-container [ngTemplateOutlet]="seatButton" [ngTemplateOutletContext]="{ seat: seat }" />
+                }
+              </div>
 
               <div class="seat-pair">
-                @for (seat of row.slice(2, 4); track seat.number) {
-                  <button
-                    type="button"
-                    class="seat"
-                    [class.available]="seat.status === 'available'"
-                    [class.selected]="seat.status === 'selected'"
-                    [class.booked]="seat.status === 'booked'"
-                    [class]="seat.className ? 'class-' + seat.className.toLowerCase() : ''"
-                    [disabled]="seat.status === 'booked'"
-                    [attr.aria-label]="'Seat ' + seat.number + (seat.className ? ', ' + seat.className : '')"
-                    (click)="toggleSeat(seat)"
-                  >
-                    <i class="fa-solid fa-couch" aria-hidden="true"></i>
-                    <span class="seat-number">{{ seat.number }}</span>
-                  </button>
+                @for (seat of row.right; track seat.number) {
+                  <ng-container [ngTemplateOutlet]="seatButton" [ngTemplateOutletContext]="{ seat: seat }" />
                 }
               </div>
             </div>

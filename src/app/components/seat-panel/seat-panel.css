@@ -99,6 +99,7 @@
 
 .seat-legend {
   display: flex;
+  align-items: center;
   gap: var(--space-3, 16px);
   margin-bottom: var(--space-4, 24px);
   flex-wrap: wrap;
@@ -129,6 +130,12 @@
 }
 
 .legend-swatch.booked {
+  background-color: var(--color-border, #e4dfd6);
+}
+
+.legend-divider {
+  width: 1px;
+  align-self: stretch;
   background-color: var(--color-border, #e4dfd6);
 }
 
@@ -189,9 +196,17 @@
   gap: var(--space-2, 8px);
 }
 
-/* Clear central aisle so a tap can't land on the wrong side by accident */
+/* Clear central aisle so a tap can't land on the wrong side by accident.
+   Rows with a middle seat (the 5-seat back bench row) widen to fit it. */
 .aisle {
   width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.aisle:has(.seat) {
+  width: 44px;
 }
 
 .seat {
@@ -357,5 +372,9 @@
   .seat {
     width: 40px;
     height: 40px;
+  }
+
+  .aisle:has(.seat) {
+    width: 40px;
   }
 }

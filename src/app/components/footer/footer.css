@@ -1,0 +1,13 @@
+.site-footer {
+  padding: var(--space-4, 24px);
+  text-align: center;
+  color: var(--color-text-muted, #6b6b6b);
+  font-size: 0.875rem;
+  border-top: 3px solid var(--color-accent, #eb1f1a);
+  background-color: var(--color-primary-dark, #12294d);
+}
+
+.site-footer p {
+  color: white;
+  margin: 0;
+}

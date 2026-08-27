@@ -1,0 +1,119 @@
+<section class="hero">
+  <h1>Book your seat, skip the queue.</h1>
+</section>
+
+<div class="search-card-wrapper">
+  <app-search-bar variant="hero" />
+</div>
+
+<section class="top-routes">
+  <div class="section-container">
+    <h2>Popular Routes</h2>
+    <div class="route-cards">
+      @for (route of topRoutes; track route.from + route.to) {
+        <button type="button" class="route-card" (click)="selectRoute(route)">
+          <div class="photo" [style.background-image]="'url(' + cityPhoto(route.to) + ')'">
+            <span class="flag">{{ route.busType }}</span>
+          </div>
+
+          <div class="panel" [class.panel-luxury]="route.busType === 'Luxury'">
+            <p class="route-cities">{{ route.from }} &rarr; {{ route.to }}</p>
+            <div class="route-meta-row">
+              <span class="route-character">{{ route.duration }} · {{ route.character }}</span>
+              <span class="seats">{{ route.seatsLeft }} left</span>
+            </div>
+          </div>
+        </button>
+      }
+    </div>
+    <a href="#" class="see-all-link">View More Routes</a>
+  </div>
+</section>
+
+<section class="why-choose-us" id="about">
+  <div class="section-container">
+    <h2>Why Choose Us</h2>
+    <p class="about-copy">
+      BusEase is a growing online bus ticketing platform connecting travelers across Kenya and beyond.
+      We partner with licensed coach operators so you can compare routes, pick a seat, and book a trip
+      in minutes — no queues, no paperwork.
+    </p>
+    <div class="feature-list">
+      @for (feature of features; track feature.title) {
+        <div class="feature-item">
+          <i [class]="feature.icon" aria-hidden="true"></i>
+          <p class="feature-title">{{ feature.title }}</p>
+          <p class="feature-description">{{ feature.description }}</p>
+        </div>
+      }
+    </div>
+    <div class="about-stats">
+      @for (stat of aboutStats; track stat.label) {
+        <div class="stat-item">
+          <p class="stat-number">{{ stat.value }}</p>
+          <p class="stat-label">{{ stat.label }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<section class="partners">
+  <div class="section-container">
+    <h2>Our Bus Partners</h2>
+    <div class="partner-marquee">
+      <div class="partner-track">
+        @for (partner of partners; track partner.name) {
+          <span class="partner-logo">
+            <img [src]="partner.logo" [alt]="partner.name + ' logo'" />
+          </span>
+        }
+        @for (partner of partners; track partner.name + '-dup') {
+          <span class="partner-logo" aria-hidden="true">
+            <img [src]="partner.logo" alt="" />
+          </span>
+        }
+      </div>
+    </div>
+    <a href="#" class="see-all-link">See All Partners</a>
+  </div>
+</section>
+
+<section class="testimonials">
+  <div class="section-container">
+    <h2>What Travelers Say</h2>
+    <div class="testimonial-cards">
+      @for (t of testimonials; track t.name) {
+        <div class="testimonial-card">
+          <span class="stars" [attr.aria-label]="'Rated ' + t.rating + ' out of 5 stars'">
+            @for (star of [1, 2, 3, 4, 5]; track star) {
+              <span [class.filled]="star <= t.rating">★</span>
+            }
+          </span>
+          <p class="quote">"{{ t.quote }}"</p>
+          <p class="attribution">{{ t.name }}, {{ t.location }} · {{ t.date }}</p>
+        </div>
+      }
+    </div>
+    <a href="#" class="see-all-link">Read More Reviews</a>
+  </div>
+</section>
+
+<section class="app-download">
+  <div class="app-download-text">
+    <h2>Book on the Go</h2>
+    <ul>
+      <li>Instant Booking</li>
+      <li>Live Bus Tracking</li>
+      <li>Easy Cancellation</li>
+    </ul>
+  </div>
+
+  <div class="app-download-badges">
+    <div class="qr-placeholder" aria-hidden="true">QR</div>
+    <div class="store-badges">
+      <span class="store-badge"><i class="fa-brands fa-apple"></i> App Store</span>
+      <span class="store-badge"><i class="fa-brands fa-google-play"></i> Google Play</span>
+    </div>
+  </div>
+</section>

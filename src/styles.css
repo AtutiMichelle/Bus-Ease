@@ -1,0 +1,16 @@
+/* You can add global styles to this file, and also import other style files */
+@import './theme.css';
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  margin: 0;
+}
+
+/* Shared content width, reused by every page so sections line up consistently */
+.section-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-4, 24px);
+}

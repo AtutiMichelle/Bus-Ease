@@ -1,0 +1,300 @@
+.seat-panel-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background-color: rgba(18, 41, 77, 0.5);
+  display: flex;
+  justify-content: flex-end;
+  animation: fade-in 0.2s ease-out;
+}
+
+.seat-panel {
+  position: relative;
+  width: min(560px, 100vw);
+  height: 100%;
+  background-color: var(--color-surface, #fff);
+  box-shadow: -12px 0 32px rgba(18, 41, 77, 0.25);
+  display: flex;
+  flex-direction: column;
+  animation: slide-in 0.25s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seat-panel-backdrop,
+  .seat-panel {
+    animation: none;
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.panel-close {
+  position: absolute;
+  top: var(--space-3, 16px);
+  right: var(--space-3, 16px);
+  z-index: 1;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 999px;
+  background-color: var(--color-soft-bg, #e8f1fc);
+  color: var(--color-primary, #1a3a6b);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.panel-close:hover {
+  background-color: var(--color-border, #e4dfd6);
+}
+
+.panel-trip {
+  padding: var(--space-4, 24px) var(--space-5, 56px) var(--space-3, 16px) var(--space-4, 24px);
+  background-color: var(--color-primary-dark, #12294d);
+  color: white;
+}
+
+.trip-route {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+}
+
+.trip-route i {
+  color: var(--color-accent, #eb1f1a);
+  font-size: 0.9rem;
+}
+
+.trip-meta {
+  margin: 4px 0 0 0;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.85rem;
+}
+
+.panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-4, 24px);
+}
+
+.panel-body h2 {
+  margin: 0 0 var(--space-3, 16px) 0;
+  color: var(--color-primary, #1a3a6b);
+  font-size: 1.1rem;
+}
+
+.seat-legend {
+  display: flex;
+  gap: var(--space-3, 16px);
+  margin-bottom: var(--space-4, 24px);
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--color-text-muted, #6b6b6b);
+}
+
+.legend-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.legend-swatch.available {
+  background-color: var(--color-soft-bg, #e8f1fc);
+  border: 1px solid var(--color-primary, #1a3a6b);
+}
+
+.legend-swatch.selected {
+  background-color: var(--color-primary, #1a3a6b);
+}
+
+.legend-swatch.booked {
+  background-color: var(--color-border, #e4dfd6);
+}
+
+.bus-front {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 264px;
+  margin: 0 auto var(--space-3, 16px);
+  padding-bottom: var(--space-3, 16px);
+  border-bottom: 1px dashed var(--color-border, #e4dfd6);
+}
+
+.front-label {
+  color: var(--color-text-muted, #6b6b6b);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.door-indicator,
+.driver-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.door-indicator {
+  color: var(--color-success, #2fa88a);
+  background-color: rgba(47, 168, 138, 0.12);
+}
+
+.driver-indicator {
+  color: var(--color-primary, #1a3a6b);
+  background-color: var(--color-soft-bg, #e8f1fc);
+}
+
+.seat-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.seat-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+}
+
+.seat-pair {
+  display: flex;
+  gap: var(--space-2, 8px);
+}
+
+/* Clear central aisle so a tap can't land on the wrong side by accident */
+.aisle {
+  width: 32px;
+}
+
+.seat {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.seat.available {
+  background-color: var(--color-soft-bg, #e8f1fc);
+  border: 1px solid var(--color-primary, #1a3a6b);
+  color: var(--color-primary, #1a3a6b);
+}
+
+.seat.available:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(26, 58, 107, 0.2);
+}
+
+.seat.selected {
+  background-color: var(--color-primary, #1a3a6b);
+  border: 1px solid var(--color-primary, #1a3a6b);
+  color: white;
+}
+
+.seat.booked {
+  background-color: var(--color-border, #e4dfd6);
+  border: 1px solid var(--color-border, #e4dfd6);
+  color: var(--color-text-muted, #6b6b6b);
+  cursor: not-allowed;
+}
+
+.panel-footer {
+  border-top: 1px solid var(--color-border, #e4dfd6);
+  padding: var(--space-3, 16px) var(--space-4, 24px);
+  background-color: var(--color-surface, #fff);
+}
+
+.footer-empty {
+  margin: 0 0 var(--space-2, 8px) 0;
+  color: var(--color-text-muted, #6b6b6b);
+  font-size: 0.85rem;
+}
+
+.footer-seats {
+  margin: 0 0 var(--space-2, 8px) 0;
+  color: var(--color-text, #3a3a3a);
+  font-size: 0.85rem;
+}
+
+.footer-total {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--color-primary, #1a3a6b);
+  margin-bottom: var(--space-3, 16px);
+}
+
+.continue-cta {
+  width: 100%;
+  padding: 14px;
+  background-color: var(--color-accent, #eb1f1a);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.continue-cta:hover:not(:disabled) {
+  background-color: var(--color-accent-dark, #d68c0f);
+  transform: translateY(-2px);
+}
+
+.continue-cta:disabled {
+  background-color: var(--color-border, #e4dfd6);
+  cursor: not-allowed;
+}
+
+.panel-status {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6, 48px);
+  text-align: center;
+  color: var(--color-text-muted, #6b6b6b);
+}
+
+@media (max-width: 600px) {
+  .seat-panel {
+    width: 100vw;
+  }
+
+  .seat {
+    width: 40px;
+    height: 40px;
+  }
+}

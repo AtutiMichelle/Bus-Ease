@@ -1,0 +1,98 @@
+<section class="page-header">
+  <div class="section-container">
+    <h1>Contact Us</h1>
+    <p>Have a question about a booking or route? We're here to help.</p>
+  </div>
+</section>
+
+<section class="contact-content">
+  <div class="section-container contact-layout">
+    <div class="contact-info">
+      <div class="info-card">
+        <i class="fa-solid fa-phone" aria-hidden="true"></i>
+        <div>
+          <p class="info-label">Call Us</p>
+          <p class="info-value">+254 700 000 000</p>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <i class="fa-solid fa-envelope" aria-hidden="true"></i>
+        <div>
+          <p class="info-label">Email</p>
+          <p class="info-value">support&#64;busease.co.ke</p>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
+        <div>
+          <p class="info-label">Office</p>
+          <p class="info-value">Nairobi, Kenya</p>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <i class="fa-solid fa-clock" aria-hidden="true"></i>
+        <div>
+          <p class="info-label">Support Hours</p>
+          <p class="info-value">24/7</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="contact-form-card">
+      @if (submitted()) {
+        <div class="success-state">
+          <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+          <h2>Message Sent</h2>
+          <p>Thanks for reaching out — our team will get back to you shortly.</p>
+        </div>
+      } @else {
+        <h2>Send Us a Message</h2>
+        <form (ngSubmit)="submit()">
+          <div class="field">
+            <label for="name">Name</label>
+            <input
+              id="name"
+              type="text"
+              placeholder="Your name"
+              [ngModel]="name()"
+              (ngModelChange)="name.set($event)"
+              name="name"
+              required
+            />
+          </div>
+
+          <div class="field">
+            <label for="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              placeholder="you@example.com"
+              [ngModel]="email()"
+              (ngModelChange)="email.set($event)"
+              name="email"
+              required
+            />
+          </div>
+
+          <div class="field">
+            <label for="message">Message</label>
+            <textarea
+              id="message"
+              rows="5"
+              placeholder="How can we help?"
+              [ngModel]="message()"
+              (ngModelChange)="message.set($event)"
+              name="message"
+              required
+            ></textarea>
+          </div>
+
+          <button type="submit" class="submit-cta" [disabled]="!canSubmit">Send Message</button>
+        </form>
+      }
+    </div>
+  </div>
+</section>

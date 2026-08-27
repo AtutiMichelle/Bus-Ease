@@ -1,0 +1,27 @@
+<header class="site-header">
+  <a routerLink="/" class="logo"><i class="fa-solid fa-bus logo-icon" aria-hidden="true"></i>BusEase</a>
+
+  <div class="nav-group">
+    <nav>
+      <a routerLink="/">Home</a>
+       <a routerLink="/" fragment="about">About</a>
+      <a routerLink="/my-bookings">My Bookings</a>     
+      <a routerLink="/contact">Contact</a>
+    </nav>
+
+    @if (authService.user(); as user) {
+      <div class="user-menu">
+        <span class="user-name">
+          <i class="fa-solid fa-circle-user" aria-hidden="true"></i>
+          {{ authService.displayName() }}
+        </span>
+        <button type="button" class="logout-cta" (click)="logout()">Logout</button>
+      </div>
+    } @else {
+      <a routerLink="/login" class="auth-cta">
+        <i class="fa-solid fa-circle-user" aria-hidden="true"></i>
+        Login
+      </a>
+    }
+  </div>
+</header>

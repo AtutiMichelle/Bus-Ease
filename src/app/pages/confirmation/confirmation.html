@@ -1,0 +1,170 @@
+@switch (phase()) {
+  @case ('loading') {
+    <section class="not-found">
+      <div class="section-container">
+        <p>Loading your trip…</p>
+      </div>
+    </section>
+  }
+
+  @case ('error') {
+    <section class="not-found">
+      <div class="section-container">
+        <p>{{ errorMessage() }} <a routerLink="/">Go back home</a>.</p>
+      </div>
+    </section>
+  }
+
+  @default {
+    @if (bus(); as b) {
+      <section class="confirmation-hero details-hero">
+        <div class="section-container">
+          <h1>Passenger Details</h1>
+          <p class="confirmation-ref">
+            {{ b.from }} → {{ b.to }} · {{ b.operator }} · {{ b.departureTime }} · {{ passengers().length }} seat(s)
+          </p>
+        </div>
+      </section>
+
+      <section class="ticket-section">
+        <div class="section-container">
+          <div class="ticket-card">
+            @for (passenger of passengers(); track passenger.seatNumber; let i = $index) {
+              <div class="passenger-form">
+                <p class="passenger-seat">Seat {{ passenger.seatNumber }}</p>
+
+                <div class="passenger-fields">
+                  <div class="field">
+                    <label [for]="'name-' + i">Full Name</label>
+                    <input
+                      [id]="'name-' + i"
+                      type="text"
+                      placeholder="Jane Doe"
+                      [ngModel]="passenger.fullName"
+                      (ngModelChange)="updatePassenger(i, 'fullName', $event)"
+                      [name]="'name-' + i"
+                      required
+                    />
+                  </div>
+
+                  <div class="field">
+                    <label [for]="'mobile-' + i">Mobile</label>
+                    <input
+                      [id]="'mobile-' + i"
+                      type="tel"
+                      placeholder="07xx xxx xxx"
+                      [ngModel]="passenger.mobile"
+                      (ngModelChange)="updatePassenger(i, 'mobile', $event)"
+                      [name]="'mobile-' + i"
+                      required
+                    />
+                  </div>
+
+                  <div class="field field-small">
+                    <label [for]="'age-' + i">Age (optional)</label>
+                    <input
+                      [id]="'age-' + i"
+                      type="number"
+                      min="0"
+                      max="120"
+                      [ngModel]="passenger.age"
+                      (ngModelChange)="updatePassengerAge(i, $event)"
+                      [name]="'age-' + i"
+                    />
+                  </div>
+
+                  <div class="field field-small">
+                    <label [for]="'gender-' + i">Gender (optional)</label>
+                    <select
+                      [id]="'gender-' + i"
+                      [ngModel]="passenger.gender"
+                      (ngModelChange)="updatePassenger(i, 'gender', $event)"
+                      [name]="'gender-' + i"
+                    >
+                      <option value="">Prefer not to say</option>
+                      <option value="female">Female</option>
+                      <option value="male">Male</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            }
+
+            @if (errorMessage()) {
+              <p class="error">{{ errorMessage() }}</p>
+            }
+
+            <div class="ticket-actions">
+              <button
+                type="button"
+                class="print-cta"
+                [disabled]="!canSubmit || phase() === 'submitting'"
+                (click)="confirmBooking()"
+              >
+                {{ phase() === 'submitting' ? 'Confirming…' : 'Confirm Booking · KSh ' + totalPrice() }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    }
+  }
+
+  @case ('confirmed') {
+    @if (bus(); as b) {
+      <section class="confirmation-hero">
+        <div class="section-container">
+          <div class="confirmation-icon"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></div>
+          <h1>Booking Confirmed</h1>
+          <p class="confirmation-ref">Reference: <strong>{{ bookingReference() }}</strong></p>
+        </div>
+      </section>
+
+      <section class="ticket-section">
+        <div class="section-container">
+          <div class="ticket-card">
+            <div class="ticket-route">
+              <p class="route-cities">{{ b.from }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i> {{ b.to }}</p>
+              <p class="route-date">{{ b.date }}</p>
+            </div>
+
+            <div class="ticket-grid">
+              <div>
+                <p class="ticket-label">Operator</p>
+                <p class="ticket-value">{{ b.operator }}</p>
+              </div>
+              <div>
+                <p class="ticket-label">Bus Type</p>
+                <p class="ticket-value">{{ b.busType }}</p>
+              </div>
+              <div>
+                <p class="ticket-label">Departure</p>
+                <p class="ticket-value">{{ b.departureTime }}</p>
+              </div>
+              <div>
+                <p class="ticket-label">Arrival</p>
+                <p class="ticket-value">{{ b.arrivalTime }}</p>
+              </div>
+              <div>
+                <p class="ticket-label">Seats</p>
+                <p class="ticket-value">{{ seatList() }}</p>
+              </div>
+              <div>
+                <p class="ticket-label">Total Paid</p>
+                <p class="ticket-value total">KSh {{ totalPrice() }}</p>
+              </div>
+            </div>
+
+            <div class="ticket-actions">
+              <button type="button" class="print-cta" (click)="print()">
+                <i class="fa-solid fa-print" aria-hidden="true"></i> Print Ticket
+              </button>
+              <a routerLink="/" class="home-link">Back to Home</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    }
+  }
+}

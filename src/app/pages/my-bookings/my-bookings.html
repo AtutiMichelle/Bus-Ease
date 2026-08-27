@@ -1,0 +1,43 @@
+<section class="page-header">
+  <div class="section-container">
+    <h1>My Bookings</h1>
+    <p>Your booked trips, all in one place.</p>
+  </div>
+</section>
+
+<section class="bookings-list">
+  <div class="section-container">
+    @if (loading()) {
+      <div class="empty-state">
+        <p>Loading your bookings…</p>
+      </div>
+    } @else if (errorMessage()) {
+      <div class="empty-state">
+        <p>{{ errorMessage() }}</p>
+      </div>
+    } @else if (bookings().length === 0) {
+      <div class="empty-state">
+        <i class="fa-solid fa-ticket" aria-hidden="true"></i>
+        <p>You haven't booked a trip yet.</p>
+        <a routerLink="/" class="cta-link">Search Buses</a>
+      </div>
+    } @else {
+      @for (booking of bookings(); track booking.reference) {
+        <article class="booking-card">
+          <div class="booking-main">
+            <p class="booking-route">
+              {{ booking.bus.from }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i> {{ booking.bus.to }}
+            </p>
+            <p class="booking-meta">{{ booking.bus.operator }} · {{ booking.bus.date }} · {{ booking.bus.departureTime }}</p>
+            <p class="booking-seats">Seats: {{ booking.seats.join(', ') }}</p>
+          </div>
+
+          <div class="booking-side">
+            <p class="booking-ref">Ref: {{ booking.reference }}</p>
+            <p class="booking-total">KSh {{ booking.total }}</p>
+          </div>
+        </article>
+      }
+    }
+  </div>
+</section>

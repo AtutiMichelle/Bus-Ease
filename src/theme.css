@@ -1,0 +1,41 @@
+:root {
+  /* Color */
+  --color-primary: #1e88e5;
+  --color-primary-dark: #12294d;
+  --color-accent: #eb1f1a;
+  --color-accent-dark: #d68c0f;
+  --color-danger: #d64545;
+  --color-success: #2fa88a;
+  --color-bg: #faf8f5;
+  --color-surface: #ffffff;
+  --color-text: #3a3a3a;
+  --color-text-muted: #6b6b6b;
+  --color-border: #e4dfd6;
+
+  /* Single soft tint, reused everywhere a badge/icon needs a light background
+     (icon circles, chips, pills) instead of a different hue per card */
+  --color-soft-bg: #e8f1fc;
+
+  /* Type */
+  --font-family: 'Times New Roman', Times, serif;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.75rem;
+  --text-2xl: 2.5rem;
+
+  /* Spacing (4px base scale) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 32px;
+  --space-6: 48px;
+  --space-7: 64px;
+
+  /* Radius & shadow */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --shadow-card: 0 2px 8px rgba(26, 58, 107, 0.08);
+}

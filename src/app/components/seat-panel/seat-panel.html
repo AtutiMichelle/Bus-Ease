@@ -1,0 +1,93 @@
+<div class="seat-panel-backdrop" (click)="close()">
+  <aside class="seat-panel" (click)="$event.stopPropagation()">
+    <button type="button" class="panel-close" aria-label="Close seat selection" (click)="close()">
+      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+    </button>
+
+    @if (bus(); as b) {
+      <header class="panel-trip">
+        <p class="trip-route">{{ b.from }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i> {{ b.to }}</p>
+        <p class="trip-meta">{{ b.operator }} · {{ b.departureTime }} – {{ b.arrivalTime }} · {{ b.busType }}</p>
+      </header>
+
+      <div class="panel-body">
+        <h2>Choose Your Seats</h2>
+
+        <div class="seat-legend">
+          <span class="legend-item"><span class="legend-swatch available"></span> Available</span>
+          <span class="legend-item"><span class="legend-swatch selected"></span> Selected</span>
+          <span class="legend-item"><span class="legend-swatch booked"></span> Booked</span>
+        </div>
+
+        <div class="bus-front">
+          <span class="door-indicator"><i class="fa-solid fa-door-open" aria-hidden="true"></i> Door</span>
+          <span class="front-label">FRONT OF BUS</span>
+          <span class="driver-indicator"><i class="fa-solid fa-user" aria-hidden="true"></i> Driver</span>
+        </div>
+
+        <div class="seat-rows">
+          @for (row of seatRows(); track $index) {
+            <div class="seat-row">
+              <div class="seat-pair">
+                @for (seat of row.slice(0, 2); track seat.number) {
+                  <button
+                    type="button"
+                    class="seat"
+                    [class.available]="seat.status === 'available'"
+                    [class.selected]="seat.status === 'selected'"
+                    [class.booked]="seat.status === 'booked'"
+                    [disabled]="seat.status === 'booked'"
+                    (click)="toggleSeat(seat)"
+                  >
+                    {{ seat.number }}
+                  </button>
+                }
+              </div>
+
+              <div class="aisle"></div>
+
+              <div class="seat-pair">
+                @for (seat of row.slice(2, 4); track seat.number) {
+                  <button
+                    type="button"
+                    class="seat"
+                    [class.available]="seat.status === 'available'"
+                    [class.selected]="seat.status === 'selected'"
+                    [class.booked]="seat.status === 'booked'"
+                    [disabled]="seat.status === 'booked'"
+                    (click)="toggleSeat(seat)"
+                  >
+                    {{ seat.number }}
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <footer class="panel-footer">
+        @if (selectedSeats().length === 0) {
+          <p class="footer-empty">Select at least one seat to continue.</p>
+        } @else {
+          <p class="footer-seats">Seat{{ selectedSeats().length > 1 ? 's' : '' }} {{ selectedSeats().join(', ') }}</p>
+        }
+        <div class="footer-total">
+          <span>Total</span>
+          <span>KSh {{ totalPrice() }}</span>
+        </div>
+        <button type="button" class="continue-cta" [disabled]="selectedSeats().length === 0" (click)="continue()">
+          Continue
+        </button>
+      </footer>
+    } @else if (loading()) {
+      <div class="panel-status">
+        <p>Loading seat map…</p>
+      </div>
+    } @else {
+      <div class="panel-status">
+        <p>{{ errorMessage() || "We couldn't find that bus." }}</p>
+      </div>
+    }
+  </aside>
+</div>

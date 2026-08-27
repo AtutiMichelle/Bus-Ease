@@ -1,0 +1,63 @@
+<section class="results-header">
+  <div class="section-container">
+    <h1>{{ origin() || 'Anywhere' }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i> {{ destination() || 'Anywhere' }}</h1>
+    <p class="results-meta">{{ formattedDate() }} · {{ buses().length }} buses found</p>
+  </div>
+</section>
+
+<section class="results-toolbar">
+  <div class="section-container">
+    <app-search-bar variant="compact" [origin]="origin()" [destination]="destination()" [date]="journeyDate()" />
+  </div>
+</section>
+
+<section class="results-list">
+  <div class="section-container">
+    @if (loading()) {
+      <p class="empty-state">Searching for buses…</p>
+    } @else if (errorMessage()) {
+      <p class="empty-state">{{ errorMessage() }}</p>
+    } @else if (buses().length === 0) {
+      <p class="empty-state">No buses found for this route yet. Try a different search.</p>
+    }
+
+    @for (bus of buses(); track bus.id) {
+      <article class="bus-card">
+        <div class="bus-main">
+          <div class="bus-operator">
+            <p class="operator-name">{{ bus.operator }}</p>
+            <span class="bus-type-chip">{{ bus.busType }}</span>
+          </div>
+
+          <div class="bus-times">
+            <div class="time-block">
+              <p class="time">{{ bus.departureTime }}</p>
+              <p class="time-label">{{ bus.from }}</p>
+            </div>
+            <div class="duration-block">
+              <p class="duration">{{ bus.duration }}</p>
+              <div class="duration-line"></div>
+            </div>
+            <div class="time-block">
+              <p class="time">{{ bus.arrivalTime }}</p>
+              <p class="time-label">{{ bus.to }}</p>
+            </div>
+          </div>
+
+          <div class="bus-rating">
+            <span class="seats-left">{{ bus.seatsAvailable }} seats left</span>
+          </div>
+        </div>
+
+        <div class="bus-cta">
+          <p class="price">KSh {{ bus.price }}</p>
+          <button type="button" (click)="selectBus(bus)">Select Seats</button>
+        </div>
+      </article>
+    }
+  </div>
+</section>
+
+@if (selectedBusId(); as busId) {
+  <app-seat-panel [busId]="busId" (closed)="closeSeatPanel()" />
+}

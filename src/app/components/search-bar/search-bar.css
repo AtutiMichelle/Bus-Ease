@@ -1,0 +1,157 @@
+:host {
+  display: block;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.search-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3, 16px);
+  justify-content: center;
+  align-items: flex-start;
+  max-width: 1200px;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 auto;
+  background-color: var(--color-surface, #fff);
+  border-radius: var(--radius-md, 8px);
+  border-left: 5px solid var(--color-accent, #f5a623);
+  box-shadow: 0 12px 32px rgba(26, 58, 107, 0.18);
+  padding: var(--space-4, 32px);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  flex: 1;
+  min-width: 140px;
+  position: relative;
+}
+
+.field label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text, #3a3a3a);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.field input {
+  padding: 12px 14px;
+  border: 2px solid var(--color-border, #e4dfd6);
+  border-radius: 6px;
+  font-size: 1rem;
+  background-color: #fafafa;
+  transition: border-color 0.2s, background-color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.field input:focus {
+  outline: none;
+  border-color: var(--color-accent, #f5a623);
+  background-color: white;
+  box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.1);
+}
+
+.suggestion-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background-color: var(--color-surface, #fff);
+  border: 1px solid var(--color-border, #e4dfd6);
+  border-radius: var(--radius-md, 8px);
+  box-shadow: 0 12px 24px rgba(26, 58, 107, 0.18);
+  z-index: 20;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.suggestion-list li {
+  margin: 0;
+}
+
+.suggestion-list button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border: none;
+  background: none;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: var(--color-text, #3a3a3a);
+  cursor: pointer;
+}
+
+.suggestion-list button:hover,
+.suggestion-list button:focus-visible {
+  background-color: var(--color-soft-bg, #e8f1fc);
+  color: var(--color-primary, #1a3a6b);
+  outline: none;
+}
+
+.error {
+  color: var(--color-danger, #d64545);
+  font-size: 0.8rem;
+  margin-top: 4px;
+}
+
+.search-cta {
+  align-self: flex-end;
+  padding: 14px 36px;
+  background-color: var(--color-accent, #f5a623);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.05rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(245, 166, 35, 0.25);
+  transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  flex-shrink: 0;
+}
+
+.search-cta:hover:not(:disabled) {
+  background-color: var(--color-accent-dark, #d68c0f);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(245, 166, 35, 0.35);
+}
+
+.search-cta:disabled {
+  background-color: var(--color-border, #e4dfd6);
+  cursor: not-allowed;
+}
+
+/* Compact variant: fields sit flush inside the Results page's own toolbar band, not a floating card. */
+:host(.compact) .search-form {
+  max-width: none;
+  border-left: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  padding: 0;
+  align-items: flex-end;
+}
+
+:host(.compact) .field {
+  min-width: 120px;
+}
+
+:host(.compact) .field input {
+  padding: 9px 12px;
+}
+
+:host(.compact) .search-cta {
+  padding: 11px 28px;
+  font-size: 0.95rem;
+}

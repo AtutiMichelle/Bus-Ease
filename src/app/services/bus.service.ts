@@ -1,11 +1,16 @@
 import { Injectable, inject } from '@angular/core';
 import { Supabase } from './supabase';
-import { Bus } from '../models/bus.model';
+import { Bus, BusClassOption } from '../models/bus.model';
 
 export interface Seat {
   id: string;
   number: string;
   status: 'available' | 'booked';
+}
+
+export interface BusClassRow {
+  class_name: string;
+  price: string | number;
 }
 
 export interface BusRow {
@@ -22,10 +27,19 @@ export interface BusRow {
     destination: string;
     duration_minutes: number;
   };
+  bus_classes: BusClassRow[];
 }
 
 export const BUS_ROW_SELECT =
-  'id, operator, bus_type, base_price, departure_time, arrival_time, total_seats, available_seats, routes!inner(origin, destination, duration_minutes)';
+  'id, operator, bus_type, base_price, departure_time, arrival_time, total_seats, available_seats, routes!inner(origin, destination, duration_minutes), bus_classes(class_name, price)';
+
+const CLASS_RANK: Record<string, number> = { VIP: 0, Business: 1, Normal: 2 };
+
+function mapClasses(rows: BusClassRow[]): BusClassOption[] {
+  return (rows ?? [])
+    .map((row) => ({ className: row.class_name as BusClassOption['className'], price: Number(row.price) }))
+    .sort((a, b) => (CLASS_RANK[a.className] ?? 99) - (CLASS_RANK[b.className] ?? 99));
+}
 
 export function mapBusRow(row: BusRow): Bus {
   return {
@@ -41,6 +55,7 @@ export function mapBusRow(row: BusRow): Bus {
     price: Number(row.base_price),
     seatsAvailable: row.available_seats,
     totalSeats: row.total_seats,
+    classes: mapClasses(row.bus_classes),
   };
 }
 

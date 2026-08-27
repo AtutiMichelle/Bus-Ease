@@ -1,4 +1,4 @@
-import { mapBusRow, BusRow } from './bus.service';
+import { mapBusRow, BusRow, mapSeatRow, SeatRow } from './bus.service';
 
 function makeRow(overrides: Partial<BusRow> = {}): BusRow {
   return {
@@ -45,5 +45,48 @@ describe('mapBusRow classes', () => {
     const row = makeRow({ bus_classes: [] });
 
     expect(mapBusRow(row).classes).toEqual([]);
+  });
+});
+
+describe('mapSeatRow', () => {
+  it('maps a seat with a class embed to className and price', () => {
+    const row: SeatRow = {
+      id: 's1',
+      seat_number: '3B',
+      status: 'available',
+      bus_classes: { class_name: 'VIP', price: '4200' },
+    };
+
+    expect(mapSeatRow(row)).toEqual({
+      id: 's1',
+      number: '3B',
+      status: 'available',
+      className: 'VIP',
+      price: 4200,
+    });
+  });
+
+  it('maps a booked seat status correctly', () => {
+    const row: SeatRow = {
+      id: 's2',
+      seat_number: '1A',
+      status: 'booked',
+      bus_classes: { class_name: 'Normal', price: '1800' },
+    };
+
+    expect(mapSeatRow(row).status).toBe('booked');
+  });
+
+  it('leaves className and price undefined when a seat has no class embed', () => {
+    const row: SeatRow = {
+      id: 's3',
+      seat_number: '5A',
+      status: 'available',
+      bus_classes: null,
+    };
+
+    const seat = mapSeatRow(row);
+    expect(seat.className).toBeUndefined();
+    expect(seat.price).toBeUndefined();
   });
 });

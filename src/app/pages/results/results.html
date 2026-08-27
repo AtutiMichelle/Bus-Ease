@@ -1,7 +1,11 @@
-<section class="results-header">
-  <div class="section-container">
-    <h1>{{ origin() || 'Anywhere' }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i> {{ destination() || 'Anywhere' }}</h1>
-    <p class="results-meta">{{ formattedDate() }} · {{ buses().length }} buses found</p>
+<section class="results-status">
+  <div class="section-container results-status-inner">
+    <p class="results-count"><i class="fa-solid fa-bus" aria-hidden="true"></i> {{ buses().length }} {{ buses().length === 1 ? 'bus' : 'buses' }} found</p>
+    <p class="results-subtitle">
+      {{ origin() || 'Anywhere' }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i> {{ destination() || 'Anywhere' }}
+      <span class="meta-dot" aria-hidden="true"></span>
+      {{ formattedDate() }}
+    </p>
   </div>
 </section>
 
@@ -14,19 +18,32 @@
 <section class="results-list">
   <div class="section-container">
     @if (loading()) {
-      <p class="empty-state">Searching for buses…</p>
+      <div class="state-panel">
+        <i class="fa-solid fa-bus state-icon state-icon-pulse" aria-hidden="true"></i>
+        <p class="state-title">Searching for buses…</p>
+      </div>
     } @else if (errorMessage()) {
-      <p class="empty-state">{{ errorMessage() }}</p>
+      <div class="state-panel state-panel-error">
+        <i class="fa-solid fa-triangle-exclamation state-icon" aria-hidden="true"></i>
+        <p class="state-title">{{ errorMessage() }}</p>
+      </div>
     } @else if (buses().length === 0) {
-      <p class="empty-state">No buses found for this route yet. Try a different search.</p>
+      <div class="state-panel">
+        <i class="fa-regular fa-face-frown state-icon" aria-hidden="true"></i>
+        <p class="state-title">No buses found for this route yet.</p>
+        <p class="state-subtitle">Try a different date or route.</p>
+      </div>
     }
 
     @for (bus of buses(); track bus.id) {
-      <article class="bus-card">
+      <article class="bus-card" [class]="'bus-type-' + bus.busType.toLowerCase()">
         <div class="bus-main">
           <div class="bus-operator">
-            <p class="operator-name">{{ bus.operator }}</p>
-            <span class="bus-type-chip">{{ bus.busType }}</span>
+            <span class="operator-badge" aria-hidden="true"><i class="fa-solid fa-bus-simple"></i></span>
+            <div>
+              <p class="operator-name">{{ bus.operator }}</p>
+              <span [class]="'bus-type-chip chip-' + bus.busType.toLowerCase()">{{ bus.busType }}</span>
+            </div>
           </div>
 
           <div class="bus-times">
@@ -35,8 +52,14 @@
               <p class="time-label">{{ bus.from }}</p>
             </div>
             <div class="duration-block">
-              <p class="duration">{{ bus.duration }}</p>
-              <div class="duration-line"></div>
+              <div class="duration-track">
+                <p class="duration">{{ bus.duration }}</p>
+                <div class="duration-line">
+                  <span class="route-dot route-dot-start" aria-hidden="true"></span>
+                  <span class="route-bus" aria-hidden="true"><i class="fa-solid fa-bus"></i></span>
+                  <span class="route-dot route-dot-end" aria-hidden="true"></span>
+                </div>
+              </div>
             </div>
             <div class="time-block">
               <p class="time">{{ bus.arrivalTime }}</p>
@@ -45,13 +68,19 @@
           </div>
 
           <div class="bus-rating">
-            <span class="seats-left">{{ bus.seatsAvailable }} seats left</span>
+            <span class="seats-left" [class.seats-low]="bus.seatsAvailable <= 5">
+              <i class="fa-solid fa-couch" style="color: #1e88e5;"></i>{{ bus.seatsAvailable }} seats left
+            </span>
           </div>
         </div>
 
+        <div class="ticket-divider" aria-hidden="true"></div>
+
         <div class="bus-cta">
-          <p class="price">KSh {{ bus.price }}</p>
-          <button type="button" (click)="selectBus(bus)">Select Seats</button>
+          <p class="price"><span class="price-currency">KSh</span>{{ bus.price }}</p>
+          <button type="button" (click)="selectBus(bus)">
+            Select Seats <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+          </button>
         </div>
       </article>
     }

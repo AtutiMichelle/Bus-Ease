@@ -14,6 +14,8 @@ create table if not exists bus_classes (
 
 alter table bus_classes enable row level security;
 
+drop policy if exists "bus_classes are viewable by everyone" on bus_classes;
+
 create policy "bus_classes are viewable by everyone"
   on bus_classes for select
   using (true);

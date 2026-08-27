@@ -139,14 +139,6 @@
   box-shadow: 0 14px 32px rgba(26, 58, 107, 0.14);
 }
 
-.bus-card.bus-type-luxury {
-  border-left-color: var(--color-accent-dark, #d68c0f);
-}
-
-.bus-card.bus-type-express {
-  border-left-color: var(--color-accent, #eb1f1a);
-}
-
 .bus-main {
   display: flex;
   align-items: center;
@@ -179,32 +171,7 @@
   font-size: 1.13rem;
   font-weight: 700;
   color: var(--color-primary, #1a3a6b);
-  margin: 0 0 6px 0;
-}
-
-.bus-type-chip {
-  display: inline-block;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  border-radius: 999px;
-  padding: 3px 10px;
-}
-
-.chip-standard {
-  color: var(--color-primary, #1a3a6b);
-  background-color: var(--color-soft-bg, #e8f1fc);
-}
-
-.chip-luxury {
-  color: #7a5108;
-  background-color: #fbf0da;
-}
-
-.chip-express {
-  color: var(--color-accent, #eb1f1a);
-  background-color: #fce9e8;
+  margin: 0;
 }
 
 .bus-times {
@@ -364,10 +331,50 @@
   gap: var(--space-2, 8px);
 }
 
-.price {
-  margin: 0;
-  font-size: 1.75rem;
+.class-price-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-end;
+}
+
+.class-price-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.class-chip {
+  display: inline-block;
+  min-width: 62px;
+  text-align: center;
+  font-size: 0.7rem;
   font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+
+.chip-vip {
+  color: #7a5108;
+  background-color: #fbf0da;
+}
+
+.chip-business {
+  color: var(--color-primary, #1a3a6b);
+  background-color: var(--color-soft-bg, #e8f1fc);
+}
+
+.chip-normal {
+  color: #1f7a5c;
+  background-color: #e3f5ee;
+}
+
+.class-price {
+  font-size: 1.05rem;
+  font-weight: 700;
+  white-space: nowrap;
   color: var(--color-primary, #1a3a6b);
 }
 
@@ -441,10 +448,6 @@
 
   .bus-cta {
     align-items: stretch;
-  }
-
-  .bus-cta .price {
-    text-align: right;
   }
 
   .bus-cta button {

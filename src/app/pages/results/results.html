@@ -36,14 +36,11 @@
     }
 
     @for (bus of buses(); track bus.id) {
-      <article class="bus-card" [class]="'bus-type-' + bus.busType.toLowerCase()">
+      <article class="bus-card">
         <div class="bus-main">
           <div class="bus-operator">
             <span class="operator-badge" aria-hidden="true"><i class="fa-solid fa-bus-simple"></i></span>
-            <div>
-              <p class="operator-name">{{ bus.operator }}</p>
-              <span [class]="'bus-type-chip chip-' + bus.busType.toLowerCase()">{{ bus.busType }}</span>
-            </div>
+            <p class="operator-name">{{ bus.operator }}</p>
           </div>
 
           <div class="bus-times">
@@ -77,7 +74,14 @@
         <div class="ticket-divider" aria-hidden="true"></div>
 
         <div class="bus-cta">
-          <p class="price"><span class="price-currency">KSh</span>{{ bus.price }}</p>
+          <div class="class-price-list">
+            @for (cls of bus.classes; track cls.className) {
+              <div class="class-price-row">
+                <span [class]="'class-chip chip-' + cls.className.toLowerCase()">{{ cls.className }}</span>
+                <span class="class-price"><span class="price-currency">KSh</span>{{ cls.price }}</span>
+              </div>
+            }
+          </div>
           <button type="button" (click)="selectBus(bus)">
             Select Seats <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
           </button>

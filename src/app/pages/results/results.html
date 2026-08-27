@@ -81,7 +81,7 @@
                 <span class="class-price"><span class="price-currency">KSh</span>{{ cls.price | number }}</span>
               </div>
             } @empty {
-              <div class="class-price-row">
+              <div class="class-price-row class-price-row-fallback">
                 <span class="class-price"><span class="price-currency">KSh</span>{{ bus.price | number }}</span>
               </div>
             }

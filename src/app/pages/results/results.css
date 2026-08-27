@@ -334,46 +334,53 @@
 .class-price-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  align-items: flex-end;
+  gap: 14px;
+  width: 180px;
 }
 
 .class-price-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.class-price-row-fallback {
+  justify-content: flex-end;
 }
 
 .class-chip {
   display: inline-block;
-  min-width: 62px;
+  min-width: 76px;
   text-align: center;
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.5px;
   border-radius: 999px;
-  padding: 2px 9px;
+  padding: 4px 10px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
 .chip-vip {
-  color: #7a5108;
-  background-color: #fbf0da;
+  color: #4a3200;
+  background-color: #f2b632;
 }
 
 .chip-business {
-  color: var(--color-primary, #1a3a6b);
-  background-color: var(--color-soft-bg, #e8f1fc);
+  color: white;
+  background-color: var(--color-primary, #1a3a6b);
 }
 
 .chip-normal {
-  color: #1f7a5c;
-  background-color: #e3f5ee;
+  color: white;
+  background-color: #1c7d5a;
 }
 
 .class-price {
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-size: 1.2rem;
+  font-weight: 800;
   white-space: nowrap;
   color: var(--color-primary, #1a3a6b);
 }
@@ -448,6 +455,10 @@
 
   .bus-cta {
     align-items: stretch;
+  }
+
+  .class-price-list {
+    width: 100%;
   }
 
   .bus-cta button {

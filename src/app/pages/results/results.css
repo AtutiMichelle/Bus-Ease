@@ -326,7 +326,7 @@
 .bus-cta {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: stretch;
   justify-content: center;
   gap: var(--space-2, 8px);
 }
@@ -334,7 +334,7 @@
 .class-price-list {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
   width: 180px;
 }
 
@@ -344,10 +344,25 @@
   justify-content: space-between;
   gap: 12px;
   width: 100%;
+  box-sizing: border-box;
+  padding: 7px 10px;
+  border-radius: 10px;
 }
 
 .class-price-row-fallback {
   justify-content: flex-end;
+}
+
+.row-vip {
+  background-color: #fbf1da;
+}
+
+.row-business {
+  background-color: #e6eef8;
+}
+
+.row-normal {
+  background-color: #e2f3ec;
 }
 
 .class-chip {
@@ -396,6 +411,7 @@
 .bus-cta button {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   padding: 11px 22px;
   background-color: var(--color-accent, #eb1f1a);

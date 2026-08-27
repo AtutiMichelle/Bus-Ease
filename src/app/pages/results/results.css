@@ -351,36 +351,22 @@
   gap: 12px;
   width: 100%;
   box-sizing: border-box;
-  padding: 7px 10px;
-  border-radius: 10px;
 }
 
 .class-price-row-fallback {
   justify-content: flex-end;
 }
 
-.row-vip {
-  background-color: #fbf1da;
-}
-
-.row-business {
-  background-color: #e6eef8;
-}
-
-.row-normal {
-  background-color: #e2f3ec;
-}
-
 .class-chip {
   display: inline-block;
-  min-width: 76px;
+  min-width: 68px;
   text-align: center;
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   border-radius: 999px;
-  padding: 4px 10px;
+  padding: 2px 8px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 

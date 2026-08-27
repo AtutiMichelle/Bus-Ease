@@ -76,7 +76,7 @@
         <div class="bus-classes-mid">
           <div class="class-price-list">
             @for (cls of bus.classes; track cls.className) {
-              <div [class]="'class-price-row row-' + cls.className.toLowerCase()">
+              <div class="class-price-row">
                 <span [class]="'class-chip chip-' + cls.className.toLowerCase()">{{ cls.className }}</span>
                 <span class="class-price"><span class="price-currency">KSh</span>{{ cls.price | number }}</span>
               </div>
@@ -87,8 +87,6 @@
             }
           </div>
         </div>
-
-        <div class="ticket-divider" aria-hidden="true"></div>
 
         <div class="bus-cta">
           <button type="button" (click)="selectBus(bus)">

@@ -1,5 +1,6 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { DecimalPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SearchBar } from '../../components/search-bar/search-bar';
 import { SeatPanel } from '../../components/seat-panel/seat-panel';
@@ -8,7 +9,7 @@ import { Bus } from '../../models/bus.model';
 import { todayDateString } from '../../utils/date';
 
 @Component({
-  imports: [SearchBar, SeatPanel],
+  imports: [SearchBar, SeatPanel, DecimalPipe],
   selector: 'app-results',
   styleUrl: './results.css',
   templateUrl: './results.html',

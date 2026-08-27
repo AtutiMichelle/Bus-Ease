@@ -30,6 +30,9 @@ create policy "bus_classes are viewable by everyone"
 --   VIP:      3850 - 4600  (reference ~4000-4200)
 -- Inclusion is randomized per class so not every bus offers all three.
 
+-- Run this seed section once. Re-running it is safe (won't duplicate rows, thanks to
+-- ON CONFLICT DO NOTHING) but will re-roll the random() coin flips for any bus that
+-- previously drew "no" on a class, gradually pushing more buses toward offering all three.
 insert into bus_classes (bus_id, class_name, price)
 select id, 'Normal', (round((1700 + random() * 600) / 10) * 10)::numeric
 from buses

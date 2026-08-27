@@ -27,15 +27,17 @@ export interface BusRow {
     destination: string;
     duration_minutes: number;
   };
-  bus_classes: BusClassRow[];
+  bus_classes?: BusClassRow[];
 }
 
 export const BUS_ROW_SELECT =
-  'id, operator, bus_type, base_price, departure_time, arrival_time, total_seats, available_seats, routes!inner(origin, destination, duration_minutes), bus_classes(class_name, price)';
+  'id, operator, bus_type, base_price, departure_time, arrival_time, total_seats, available_seats, routes!inner(origin, destination, duration_minutes)';
+
+export const BUS_ROW_SELECT_WITH_CLASSES = `${BUS_ROW_SELECT}, bus_classes(class_name, price)`;
 
 const CLASS_RANK: Record<string, number> = { VIP: 0, Business: 1, Normal: 2 };
 
-function mapClasses(rows: BusClassRow[]): BusClassOption[] {
+function mapClasses(rows: BusClassRow[] | undefined): BusClassOption[] {
   return (rows ?? [])
     .map((row) => ({ className: row.class_name as BusClassOption['className'], price: Number(row.price) }))
     .sort((a, b) => (CLASS_RANK[a.className] ?? 99) - (CLASS_RANK[b.className] ?? 99));
@@ -88,7 +90,7 @@ export class BusService {
   async search(origin: string, destination: string, date: string): Promise<Bus[]> {
     let query = this.client
       .from('buses')
-      .select(BUS_ROW_SELECT)
+      .select(BUS_ROW_SELECT_WITH_CLASSES)
       .ilike('routes.origin', origin.trim())
       .ilike('routes.destination', destination.trim());
 

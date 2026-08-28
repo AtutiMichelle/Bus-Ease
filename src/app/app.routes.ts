@@ -7,12 +7,15 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/home/home').then((m) => m.Home),
     },
     {
+        // Sign in/up is now a modal (see AuthModalService) that overlays whatever
+        // page is current, rather than a page of its own — these redirects just
+        // keep old /login and /signup links from dead-ending.
         path: 'login',
-        loadComponent: () => import('./pages/login/login').then((m) => m.Login),
+        redirectTo: '/',
     },
     {
         path: 'signup',
-        loadComponent: () => import('./pages/signup/signup').then((m) => m.Signup),
+        redirectTo: '/',
     },
     {
         path: 'results',

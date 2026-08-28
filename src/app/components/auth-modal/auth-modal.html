@@ -1,0 +1,139 @@
+<div class="auth-modal-backdrop" (click)="close()">
+  <div class="auth-modal" (click)="$event.stopPropagation()">
+    <button type="button" class="modal-close" aria-label="Close" (click)="close()">
+      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+    </button>
+
+    @if (mode() === 'login') {
+      <p class="auth-eyebrow">Welcome back</p>
+      <h1>Log In</h1>
+      <p class="auth-subtitle">Log in to manage your bookings and get exclusive offers.</p>
+
+      <form class="auth-form" (ngSubmit)="login()">
+        <div class="field">
+          <label for="am-login-email">Email</label>
+          <input
+            id="am-login-email"
+            type="email"
+            placeholder="you@example.com"
+            [ngModel]="loginEmail()"
+            (ngModelChange)="loginEmail.set($event)"
+            name="loginEmail"
+            required
+          />
+        </div>
+
+        <div class="field">
+          <label for="am-login-password">Password</label>
+          <input
+            id="am-login-password"
+            type="password"
+            placeholder="Enter your password"
+            [ngModel]="loginPassword()"
+            (ngModelChange)="loginPassword.set($event)"
+            name="loginPassword"
+            required
+          />
+        </div>
+
+        <a routerLink="/forgot-password" class="forgot-link" (click)="close()">Forgot password?</a>
+
+        @if (loginError()) {
+          <p class="error">{{ loginError() }}</p>
+        }
+
+        <button type="submit" class="auth-cta" [disabled]="!loginCanSubmit">
+          {{ loginSubmitting() ? 'Logging In…' : 'Log In' }}
+        </button>
+      </form>
+
+      <p class="auth-switch">
+        Don't have an account? <button type="button" class="link-btn" (click)="switchMode('signup')">Sign Up</button>
+      </p>
+    } @else if (mode() === 'signup') {
+      @if (needsEmailConfirmation()) {
+        <p class="auth-eyebrow">Almost there</p>
+        <h1>Confirm Your Email</h1>
+        <p class="auth-subtitle">
+          We've sent a confirmation link to {{ signupEmail() }}. Click it to activate your account, then log in.
+        </p>
+        <button type="button" class="auth-cta modal-cta-link" (click)="switchMode('login')">
+          Go to Log In
+        </button>
+      } @else {
+        <p class="auth-eyebrow">Join BusEase</p>
+        <h1>Create Account</h1>
+        <p class="auth-subtitle">Sign up to book faster and track your trips.</p>
+
+        <form class="auth-form" (ngSubmit)="signup()">
+          <div class="field">
+            <label for="am-signup-name">Full Name</label>
+            <input
+              id="am-signup-name"
+              type="text"
+              placeholder="Jane Doe"
+              [ngModel]="signupFullName()"
+              (ngModelChange)="signupFullName.set($event)"
+              name="signupFullName"
+              required
+            />
+          </div>
+
+          <div class="field">
+            <label for="am-signup-email">Email</label>
+            <input
+              id="am-signup-email"
+              type="email"
+              placeholder="you@example.com"
+              [ngModel]="signupEmail()"
+              (ngModelChange)="signupEmail.set($event)"
+              name="signupEmail"
+              required
+            />
+          </div>
+
+          <div class="field">
+            <label for="am-signup-password">Password</label>
+            <input
+              id="am-signup-password"
+              type="password"
+              placeholder="Create a password"
+              [ngModel]="signupPassword()"
+              (ngModelChange)="signupPassword.set($event)"
+              name="signupPassword"
+              required
+            />
+          </div>
+
+          <div class="field">
+            <label for="am-signup-confirm">Confirm Password</label>
+            <input
+              id="am-signup-confirm"
+              type="password"
+              placeholder="Re-enter your password"
+              [ngModel]="signupConfirmPassword()"
+              (ngModelChange)="signupConfirmPassword.set($event)"
+              name="signupConfirmPassword"
+              required
+            />
+            @if (signupPasswordsMismatch) {
+              <p class="error">Passwords don't match.</p>
+            }
+          </div>
+
+          @if (signupError()) {
+            <p class="error">{{ signupError() }}</p>
+          }
+
+          <button type="submit" class="auth-cta" [disabled]="!signupCanSubmit">
+            {{ signupSubmitting() ? 'Creating Account…' : 'Create Account' }}
+          </button>
+        </form>
+
+        <p class="auth-switch">
+          Already have an account? <button type="button" class="link-btn" (click)="switchMode('login')">Log In</button>
+        </p>
+      }
+    }
+  </div>
+</div>

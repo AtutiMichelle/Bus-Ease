@@ -18,10 +18,10 @@
         <button type="button" class="logout-cta" (click)="logout()">Logout</button>
       </div>
     } @else {
-      <a routerLink="/login" class="auth-cta">
+      <button type="button" class="auth-cta" (click)="authModal.open('login')">
         <i class="fa-solid fa-circle-user" aria-hidden="true"></i>
         Login
-      </a>
+      </button>
     }
   </div>
 </header>

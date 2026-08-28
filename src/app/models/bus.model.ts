@@ -10,6 +10,8 @@ export interface Bus {
   to: string;
   date: string;
   departureTime: string;
+  /** Raw 24-hour departure hour (0-23), for filtering by time-of-day bucket. */
+  departureHour: number;
   arrivalTime: string;
   duration: string;
   busType: 'Luxury' | 'Standard' | 'Express';
@@ -17,6 +19,7 @@ export interface Bus {
   seatsAvailable: number;
   totalSeats: number;
   classes: BusClassOption[];
+  amenities: string[];
   /** Not tracked in the database yet; only the old mock data set this. */
   rating?: number;
 }

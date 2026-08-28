@@ -4,12 +4,14 @@ import { DecimalPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SearchBar } from '../../components/search-bar/search-bar';
 import { SeatPanel } from '../../components/seat-panel/seat-panel';
+import { FilterPanel } from '../../components/filter-panel/filter-panel';
 import { BusService } from '../../services/bus.service';
 import { Bus } from '../../models/bus.model';
 import { todayDateString } from '../../utils/date';
+import { FilterState, emptyFilterState, matchesFilters } from '../../utils/bus-filters';
 
 @Component({
-  imports: [SearchBar, SeatPanel, DecimalPipe],
+  imports: [SearchBar, SeatPanel, FilterPanel, DecimalPipe],
   selector: 'app-results',
   styleUrl: './results.css',
   templateUrl: './results.html',
@@ -29,6 +31,9 @@ export class Results {
   buses = signal<Bus[]>([]);
   loading = signal(true);
   errorMessage = signal('');
+
+  filters = signal<FilterState>(emptyFilterState());
+  filteredBuses = computed(() => this.buses().filter((bus) => matchesFilters(bus, this.filters())));
 
   formattedDate = computed(() => {
     const raw = this.journeyDate();

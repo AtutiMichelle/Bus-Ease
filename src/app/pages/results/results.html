@@ -1,6 +1,6 @@
 <section class="results-status">
   <div class="section-container results-status-inner">
-    <p class="results-count"><i class="fa-solid fa-bus" aria-hidden="true"></i> {{ buses().length }} {{ buses().length === 1 ? 'bus' : 'buses' }} found</p>
+    <p class="results-count"><i class="fa-solid fa-bus" aria-hidden="true"></i> {{ filteredBuses().length }} {{ filteredBuses().length === 1 ? 'bus' : 'buses' }} found</p>
     <p class="results-subtitle">
       {{ origin() || 'Anywhere' }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i> {{ destination() || 'Anywhere' }}
       <span class="meta-dot" aria-hidden="true"></span>
@@ -16,7 +16,8 @@
 </section>
 
 <section class="results-list">
-  <div class="section-container">
+  <div class="section-container results-layout">
+    <div class="results-main">
     @if (loading()) {
       <div class="state-panel">
         <i class="fa-solid fa-bus state-icon state-icon-pulse" aria-hidden="true"></i>
@@ -33,9 +34,15 @@
         <p class="state-title">No buses found for this route yet.</p>
         <p class="state-subtitle">Try a different date or route.</p>
       </div>
+    } @else if (filteredBuses().length === 0) {
+      <div class="state-panel">
+        <i class="fa-solid fa-filter-circle-xmark state-icon" aria-hidden="true"></i>
+        <p class="state-title">No buses match your filters.</p>
+        <p class="state-subtitle">Try clearing a filter to see more results.</p>
+      </div>
     }
 
-    @for (bus of buses(); track bus.id) {
+    @for (bus of filteredBuses(); track bus.id) {
       <article class="bus-card">
         <div class="bus-main">
           <div class="bus-operator">
@@ -73,7 +80,7 @@
 
         <div class="ticket-divider" aria-hidden="true"></div>
 
-        <div class="bus-classes-mid">
+        <div class="bus-price-cta">
           <div class="class-price-list">
             @for (cls of bus.classes; track cls.className) {
               <div class="class-price-row">
@@ -81,20 +88,21 @@
                 <span class="class-price"><span class="price-currency">KSh</span>{{ cls.price | number }}</span>
               </div>
             } @empty {
-              <div class="class-price-row class-price-row-fallback">
+              <div class="class-price-row">
                 <span class="class-price"><span class="price-currency">KSh</span>{{ bus.price | number }}</span>
               </div>
             }
           </div>
-        </div>
 
-        <div class="bus-cta">
-          <button type="button" (click)="selectBus(bus)">
+          <button type="button" class="select-seats-btn" (click)="selectBus(bus)">
             Select Seats <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
           </button>
         </div>
       </article>
     }
+    </div>
+
+    <app-filter-panel class="results-sidebar" [buses]="buses()" (filtersChange)="filters.set($event)" />
   </div>
 </section>
 

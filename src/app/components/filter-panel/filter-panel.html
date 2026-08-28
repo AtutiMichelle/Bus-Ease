@@ -1,0 +1,84 @@
+<aside class="filter-panel">
+  <div class="filter-panel-header">
+    <h2>Filters</h2>
+    <button type="button" class="clear-all" (click)="clearAll()">Clear All</button>
+  </div>
+
+  <section class="filter-section">
+    <h3>Seat Type</h3>
+    <ul class="checkbox-list">
+      @for (seatType of seatTypeOptions; track seatType) {
+        <li>
+          <label>
+            <input type="checkbox" [checked]="selectedSeatTypes().has(seatType)" (change)="toggleSeatType(seatType)" />
+            {{ seatType }}
+          </label>
+        </li>
+      }
+    </ul>
+  </section>
+
+  <section class="filter-section">
+    <h3>Departure Time</h3>
+    <div class="tile-row">
+      @for (dp of departurePeriods; track dp.period) {
+        <button
+          type="button"
+          class="time-tile"
+          [class.selected]="selectedDepartureTimes().has(dp.period)"
+          [attr.aria-pressed]="selectedDepartureTimes().has(dp.period)"
+          (click)="toggleDepartureTime(dp.period)"
+        >
+          <i class="fa-solid {{ dp.icon }}" aria-hidden="true"></i>
+          <span>{{ dp.period }}</span>
+        </button>
+      }
+    </div>
+  </section>
+
+  <section class="filter-section">
+    <h3>Amenities</h3>
+    <div class="tile-grid">
+      @for (amenity of options().amenities; track amenity) {
+        <button
+          type="button"
+          class="amenity-tile"
+          [class.selected]="selectedAmenities().has(amenity)"
+          [attr.aria-pressed]="selectedAmenities().has(amenity)"
+          (click)="toggleAmenity(amenity)"
+        >
+          <i class="fa-solid {{ amenityIcon(amenity) }}" aria-hidden="true"></i>
+          <span>{{ amenity }}</span>
+        </button>
+      } @empty {
+        <p class="filter-empty">No amenity data for these buses yet.</p>
+      }
+    </div>
+  </section>
+
+  <section class="filter-section">
+    <h3>Bus Partner</h3>
+    <select class="operator-select" [ngModel]="selectedOperator() ?? ''" (ngModelChange)="setOperator($event)">
+      <option value="">All operators</option>
+      @for (operator of options().operators; track operator) {
+        <option [value]="operator">{{ operator }}</option>
+      }
+    </select>
+  </section>
+
+  <section class="filter-section">
+    <h3>Bus Type</h3>
+    <ul class="checkbox-list">
+      @for (busType of options().busTypes; track busType) {
+        <li>
+          <label>
+            <input type="checkbox" [checked]="selectedBusTypes().has(busType)" (change)="toggleBusType(busType)" />
+            {{ busType }}
+          </label>
+        </li>
+      } @empty {
+        <p class="filter-empty">No bus type data for these buses yet.</p>
+      }
+    </ul>
+  </section>
+</aside>

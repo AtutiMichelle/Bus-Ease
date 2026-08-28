@@ -32,6 +32,10 @@ export interface BusClassRow {
   price: string | number;
 }
 
+export interface BusAmenityRow {
+  amenity: string;
+}
+
 export interface BusRow {
   id: string;
   operator: string;
@@ -47,12 +51,13 @@ export interface BusRow {
     duration_minutes: number;
   };
   bus_classes?: BusClassRow[];
+  bus_amenities?: BusAmenityRow[];
 }
 
 export const BUS_ROW_SELECT =
   'id, operator, bus_type, base_price, departure_time, arrival_time, total_seats, available_seats, routes!inner(origin, destination, duration_minutes)';
 
-export const BUS_ROW_SELECT_WITH_CLASSES = `${BUS_ROW_SELECT}, bus_classes(class_name, price)`;
+export const BUS_ROW_SELECT_WITH_CLASSES = `${BUS_ROW_SELECT}, bus_classes(class_name, price), bus_amenities(amenity)`;
 
 const CLASS_RANK: Record<string, number> = { VIP: 0, Business: 1, Normal: 2 };
 
@@ -60,6 +65,10 @@ function mapClasses(rows: BusClassRow[] | undefined): BusClassOption[] {
   return (rows ?? [])
     .map((row) => ({ className: row.class_name as BusClassOption['className'], price: Number(row.price) }))
     .sort((a, b) => (CLASS_RANK[a.className] ?? 99) - (CLASS_RANK[b.className] ?? 99));
+}
+
+function mapAmenities(rows: BusAmenityRow[] | undefined): string[] {
+  return (rows ?? []).map((row) => row.amenity);
 }
 
 export function mapBusRow(row: BusRow): Bus {
@@ -70,6 +79,7 @@ export function mapBusRow(row: BusRow): Bus {
     to: row.routes.destination,
     date: toDateString(row.departure_time),
     departureTime: formatTime(row.departure_time),
+    departureHour: parseInt(row.departure_time.slice(11, 13), 10),
     arrivalTime: formatTime(row.arrival_time),
     duration: formatDuration(row.routes.duration_minutes),
     busType: row.bus_type as Bus['busType'],
@@ -77,6 +87,7 @@ export function mapBusRow(row: BusRow): Bus {
     seatsAvailable: row.available_seats,
     totalSeats: row.total_seats,
     classes: mapClasses(row.bus_classes),
+    amenities: mapAmenities(row.bus_amenities),
   };
 }
 

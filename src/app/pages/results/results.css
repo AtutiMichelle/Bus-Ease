@@ -62,6 +62,35 @@
   background-color: var(--color-bg, #faf8f5);
 }
 
+.results-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4, 24px);
+}
+
+.results-sidebar {
+  flex: 0 0 260px;
+  position: sticky;
+  top: var(--space-4, 24px);
+}
+
+.results-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .results-layout {
+    flex-direction: column;
+  }
+
+  .results-sidebar {
+    flex-basis: auto;
+    width: 100%;
+    position: static;
+  }
+}
+
 /* ---- Empty / loading / error states ---- */
 
 .state-panel {
@@ -323,18 +352,12 @@
   bottom: -22px;
 }
 
-.bus-classes-mid {
+.bus-price-cta {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
-  flex: 1 1 auto;
-}
-
-.bus-cta {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
+  gap: 10px;
+  flex: 0 1 auto;
 }
 
 .class-price-list {
@@ -346,13 +369,8 @@
 .class-price-row {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
   gap: 8px;
   box-sizing: border-box;
-}
-
-.class-price-row-fallback {
-  justify-content: flex-end;
 }
 
 .class-chip {
@@ -387,6 +405,8 @@
 }
 
 .class-price {
+  flex: 1 1 auto;
+  text-align: right;
   font-size: 1.2rem;
   font-weight: 800;
   white-space: nowrap;
@@ -401,7 +421,7 @@
   vertical-align: middle;
 }
 
-.bus-cta button {
+.select-seats-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -414,22 +434,23 @@
   font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
+  box-sizing: border-box;
   box-shadow: 0 6px 16px rgba(235, 31, 26, 0.25);
   transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
 }
 
-.bus-cta button i {
+.select-seats-btn i {
   font-size: 0.8rem;
   transition: transform 0.2s;
 }
 
-.bus-cta button:hover {
+.select-seats-btn:hover {
   background-color: #c81915;
   transform: translateY(-2px);
   box-shadow: 0 10px 22px rgba(235, 31, 26, 0.32);
 }
 
-.bus-cta button:hover i {
+.select-seats-btn:hover i {
   transform: translateX(3px);
 }
 
@@ -462,16 +483,7 @@
     right: -22px;
   }
 
-  .bus-cta {
-    align-items: stretch;
-  }
-
-  .class-price-list {
+  .bus-price-cta {
     width: 100%;
-  }
-
-  .bus-cta button {
-    width: 100%;
-    justify-content: center;
   }
 }

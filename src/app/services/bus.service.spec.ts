@@ -12,9 +12,25 @@ function makeRow(overrides: Partial<BusRow> = {}): BusRow {
     available_seats: 40,
     routes: { origin: 'Nairobi', destination: 'Mombasa', duration_minutes: 390 },
     bus_classes: [],
+    bus_amenities: [],
     ...overrides,
   };
 }
+
+describe('mapBusRow amenities', () => {
+  it('maps bus_amenities rows into a flat list of amenity names', () => {
+    const row = makeRow({
+      bus_amenities: [{ amenity: 'Wifi' }, { amenity: 'Water' }],
+    });
+
+    expect(mapBusRow(row).amenities).toEqual(['Wifi', 'Water']);
+  });
+
+  it('returns an empty array when bus_amenities is empty or missing', () => {
+    expect(mapBusRow(makeRow({ bus_amenities: [] })).amenities).toEqual([]);
+    expect(mapBusRow(makeRow({ bus_amenities: undefined })).amenities).toEqual([]);
+  });
+});
 
 describe('mapBusRow classes', () => {
   it('maps bus_classes rows into classes, sorted VIP, Business, Normal', () => {

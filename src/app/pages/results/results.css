@@ -360,10 +360,10 @@
 .bus-price-cta {
   display: flex;
   flex-direction: column;
+  align-items: stretch;
   justify-content: center;
   gap: 10px;
   flex: 0 0 auto;
-  width: 180px;
   box-sizing: border-box;
 }
 
@@ -371,7 +371,6 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  width: 100%;
   box-sizing: border-box;
 }
 
@@ -379,7 +378,6 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  width: 100%;
   box-sizing: border-box;
 }
 
@@ -415,8 +413,6 @@
 }
 
 .class-price {
-  flex: 1 1 auto;
-  text-align: right;
   font-size: 1.2rem;
   font-weight: 800;
   white-space: nowrap;
@@ -436,7 +432,6 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  width: 100%;
   padding: 11px 22px;
   background-color: var(--color-accent, #eb1f1a);
   color: white;
@@ -505,5 +500,10 @@
 
   .bus-price-cta {
     width: 100%;
+  }
+
+  .class-price {
+    flex: 1 1 auto;
+    text-align: right;
   }
 }

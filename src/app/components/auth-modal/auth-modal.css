@@ -18,7 +18,7 @@
   border-radius: 16px;
   border-left: 5px solid var(--color-accent, #eb1f1a);
   box-shadow: 0 24px 64px rgba(18, 41, 77, 0.35);
-  padding: var(--space-5, 32px) var(--space-4, 24px);
+  padding: 44px var(--space-4, 24px);
   box-sizing: border-box;
   animation: scale-in 0.2s ease-out;
 }
@@ -70,17 +70,20 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin: 0 0 4px 0;
+  text-align: center;
 }
 
 .auth-modal h1 {
   color: var(--color-primary, #1a3a6b);
   margin: 0 0 var(--space-2, 8px) 0;
+  text-align: center;
 }
 
 .auth-subtitle {
   color: var(--color-text-muted, #6b6b6b);
   font-size: 0.9rem;
   margin: 0 0 var(--space-4, 24px) 0;
+  text-align: center;
 }
 
 .auth-form {

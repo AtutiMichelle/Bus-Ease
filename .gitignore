@@ -45,5 +45,6 @@ Thumbs.db
 
 # Subagent-driven-development scratch workspace
 .superpowers/
+docs/superpowers/
 .claude/
 docs/

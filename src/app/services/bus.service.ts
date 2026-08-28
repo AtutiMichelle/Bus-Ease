@@ -6,6 +6,25 @@ export interface Seat {
   id: string;
   number: string;
   status: 'available' | 'booked';
+  className?: 'VIP' | 'Business' | 'Normal';
+  price?: number;
+}
+
+export interface SeatRow {
+  id: string;
+  seat_number: string;
+  status: string;
+  bus_classes: { class_name: string; price: string | number } | null;
+}
+
+export function mapSeatRow(row: SeatRow): Seat {
+  return {
+    id: row.id,
+    number: row.seat_number,
+    status: (row.status === 'available' ? 'available' : 'booked') as Seat['status'],
+    className: row.bus_classes ? (row.bus_classes.class_name as Seat['className']) : undefined,
+    price: row.bus_classes ? Number(row.bus_classes.price) : undefined,
+  };
 }
 
 export interface BusClassRow {
@@ -133,19 +152,15 @@ export class BusService {
   async getSeats(busId: string): Promise<Seat[]> {
     const { data, error } = await this.client
       .from('seats')
-      .select('id, seat_number, status')
+      .select('id, seat_number, status, bus_classes(class_name, price)')
       .eq('bus_id', busId);
 
     if (error) {
       throw error;
     }
 
-    return (data ?? [])
-      .map((row) => ({
-        id: row.id,
-        number: row.seat_number,
-        status: (row.status === 'available' ? 'available' : 'booked') as Seat['status'],
-      }))
+    return ((data ?? []) as unknown as SeatRow[])
+      .map(mapSeatRow)
       .sort((a, b) => {
         const [rowA, colA] = seatSortKey(a.number);
         const [rowB, colB] = seatSortKey(b.number);

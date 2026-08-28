@@ -6,18 +6,13 @@
 
     @if (bus(); as b) {
       <header class="panel-trip">
+        <p class="trip-operator">{{ b.operator }}</p>
         <p class="trip-route">{{ b.from }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i> {{ b.to }}</p>
-        <p class="trip-meta">{{ b.operator }} · {{ b.departureTime }} – {{ b.arrivalTime }} · {{ b.busType }}</p>
+        <p class="trip-meta">{{ b.departureTime }} – {{ b.arrivalTime }} · {{ b.busType }}</p>
       </header>
 
       <div class="panel-body">
         <h2>Choose Your Seats</h2>
-
-        <div class="seat-legend">
-          <span class="legend-item"><span class="legend-swatch available"></span> Available</span>
-          <span class="legend-item"><span class="legend-swatch selected"></span> Selected</span>
-          <span class="legend-item"><span class="legend-swatch booked"></span> Booked</span>
-        </div>
 
         <div class="bus-front">
           <span class="door-indicator"><i class="fa-solid fa-door-open" aria-hidden="true"></i> Door</span>
@@ -25,43 +20,56 @@
           <span class="driver-indicator"><i class="fa-solid fa-user" aria-hidden="true"></i> Driver</span>
         </div>
 
+        <ng-template #seatButton let-seat="seat">
+          <button
+            type="button"
+            class="seat"
+            [class.available]="seat.status === 'available'"
+            [class.selected]="seat.status === 'selected'"
+            [class.booked]="seat.status === 'booked'"
+            [class]="seat.className ? 'class-' + seat.className.toLowerCase() : ''"
+            [disabled]="seat.status === 'booked'"
+            [attr.aria-label]="'Seat ' + seat.number + (seat.className ? ', ' + seat.className : '')"
+            (click)="toggleSeat(seat)"
+          >
+            <i class="fa-solid fa-couch" aria-hidden="true"></i>
+            <span class="seat-number">{{ seat.number }}</span>
+          </button>
+        </ng-template>
+
         <div class="seat-rows">
           @for (row of seatRows(); track $index) {
             <div class="seat-row">
               <div class="seat-pair">
-                @for (seat of row.slice(0, 2); track seat.number) {
-                  <button
-                    type="button"
-                    class="seat"
-                    [class.available]="seat.status === 'available'"
-                    [class.selected]="seat.status === 'selected'"
-                    [class.booked]="seat.status === 'booked'"
-                    [disabled]="seat.status === 'booked'"
-                    (click)="toggleSeat(seat)"
-                  >
-                    {{ seat.number }}
-                  </button>
+                @for (seat of row.left; track seat.number) {
+                  <ng-container [ngTemplateOutlet]="seatButton" [ngTemplateOutletContext]="{ seat: seat }" />
                 }
               </div>
 
-              <div class="aisle"></div>
+              <div class="aisle">
+                @if (row.middle; as seat) {
+                  <ng-container [ngTemplateOutlet]="seatButton" [ngTemplateOutletContext]="{ seat: seat }" />
+                }
+              </div>
 
               <div class="seat-pair">
-                @for (seat of row.slice(2, 4); track seat.number) {
-                  <button
-                    type="button"
-                    class="seat"
-                    [class.available]="seat.status === 'available'"
-                    [class.selected]="seat.status === 'selected'"
-                    [class.booked]="seat.status === 'booked'"
-                    [disabled]="seat.status === 'booked'"
-                    (click)="toggleSeat(seat)"
-                  >
-                    {{ seat.number }}
-                  </button>
+                @for (seat of row.right; track seat.number) {
+                  <ng-container [ngTemplateOutlet]="seatButton" [ngTemplateOutletContext]="{ seat: seat }" />
                 }
               </div>
             </div>
+          }
+        </div>
+
+        <div class="seat-legend">
+          <span class="legend-item"><span class="legend-swatch available"></span> Available</span>
+          <span class="legend-item"><span class="legend-swatch selected"></span> Selected</span>
+          <span class="legend-item"><span class="legend-swatch booked"></span> Booked</span>
+          <span class="legend-divider" aria-hidden="true"></span>
+          @for (cls of legendClasses(); track cls) {
+            <span class="legend-item">
+              <span [class]="'legend-swatch class-' + cls.toLowerCase()"></span> {{ cls }}
+            </span>
           }
         </div>
       </div>

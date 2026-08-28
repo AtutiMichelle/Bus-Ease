@@ -173,9 +173,10 @@
 .bus-main {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--space-3, 16px);
   flex-wrap: nowrap;
-  flex: 0 0 auto;
+  flex: 1 1 auto;
 }
 
 .bus-operator {
@@ -383,10 +384,11 @@
 
 .class-chip {
   display: inline-block;
+  min-width: 76px;
   flex-shrink: 0;
   white-space: nowrap;
   font-size: 0.72rem;
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }

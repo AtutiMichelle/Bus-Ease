@@ -1,17 +1,15 @@
-<section class="results-status">
-  <div class="section-container results-status-inner">
-    <p class="results-count"><i class="fa-solid fa-bus" aria-hidden="true"></i> {{ filteredBuses().length }} {{ filteredBuses().length === 1 ? 'bus' : 'buses' }} found</p>
-    <p class="results-subtitle">
-      {{ origin() || 'Anywhere' }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i> {{ destination() || 'Anywhere' }}
-      <span class="meta-dot" aria-hidden="true"></span>
-      {{ formattedDate() }}
-    </p>
-  </div>
-</section>
-
 <section class="results-toolbar">
   <div class="section-container">
     <app-search-bar variant="compact" [origin]="origin()" [destination]="destination()" [date]="journeyDate()" />
+
+    <div class="results-status-inner">
+      <p class="results-count"><i class="fa-solid fa-bus" aria-hidden="true"></i> {{ filteredBuses().length }} {{ filteredBuses().length === 1 ? 'bus' : 'buses' }} found</p>
+      <p class="results-subtitle">
+        {{ origin() || 'Anywhere' }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i> {{ destination() || 'Anywhere' }}
+        <span class="meta-dot" aria-hidden="true"></span>
+        {{ formattedDate() }}
+      </p>
+    </div>
   </div>
 </section>
 
@@ -84,7 +82,11 @@
           </div>
         </div>
 
-        <div class="ticket-divider" aria-hidden="true"></div>
+        <div class="ticket-divider" aria-hidden="true">
+          <span class="ticket-notch ticket-notch-top"></span>
+          <span class="ticket-notch ticket-notch-mid"></span>
+          <span class="ticket-notch ticket-notch-bottom"></span>
+        </div>
 
         <div class="bus-price-cta">
           <div class="class-price-list">

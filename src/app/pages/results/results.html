@@ -43,19 +43,57 @@
     @for (bus of filteredBuses(); track bus.id) {
       <article class="bus-card">
         <div class="bus-main">
-          <div class="bus-operator">
-            @if (bus.operatorLogo) {
-              <span class="operator-logo-frame">
-                <img class="operator-logo" [src]="bus.operatorLogo" [alt]="bus.operator" />
-              </span>
-            } @else {
-              <span class="operator-badge" aria-hidden="true"><i class="fa-solid fa-bus-simple"></i></span>
-            }
-            <p class="operator-name">{{ bus.operator }}</p>
+          <!-- Demo-only promo text; no promo/discount data source yet. -->
+          <div class="bus-top-row">
+            <span class="promo-badge">Get KSh 100 off with code SAVE100</span>
+            <!-- Demo-only; no cancellation-policy content/route to link to yet. -->
+            <button type="button" class="cancellation-link">Cancellation policy</button>
           </div>
 
+          <div class="bus-divider-dashed" aria-hidden="true"></div>
+
+          <div class="bus-info-row">
+            <div class="bus-info-left">
+              <div class="bus-operator">
+                @if (bus.operatorLogo) {
+                  <span class="operator-avatar">
+                    <img [src]="bus.operatorLogo" [alt]="bus.operator" />
+                  </span>
+                } @else {
+                  <span class="operator-avatar" aria-hidden="true">{{ operatorInitials(bus.operator) }}</span>
+                }
+                <div class="bus-operator-text">
+                  <p class="operator-name">{{ bus.operator }}</p>
+                  <span class="bus-rating-value">
+                    <i class="fa-solid fa-star" aria-hidden="true"></i>
+                    <!-- Demo-only fallback; bus.rating isn't tracked by the real data yet. -->
+                    {{ (bus.rating ?? 4.2) | number: '1.1-1' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bus-info-center">
+              <!-- "A" is a placeholder seat-layout letter; there's no layout data source yet. -->
+              <span class="bus-seater">{{ bus.totalSeats }} seater A</span>
+              @if (cardAmenities(bus).length > 0) {
+                <span class="bus-amenity-icons">
+                  @for (amenity of cardAmenities(bus); track amenity) {
+                    <i class="fa-solid {{ amenityIcon(amenity) }}" [style.color]="amenityColor(amenity)" [attr.aria-label]="amenity" [title]="amenity"></i>
+                  }
+                </span>
+              }
+            </div>
+
+            <div class="bus-info-right">
+              <span class="seats-left" [class.seats-low]="bus.seatsAvailable <= 5">{{ bus.seatsAvailable }} seats left</span>
+            </div>
+          </div>
+
+          <div class="bus-divider-dashed" aria-hidden="true"></div>
+
           <div class="bus-times">
-            <div class="time-block">
+            <div class="time-block time-block-start">
               <p class="time">{{ bus.departureTime }}</p>
               <p class="time-label">{{ bus.from }}</p>
             </div>
@@ -64,21 +102,15 @@
                 <p class="duration">{{ bus.duration }}</p>
                 <div class="duration-line">
                   <span class="route-dot route-dot-start" aria-hidden="true"></span>
-                  <span class="route-bus" aria-hidden="true"><i class="fa-solid fa-bus"></i></span>
                   <span class="route-dot route-dot-end" aria-hidden="true"></span>
                 </div>
+                <span class="route-bus" aria-hidden="true"><i class="fa-solid fa-bus"></i></span>
               </div>
             </div>
-            <div class="time-block">
+            <div class="time-block time-block-end">
               <p class="time">{{ bus.arrivalTime }}</p>
               <p class="time-label">{{ bus.to }}</p>
             </div>
-          </div>
-
-          <div class="bus-rating">
-            <span class="seats-left" [class.seats-low]="bus.seatsAvailable <= 5">
-              <i class="fa-solid fa-couch" style="color: #1e88e5;"></i>{{ bus.seatsAvailable }} seats left
-            </span>
           </div>
         </div>
 
@@ -89,22 +121,27 @@
         </div>
 
         <div class="bus-price-cta">
-          <div class="class-price-list">
-            @for (cls of bus.classes; track cls.className) {
-              <div class="class-price-row">
-                <span [class]="'class-chip chip-' + cls.className.toLowerCase()">{{ cls.className }}</span>
-                <span class="class-price"><span class="price-currency">KSh</span>{{ cls.price | number }}</span>
-              </div>
-            } @empty {
-              <div class="class-price-row">
-                <span class="class-price"><span class="price-currency">KSh</span>{{ bus.price | number }}</span>
-              </div>
-            }
-          </div>
+          <!-- Demo-only route-type label; no route-type data source yet. -->
+          <span class="route-type-badge">Highway</span>
 
-          <button type="button" class="select-seats-btn" (click)="selectBus(bus)">
-            Select Seats <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-          </button>
+          <div class="price-panel-body">
+            <div class="class-price-list">
+              @for (cls of bus.classes; track cls.className) {
+                <div class="class-price-row">
+                  <span [class]="'class-chip chip-' + cls.className.toLowerCase()">{{ cls.className }}</span>
+                  <span [class]="'class-price price-' + cls.className.toLowerCase()"><span class="price-currency">KSh</span>{{ cls.price | number }}</span>
+                </div>
+              } @empty {
+                <div class="class-price-row">
+                  <span class="class-price"><span class="price-currency">KSh</span>{{ bus.price | number }}</span>
+                </div>
+              }
+            </div>
+
+            <button type="button" class="select-seats-btn" (click)="selectBus(bus)">
+              Select Seats <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+            </button>
+          </div>
         </div>
       </article>
     }

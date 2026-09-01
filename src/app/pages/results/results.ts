@@ -9,6 +9,7 @@ import { BusService } from '../../services/bus.service';
 import { Bus } from '../../models/bus.model';
 import { todayDateString } from '../../utils/date';
 import { FilterState, emptyFilterState, matchesFilters } from '../../utils/bus-filters';
+import { amenityIcon, amenityColor } from '../../utils/amenity-icons';
 
 @Component({
   imports: [SearchBar, SeatPanel, FilterPanel, DecimalPipe],
@@ -34,6 +35,23 @@ export class Results {
 
   filters = signal<FilterState>(emptyFilterState());
   filteredBuses = computed(() => this.buses().filter((bus) => matchesFilters(bus, this.filters())));
+
+  amenityIcon = amenityIcon;
+  amenityColor = amenityColor;
+
+  /** Shown inline on each result card; kept to the first 3-4 amenities so the row stays compact. */
+  cardAmenities(bus: Bus): string[] {
+    return bus.amenities.slice(0, 4);
+  }
+
+  operatorInitials(name: string): string {
+    return name
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((word) => word[0].toUpperCase())
+      .join('');
+  }
 
   formattedDate = computed(() => {
     const raw = this.journeyDate();

@@ -1,5 +1,5 @@
 import { Bus } from '../models/bus.model';
-import { departureBucket, matchesFilters, filterOptions, emptyFilterState, FilterState } from './bus-filters';
+import { departureBucket, toSliderHour, matchesFilters, filterOptions, emptyFilterState, FilterState } from './bus-filters';
 
 function makeBus(overrides: Partial<Bus> = {}): Bus {
   return {
@@ -46,6 +46,18 @@ describe('departureBucket', () => {
   });
 });
 
+describe('toSliderHour', () => {
+  it('leaves 5-23 unchanged', () => {
+    expect(toSliderHour(5)).toBe(5);
+    expect(toSliderHour(23)).toBe(23);
+  });
+
+  it('shifts 0-4 past midnight onto the 24-29 tail so Night stays contiguous', () => {
+    expect(toSliderHour(0)).toBe(24);
+    expect(toSliderHour(4)).toBe(28);
+  });
+});
+
 describe('matchesFilters', () => {
   it('matches everything against an empty filter state', () => {
     expect(matchesFilters(makeBus(), emptyFilterState())).toBe(true);
@@ -63,13 +75,19 @@ describe('matchesFilters', () => {
     expect(matchesFilters(bus, filters)).toBe(false);
   });
 
-  it('matches departureTimes against the bus departure bucket', () => {
+  it('matches departureRange against the bus departure hour on the slider axis', () => {
     const bus = makeBus({ departureHour: 6 });
-    const filters: FilterState = { ...emptyFilterState(), departureTimes: new Set(['Morning']) };
+    const filters: FilterState = { ...emptyFilterState(), departureRange: { start: 5, end: 12 } };
     expect(matchesFilters(bus, filters)).toBe(true);
 
-    const filtersWrongBucket: FilterState = { ...emptyFilterState(), departureTimes: new Set(['Evening']) };
-    expect(matchesFilters(bus, filtersWrongBucket)).toBe(false);
+    const filtersWrongRange: FilterState = { ...emptyFilterState(), departureRange: { start: 17, end: 22 } };
+    expect(matchesFilters(bus, filtersWrongRange)).toBe(false);
+  });
+
+  it('matches a Night departureRange against a bus departing just after midnight', () => {
+    const bus = makeBus({ departureHour: 1 });
+    const filters: FilterState = { ...emptyFilterState(), departureRange: { start: 22, end: 29 } };
+    expect(matchesFilters(bus, filters)).toBe(true);
   });
 
   it('filters by amenities requiring all selected amenities present (AND within amenities)', () => {
@@ -87,35 +105,32 @@ describe('matchesFilters', () => {
     expect(matchesFilters(bus, { ...emptyFilterState(), operator: 'Coast Bus' })).toBe(false);
   });
 
-  it('filters by busTypes (OR within category)', () => {
-    const bus = makeBus({ busType: 'Express' });
-    expect(matchesFilters(bus, { ...emptyFilterState(), busTypes: new Set(['Luxury', 'Express']) })).toBe(true);
-    expect(matchesFilters(bus, { ...emptyFilterState(), busTypes: new Set(['Luxury']) })).toBe(false);
-  });
-
   it('requires all active categories to match (AND across categories)', () => {
-    const bus = makeBus({ operator: 'Coast Bus', busType: 'Luxury' });
-    const filters: FilterState = { ...emptyFilterState(), operator: 'Coast Bus', busTypes: new Set(['Express']) };
+    const bus = makeBus({ operator: 'Coast Bus', departureHour: 6 });
+    const filters: FilterState = {
+      ...emptyFilterState(),
+      operator: 'Coast Bus',
+      departureRange: { start: 17, end: 22 },
+    };
     expect(matchesFilters(bus, filters)).toBe(false);
   });
 });
 
 describe('filterOptions', () => {
-  it('derives unique, sorted operators, busTypes, and amenities from the given buses', () => {
+  it('derives unique, sorted operators and amenities from the given buses', () => {
     const buses = [
-      makeBus({ operator: 'Tahmeed', busType: 'Express', amenities: ['Wifi'] }),
-      makeBus({ operator: 'Coast Bus', busType: 'Luxury', amenities: ['Wifi', 'Water'] }),
-      makeBus({ operator: 'Coast Bus', busType: 'Luxury', amenities: [] }),
+      makeBus({ operator: 'Tahmeed', amenities: ['Wifi'] }),
+      makeBus({ operator: 'Coast Bus', amenities: ['Wifi', 'Water'] }),
+      makeBus({ operator: 'Coast Bus', amenities: [] }),
     ];
 
     const options = filterOptions(buses);
 
     expect(options.operators).toEqual(['Coast Bus', 'Tahmeed']);
-    expect(options.busTypes).toEqual(['Express', 'Luxury']);
     expect(options.amenities).toEqual(['Water', 'Wifi']);
   });
 
   it('returns empty arrays for an empty bus list', () => {
-    expect(filterOptions([])).toEqual({ operators: [], busTypes: [], amenities: [] });
+    expect(filterOptions([])).toEqual({ operators: [], amenities: [] });
   });
 });

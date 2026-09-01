@@ -544,63 +544,40 @@
 .class-price-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 12px;
   box-sizing: border-box;
 }
 
 .class-price-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   box-sizing: border-box;
 }
 
 .class-chip {
   display: inline-block;
-  min-width: 70px;
+  min-width: 60px;
   flex-shrink: 0;
   white-space: nowrap;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-}
-
-.chip-vip {
-  color: var(--color-accent-dark, #d68c0f);
-}
-
-.chip-business {
-  color: var(--color-green, #16a34a);
-}
-
-.chip-normal {
-  color: var(--color-primary, #1a3a6b);
+  color: var(--color-text, #3a3a3a);
 }
 
 .class-price {
   font-size: 14px;
   font-weight: 800;
   white-space: nowrap;
-  color: var(--color-primary, #1a3a6b);
-}
-
-.price-vip {
-  color: var(--color-accent-dark, #d68c0f);
-}
-
-.price-business {
-  color: var(--color-green, #16a34a);
-}
-
-.price-normal {
-  color: var(--color-primary, #1a3a6b);
+  color: var(--color-text, #3a3a3a);
 }
 
 .price-currency {
-  font-size: 0.75rem;
+  font-size: 11px;
   font-weight: 700;
-  color: var(--color-text-muted, #6b6b6b);
+  color: var(--color-text, #3a3a3a);
   margin-right: 5px;
   vertical-align: middle;
 }

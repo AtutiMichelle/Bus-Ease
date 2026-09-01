@@ -128,8 +128,8 @@
             <div class="class-price-list">
               @for (cls of bus.classes; track cls.className) {
                 <div class="class-price-row">
-                  <span [class]="'class-chip chip-' + cls.className.toLowerCase()">{{ cls.className }}</span>
-                  <span [class]="'class-price price-' + cls.className.toLowerCase()"><span class="price-currency">KSh</span>{{ cls.price | number }}</span>
+                  <span class="class-chip">{{ cls.className }}</span>
+                  <span class="class-price"><span class="price-currency">KSh</span>{{ cls.price | number }}</span>
                 </div>
               } @empty {
                 <div class="class-price-row">
@@ -147,7 +147,12 @@
     }
     </div>
 
-    <app-filter-panel class="results-sidebar" [buses]="buses()" (filtersChange)="filters.set($event)" />
+    <app-filter-panel
+      class="results-sidebar"
+      [buses]="buses()"
+      [resultCount]="filteredBuses().length"
+      (filtersChange)="filters.set($event)"
+    />
   </div>
 </section>
 

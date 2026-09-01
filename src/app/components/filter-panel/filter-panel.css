@@ -1,13 +1,12 @@
 .filter-panel {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  background: linear-gradient(155deg, var(--color-primary-dark, #12294d), #0b1b34);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  border: 0.5px solid var(--color-border);
+  border-radius: 12px;
   box-shadow: var(--shadow-card);
   padding: var(--space-4);
-  color: #fff;
+  color: var(--color-text);
 }
 
 .filter-panel-header {
@@ -15,341 +14,162 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
-  padding-bottom: var(--space-2);
+  padding-bottom: var(--space-3);
 }
 
 .filter-panel-header h2 {
   margin: 0;
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
   font-size: var(--text-lg);
-  color: #fff;
-}
-
-.filter-count-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
-  border-radius: 999px;
-  background-color: var(--color-success);
-  color: #fff;
-  font-size: 0.72rem;
-  font-weight: 800;
+  color: var(--color-text);
 }
 
 .clear-all {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: 999px;
-  padding: 6px 14px;
-  font-size: var(--text-xs);
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: var(--text-sm);
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--color-primary);
   cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .clear-all:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-color: #fff;
-  color: #fff;
+  text-decoration: underline;
 }
 
-/* ---- Accordion ---- */
+/* ---- Sections ---- */
 
-.accordion-section {
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+.filter-section {
+  padding: var(--space-3) 0;
+  border-top: 0.5px solid var(--color-border);
 }
 
-.accordion-section:first-of-type {
+.filter-section:first-of-type {
   border-top: none;
+  padding-top: 0;
 }
 
-.accordion-header {
+.filter-section-label {
+  margin: 0 0 10px 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+/* ---- Checkbox lists (Seat type, Bus type) ---- */
+
+.checkbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.checkbox-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
-  background: none;
-  border: none;
-  padding: var(--space-3) 0;
+  gap: var(--space-2);
+  cursor: pointer;
   font-size: var(--text-sm);
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  color: #fff;
+  color: var(--color-text);
+}
+
+.checkbox-row-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.checkbox-row-main input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary);
   cursor: pointer;
 }
 
-.accordion-chevron {
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.6);
-  transition: transform 0.2s ease;
+.checkbox-row-count {
+  font-size: 12px;
+  color: var(--color-text-muted);
 }
 
-.accordion-chevron.expanded {
-  transform: rotate(180deg);
-  color: var(--color-success);
-}
+/* ---- Icon-tile grids (Departure time, Amenities) ---- */
 
-.accordion-body {
+.tile-grid {
   display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.25s ease;
-}
-
-.accordion-body.expanded {
-  grid-template-rows: 1fr;
-}
-
-.accordion-body-inner {
-  min-height: 0;
-}
-
-/* overflow:hidden only while collapsed/collapsing — required so the grid
-   row can shrink to 0fr. Once expanded, let content (e.g. amenity
-   tooltips) escape the row's bounds instead of being clipped by it. */
-.accordion-body:not(.expanded) .accordion-body-inner {
-  overflow: hidden;
-  padding-bottom: 0;
-}
-
-.accordion-body.expanded .accordion-body-inner {
-  padding-bottom: var(--space-3);
-}
-
-/* ---- Seat type pills ---- */
-
-.seat-type-pills {
-  display: flex;
-  flex-wrap: wrap;
+  grid-template-columns: repeat(2, 1fr);
   gap: var(--space-2);
 }
 
-.seat-pill {
-  padding: 8px 18px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  background: transparent;
-  color: rgba(255, 255, 255, 0.85);
-  font-size: var(--text-sm);
-  font-weight: 700;
+.filter-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background-color: var(--color-bg);
+  color: var(--color-text);
   cursor: pointer;
   transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
-.seat-pill:hover {
-  border-color: #fff;
-  color: #fff;
+.filter-tile i {
+  font-size: 18px;
 }
 
-.seat-pill-vip.active {
-  background-color: var(--color-accent-dark);
-  border-color: var(--color-accent-dark);
-  color: #1a1200;
-}
-
-.seat-pill-business.active {
-  background-color: var(--color-success);
-  border-color: var(--color-success);
-  color: #04211a;
-}
-
-.seat-pill-normal.active {
-  background-color: var(--color-primary);
-  border-color: var(--color-primary);
-  color: #fff;
-}
-
-/* ---- Departure time slider ---- */
-
-.departure-range-label {
-  margin: 0 0 var(--space-2) 0;
-  font-size: var(--text-sm);
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.85);
-}
-
-.departure-slider {
-  position: relative;
-  height: 40px;
-}
-
-.departure-zones {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  border-radius: 999px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.departure-zone {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  background-color: rgba(255, 255, 255, 0.06);
-  border: none;
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.45);
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-.departure-zone:last-child {
-  border-right: none;
-}
-
-.departure-zone.active {
-  background-color: rgba(47, 168, 138, 0.4);
-  color: #fff;
-}
-
-.range-thumb {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 40px;
-  margin: 0;
-  background: transparent;
-  pointer-events: none;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-.range-thumb::-webkit-slider-runnable-track {
-  background: transparent;
-  height: 40px;
-}
-
-.range-thumb::-webkit-slider-thumb {
-  pointer-events: auto;
-  -webkit-appearance: none;
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  margin-top: 11px;
-  border-radius: 50%;
-  background: #fff;
-  border: 3px solid var(--color-success);
-  cursor: grab;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-}
-
-.range-thumb::-moz-range-track {
-  background: transparent;
-  height: 40px;
-}
-
-.range-thumb::-moz-range-thumb {
-  pointer-events: auto;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #fff;
-  border: 3px solid var(--color-success);
-  cursor: grab;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-}
-
-/* ---- Amenity icon pills ---- */
-
-.amenity-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
-.amenity-pill {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  color: rgba(255, 255, 255, 0.75);
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-}
-
-.amenity-pill:hover {
-  border-color: #fff;
-  color: #fff;
-}
-
-.amenity-pill.active {
-  background-color: var(--color-success);
-  border-color: var(--color-success);
-  color: #fff;
-}
-
-.amenity-tooltip {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%) translateY(4px);
-  padding: 4px 10px;
-  border-radius: var(--radius-sm);
-  background-color: #0b1b34;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #fff;
-  font-size: var(--text-xs);
+.filter-tile span {
+  font-size: 12px;
   font-weight: 600;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.15s ease, transform 0.15s ease;
-  z-index: 5;
 }
 
-.amenity-pill:hover .amenity-tooltip,
-.amenity-pill:focus-visible .amenity-tooltip {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
+.filter-tile.active {
+  /* 1px more border needs 1px less padding so the tile doesn't grow. */
+  padding: 13px 7px;
+  border: 2px solid var(--color-primary);
+  background-color: var(--color-soft-bg);
+  color: var(--color-primary);
 }
 
 /* ---- Bus partner select ---- */
 
 .operator-select {
   width: 100%;
-  padding: 12px 14px;
+  padding: 10px 12px;
   font-family: var(--font-family);
-  font-size: 1rem;
-  color: #fff;
-  background-color: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   box-sizing: border-box;
   cursor: pointer;
-  transition: border-color 0.2s, background-color 0.2s;
-}
-
-.operator-select option {
-  color: var(--color-text);
-  background-color: var(--color-surface);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .operator-select:focus {
   outline: none;
-  border-color: var(--color-success);
-  background-color: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 0 0 3px rgba(47, 168, 138, 0.2);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-soft-bg);
 }
 
-.filter-empty {
-  margin: 0;
-  font-size: var(--text-sm);
-  color: rgba(255, 255, 255, 0.6);
+/* ---- CTA ---- */
+
+.show-results-btn {
+  width: 100%;
+  margin-top: var(--space-3);
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background-color: var(--color-accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: var(--text-base);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.show-results-btn:hover {
+  background-color: #c81915;
 }

@@ -2,29 +2,26 @@ import { Bus } from '../models/bus.model';
 
 export type DeparturePeriod = 'Morning' | 'Afternoon' | 'Evening' | 'Night';
 
-export interface HourRange {
-  start: number;
-  end: number;
-}
-
 export interface FilterState {
   seatTypes: Set<string>;
-  departureRange: HourRange | null;
+  departureTimes: Set<DeparturePeriod>;
   amenities: Set<string>;
   operator: string | null;
+  busTypes: Set<Bus['busType']>;
 }
 
 export interface FilterOptions {
   operators: string[];
-  amenities: string[];
+  busTypes: Bus['busType'][];
 }
 
 export function emptyFilterState(): FilterState {
   return {
     seatTypes: new Set(),
-    departureRange: null,
+    departureTimes: new Set(),
     amenities: new Set(),
     operator: null,
+    busTypes: new Set(),
   };
 }
 
@@ -41,20 +38,20 @@ export function departureBucket(hour: number): DeparturePeriod {
   return 'Night';
 }
 
-/** Maps a 0-23 departure hour onto a 5-29 axis anchored at 5am, so the Night
- * zone (22:00-05:00) is one contiguous span instead of wrapping past midnight. */
-export function toSliderHour(hour: number): number {
-  return hour < 5 ? hour + 24 : hour;
-}
+export const DEPARTURE_ZONES: { period: DeparturePeriod; icon: string }[] = [
+  { period: 'Morning', icon: 'fa-sun' },
+  { period: 'Afternoon', icon: 'fa-cloud-sun' },
+  { period: 'Evening', icon: 'fa-cloud-moon' },
+  { period: 'Night', icon: 'fa-moon' },
+];
 
-export const DEPARTURE_SLIDER_MIN = 5;
-export const DEPARTURE_SLIDER_MAX = 29;
-
-export const DEPARTURE_ZONES: { period: DeparturePeriod; icon: string; range: HourRange }[] = [
-  { period: 'Morning', icon: 'fa-sun', range: { start: 5, end: 12 } },
-  { period: 'Afternoon', icon: 'fa-cloud-sun', range: { start: 12, end: 17 } },
-  { period: 'Evening', icon: 'fa-cloud-moon', range: { start: 17, end: 22 } },
-  { period: 'Night', icon: 'fa-moon', range: { start: 22, end: 29 } },
+/** Fixed 2x2 amenity tile set per the filter sidebar spec, mapped to the
+ * underlying amenity names stored on each bus. */
+export const AMENITY_ZONES: { label: string; icon: string; amenity: string }[] = [
+  { label: 'AC', icon: 'fa-snowflake', amenity: 'Air Conditioning' },
+  { label: 'Wifi', icon: 'fa-wifi', amenity: 'Wifi' },
+  { label: 'Charging', icon: 'fa-bolt', amenity: 'Phone Charging' },
+  { label: 'Water', icon: 'fa-droplet', amenity: 'Water' },
 ];
 
 export function matchesFilters(bus: Bus, filters: FilterState): boolean {
@@ -62,11 +59,8 @@ export function matchesFilters(bus: Bus, filters: FilterState): boolean {
     return false;
   }
 
-  if (filters.departureRange) {
-    const sliderHour = toSliderHour(bus.departureHour);
-    if (sliderHour < filters.departureRange.start || sliderHour >= filters.departureRange.end) {
-      return false;
-    }
+  if (filters.departureTimes.size > 0 && !filters.departureTimes.has(departureBucket(bus.departureHour))) {
+    return false;
   }
 
   for (const amenity of filters.amenities) {
@@ -79,16 +73,20 @@ export function matchesFilters(bus: Bus, filters: FilterState): boolean {
     return false;
   }
 
+  if (filters.busTypes.size > 0 && !filters.busTypes.has(bus.busType)) {
+    return false;
+  }
+
   return true;
 }
 
-function uniqueSorted(values: string[]): string[] {
+function uniqueSorted<T extends string>(values: T[]): T[] {
   return [...new Set(values)].sort();
 }
 
 export function filterOptions(buses: Bus[]): FilterOptions {
   return {
     operators: uniqueSorted(buses.map((bus) => bus.operator)),
-    amenities: uniqueSorted(buses.flatMap((bus) => bus.amenities)),
+    busTypes: uniqueSorted(buses.map((bus) => bus.busType)),
   };
 }

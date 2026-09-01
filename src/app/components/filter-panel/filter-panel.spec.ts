@@ -35,15 +35,15 @@ describe('FilterPanel', () => {
     fixture.detectChanges();
   });
 
-  it('derives operator and amenity options from the buses input', () => {
+  it('derives operator and bus type options from the buses input', () => {
     fixture.componentRef.setInput('buses', [
-      makeBus({ operator: 'Tahmeed', amenities: ['Wifi'] }),
-      makeBus({ operator: 'Coast Bus', amenities: ['Water'] }),
+      makeBus({ operator: 'Tahmeed', busType: 'Standard' }),
+      makeBus({ operator: 'Coast Bus', busType: 'Luxury' }),
     ]);
     fixture.detectChanges();
 
     expect(component.options().operators).toEqual(['Coast Bus', 'Tahmeed']);
-    expect(component.options().amenities).toEqual(['Water', 'Wifi']);
+    expect(component.options().busTypes).toEqual(['Luxury', 'Standard']);
   });
 
   it('toggling a seat type twice ends unselected and emits the state each time', () => {
@@ -64,6 +64,21 @@ describe('FilterPanel', () => {
     expect(Array.from(component.selectedAmenities())).toEqual(['Wifi', 'Water']);
   });
 
+  it('toggling departure times behaves as multi-select, unlike a single-select range', () => {
+    component.toggleDepartureTime('Morning');
+    component.toggleDepartureTime('Evening');
+
+    expect(Array.from(component.selectedDepartureTimes())).toEqual(['Morning', 'Evening']);
+  });
+
+  it('toggling a bus type twice ends unselected', () => {
+    component.toggleBusType('Express');
+    expect(component.selectedBusTypes().has('Express')).toBe(true);
+
+    component.toggleBusType('Express');
+    expect(component.selectedBusTypes().has('Express')).toBe(false);
+  });
+
   it('setOperator selects a single operator; empty string clears it', () => {
     component.setOperator('Tahmeed');
     expect(component.selectedOperator()).toBe('Tahmeed');
@@ -72,65 +87,39 @@ describe('FilterPanel', () => {
     expect(component.selectedOperator()).toBeNull();
   });
 
-  it('starts with the full departure range (no filter) and seatType section expanded', () => {
-    expect(component.isDepartureRangeActive()).toBe(false);
-    expect(component.isSectionExpanded('seatType')).toBe(true);
-    expect(component.isSectionExpanded('departureTime')).toBe(false);
+  it('counts each seat type against the full unfiltered bus list', () => {
+    fixture.componentRef.setInput('buses', [
+      makeBus({ classes: [{ className: 'VIP', price: 4000 }] }),
+      makeBus({ classes: [{ className: 'Business', price: 3000 }] }),
+      makeBus({ classes: [{ className: 'VIP', price: 4200 }] }),
+    ]);
+    fixture.detectChanges();
+
+    expect(component.seatTypeCounts().get('VIP')).toBe(2);
+    expect(component.seatTypeCounts().get('Business')).toBe(1);
+    expect(component.seatTypeCounts().get('Normal')).toBe(0);
   });
 
-  it('toggleSection flips a section open and closed', () => {
-    component.toggleSection('amenities');
-    expect(component.isSectionExpanded('amenities')).toBe(true);
+  it('resultCount reflects the input value passed down from the parent', () => {
+    fixture.componentRef.setInput('resultCount', 7);
+    fixture.detectChanges();
 
-    component.toggleSection('amenities');
-    expect(component.isSectionExpanded('amenities')).toBe(false);
+    expect(component.resultCount()).toBe(7);
   });
 
-  it('toggleZone selects a zone range, and tapping the same zone again clears it', () => {
-    const emitted: FilterState[] = [];
-    component.filtersChange.subscribe((v) => emitted.push(v));
-
-    component.toggleZone('Morning');
-    expect(emitted[0].departureRange).toEqual({ start: 5, end: 12 });
-    expect(component.isZoneActive('Morning')).toBe(true);
-
-    component.toggleZone('Morning');
-    expect(emitted[1].departureRange).toBeNull();
-    expect(component.isZoneActive('Morning')).toBe(false);
-  });
-
-  it('dragging the start thumb past the current end clamps it to end', () => {
-    component.onRangeStartInput('35');
-    expect(component.rangeStart()).toBe(component.rangeEnd());
-  });
-
-  it('dragging the end thumb below the current start clamps it to start', () => {
-    component.onRangeEndInput('0');
-    expect(component.rangeEnd()).toBe(component.rangeStart());
-  });
-
-  it('activeFilterCount counts every active filter value across categories', () => {
-    component.toggleSeatType('VIP');
-    component.toggleSeatType('Business');
-    component.toggleAmenity('Wifi');
-    component.setOperator('Tahmeed');
-    component.toggleZone('Evening');
-
-    expect(component.activeFilterCount()).toBe(5);
-  });
-
-  it('clearAll resets every selection and the departure range back to empty', () => {
+  it('clearAll resets every selection back to empty', () => {
     component.toggleSeatType('VIP');
     component.toggleAmenity('Wifi');
     component.setOperator('Tahmeed');
-    component.toggleZone('Evening');
+    component.toggleDepartureTime('Evening');
+    component.toggleBusType('Express');
 
     component.clearAll();
 
     expect(component.selectedSeatTypes().size).toBe(0);
     expect(component.selectedAmenities().size).toBe(0);
     expect(component.selectedOperator()).toBeNull();
-    expect(component.isDepartureRangeActive()).toBe(false);
-    expect(component.activeFilterCount()).toBe(0);
+    expect(component.selectedDepartureTimes().size).toBe(0);
+    expect(component.selectedBusTypes().size).toBe(0);
   });
 });

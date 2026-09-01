@@ -1,158 +1,92 @@
 <aside class="filter-panel">
   <div class="filter-panel-header">
-    <h2>
-      Filters
-      @if (activeFilterCount() > 0) {
-        <span class="filter-count-badge">{{ activeFilterCount() }}</span>
-      }
-    </h2>
-    <button type="button" class="clear-all" (click)="clearAll()">Clear All</button>
+    <h2>Filters</h2>
+    <button type="button" class="clear-all" (click)="clearAll()">Clear all</button>
   </div>
 
-  <section class="accordion-section">
-    <button
-      type="button"
-      class="accordion-header"
-      [attr.aria-expanded]="isSectionExpanded('seatType')"
-      (click)="toggleSection('seatType')"
-    >
-      <span>Seat Type</span>
-      <i class="fa-solid fa-chevron-down accordion-chevron" [class.expanded]="isSectionExpanded('seatType')" aria-hidden="true"></i>
-    </button>
-    <div class="accordion-body" [class.expanded]="isSectionExpanded('seatType')">
-      <div class="accordion-body-inner">
-        <div class="seat-type-pills">
-          @for (seatType of seatTypeOptions; track seatType) {
-            <button
-              type="button"
-              class="seat-pill"
-              [class]="'seat-pill-' + seatType.toLowerCase()"
-              [class.active]="selectedSeatTypes().has(seatType)"
-              [attr.aria-pressed]="selectedSeatTypes().has(seatType)"
-              (click)="toggleSeatType(seatType)"
-            >
-              {{ seatType }}
-            </button>
-          }
-        </div>
-      </div>
+  <section class="filter-section">
+    <p class="filter-section-label">Seat type</p>
+    <div class="checkbox-list">
+      @for (seatType of seatTypeOptions; track seatType) {
+        <label class="checkbox-row">
+          <span class="checkbox-row-main">
+            <input
+              type="checkbox"
+              [checked]="selectedSeatTypes().has(seatType)"
+              (change)="toggleSeatType(seatType)"
+            />
+            {{ seatType }}
+          </span>
+          <span class="checkbox-row-count">{{ seatTypeCounts().get(seatType) ?? 0 }}</span>
+        </label>
+      }
     </div>
   </section>
 
-  <section class="accordion-section">
-    <button
-      type="button"
-      class="accordion-header"
-      [attr.aria-expanded]="isSectionExpanded('departureTime')"
-      (click)="toggleSection('departureTime')"
-    >
-      <span>Departure Time</span>
-      <i class="fa-solid fa-chevron-down accordion-chevron" [class.expanded]="isSectionExpanded('departureTime')" aria-hidden="true"></i>
-    </button>
-    <div class="accordion-body" [class.expanded]="isSectionExpanded('departureTime')">
-      <div class="accordion-body-inner">
-        <p class="departure-range-label">
-          @if (isDepartureRangeActive()) {
-            {{ formatSliderHour(rangeStart()) }} – {{ formatSliderHour(rangeEnd()) }}
-          } @else {
-            Any time
-          }
-        </p>
-
-        <div class="departure-slider">
-          <div class="departure-zones">
-            @for (zone of departureZones; track zone.period) {
-              <button
-                type="button"
-                class="departure-zone"
-                [class.active]="isZoneActive(zone.period)"
-                [style.width.%]="((zone.range.end - zone.range.start) / (sliderMax - sliderMin)) * 100"
-                [attr.aria-pressed]="isZoneActive(zone.period)"
-                [attr.aria-label]="zone.period"
-                (click)="toggleZone(zone.period)"
-              >
-                <i class="fa-solid {{ zone.icon }}" aria-hidden="true"></i>
-              </button>
-            }
-          </div>
-
-          <input
-            type="range"
-            class="range-thumb range-thumb-start"
-            [min]="sliderMin"
-            [max]="sliderMax"
-            step="1"
-            [ngModel]="rangeStart()"
-            (ngModelChange)="onRangeStartInput($event)"
-            aria-label="Earliest departure"
-          />
-          <input
-            type="range"
-            class="range-thumb range-thumb-end"
-            [min]="sliderMin"
-            [max]="sliderMax"
-            step="1"
-            [ngModel]="rangeEnd()"
-            (ngModelChange)="onRangeEndInput($event)"
-            aria-label="Latest departure"
-          />
-        </div>
-      </div>
+  <section class="filter-section">
+    <p class="filter-section-label">Departure time</p>
+    <div class="tile-grid">
+      @for (zone of departureZones; track zone.period) {
+        <button
+          type="button"
+          class="filter-tile"
+          [class.active]="selectedDepartureTimes().has(zone.period)"
+          [attr.aria-pressed]="selectedDepartureTimes().has(zone.period)"
+          (click)="toggleDepartureTime(zone.period)"
+        >
+          <i class="fa-solid {{ zone.icon }}" aria-hidden="true"></i>
+          <span>{{ zone.period }}</span>
+        </button>
+      }
     </div>
   </section>
 
-  <section class="accordion-section">
-    <button
-      type="button"
-      class="accordion-header"
-      [attr.aria-expanded]="isSectionExpanded('amenities')"
-      (click)="toggleSection('amenities')"
-    >
-      <span>Amenities</span>
-      <i class="fa-solid fa-chevron-down accordion-chevron" [class.expanded]="isSectionExpanded('amenities')" aria-hidden="true"></i>
-    </button>
-    <div class="accordion-body" [class.expanded]="isSectionExpanded('amenities')">
-      <div class="accordion-body-inner">
-        <div class="amenity-pills">
-          @for (amenity of options().amenities; track amenity) {
-            <button
-              type="button"
-              class="amenity-pill"
-              [class.active]="selectedAmenities().has(amenity)"
-              [attr.aria-pressed]="selectedAmenities().has(amenity)"
-              [attr.aria-label]="amenity"
-              (click)="toggleAmenity(amenity)"
-            >
-              <i class="fa-solid {{ amenityIcon(amenity) }}" aria-hidden="true"></i>
-              <span class="amenity-tooltip" aria-hidden="true">{{ amenity }}</span>
-            </button>
-          } @empty {
-            <p class="filter-empty">No amenity data for these buses yet.</p>
-          }
-        </div>
-      </div>
+  <section class="filter-section">
+    <p class="filter-section-label">Amenities</p>
+    <div class="tile-grid">
+      @for (zone of amenityZones; track zone.amenity) {
+        <button
+          type="button"
+          class="filter-tile"
+          [class.active]="selectedAmenities().has(zone.amenity)"
+          [attr.aria-pressed]="selectedAmenities().has(zone.amenity)"
+          (click)="toggleAmenity(zone.amenity)"
+        >
+          <i class="fa-solid {{ zone.icon }}" aria-hidden="true"></i>
+          <span>{{ zone.label }}</span>
+        </button>
+      }
     </div>
   </section>
 
-  <section class="accordion-section">
-    <button
-      type="button"
-      class="accordion-header"
-      [attr.aria-expanded]="isSectionExpanded('operator')"
-      (click)="toggleSection('operator')"
-    >
-      <span>Bus Partner</span>
-      <i class="fa-solid fa-chevron-down accordion-chevron" [class.expanded]="isSectionExpanded('operator')" aria-hidden="true"></i>
-    </button>
-    <div class="accordion-body" [class.expanded]="isSectionExpanded('operator')">
-      <div class="accordion-body-inner">
-        <select class="operator-select" [ngModel]="selectedOperator() ?? ''" (ngModelChange)="setOperator($event)">
-          <option value="">All operators</option>
-          @for (operator of options().operators; track operator) {
-            <option [value]="operator">{{ operator }}</option>
-          }
-        </select>
-      </div>
+  <section class="filter-section">
+    <p class="filter-section-label">Bus type</p>
+    <div class="checkbox-list">
+      @for (busType of options().busTypes; track busType) {
+        <label class="checkbox-row">
+          <span class="checkbox-row-main">
+            <input
+              type="checkbox"
+              [checked]="selectedBusTypes().has(busType)"
+              (change)="toggleBusType(busType)"
+            />
+            {{ busType }}
+          </span>
+          <span class="checkbox-row-count">{{ busTypeCounts().get(busType) ?? 0 }}</span>
+        </label>
+      }
     </div>
   </section>
+
+  <section class="filter-section">
+    <p class="filter-section-label">Bus partner</p>
+    <select class="operator-select" [ngModel]="selectedOperator() ?? ''" (ngModelChange)="setOperator($event)">
+      <option value="">All partners</option>
+      @for (operator of options().operators; track operator) {
+        <option [value]="operator">{{ operator }} ({{ operatorCounts().get(operator) ?? 0 }})</option>
+      }
+    </select>
+  </section>
+
+  <button type="button" class="show-results-btn">Show {{ resultCount() }} {{ resultCount() === 1 ? 'bus' : 'buses' }}</button>
 </aside>

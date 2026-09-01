@@ -73,6 +73,11 @@
   z-index: 20;
   max-height: 220px;
   overflow-y: auto;
+  /* This list always sits on its own white surface regardless of the host's
+     background, so pin --color-text back to a dark default here — otherwise
+     a dark-panel host (e.g. the Results toolbar) that overrides --color-text
+     to white for its own labels leaves these buttons unreadable until hover. */
+  --color-text: #3a3a3a;
 }
 
 .suggestion-list li {

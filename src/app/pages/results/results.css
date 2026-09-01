@@ -281,8 +281,10 @@
 
 .duration-line {
   height: 2px;
-  background-color: var(--color-border, #e4dfd6);
   position: relative;
+  /* Dashes and the route-dot markers share one color (--color-text-muted)
+     so the line reads as a single broken route, not mismatched segments. */
+  background-image: repeating-linear-gradient(to right, var(--color-text-muted, #6b6b6b) 0 4px, transparent 4px 7px);
 }
 
 .route-dot {
@@ -292,17 +294,17 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: var(--color-border, #e4dfd6);
+  /* Solid fill fully covers the dash beneath it, so the line stops cleanly
+     at the marker instead of appearing to run through it. */
+  background-color: var(--color-text-muted, #6b6b6b);
 }
 
 .route-dot-start {
   left: 0;
-  background-color: var(--color-text-muted, #6b6b6b);
 }
 
 .route-dot-end {
   right: 0;
-  background-color: var(--color-primary, #1a3a6b);
 }
 
 .route-bus {

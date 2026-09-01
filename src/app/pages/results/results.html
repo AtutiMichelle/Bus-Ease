@@ -46,7 +46,13 @@
       <article class="bus-card">
         <div class="bus-main">
           <div class="bus-operator">
-            <span class="operator-badge" aria-hidden="true"><i class="fa-solid fa-bus-simple"></i></span>
+            @if (bus.operatorLogo) {
+              <span class="operator-logo-frame">
+                <img class="operator-logo" [src]="bus.operatorLogo" [alt]="bus.operator" />
+              </span>
+            } @else {
+              <span class="operator-badge" aria-hidden="true"><i class="fa-solid fa-bus-simple"></i></span>
+            }
             <p class="operator-name">{{ bus.operator }}</p>
           </div>
 

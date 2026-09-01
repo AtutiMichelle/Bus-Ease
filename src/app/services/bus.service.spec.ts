@@ -3,7 +3,7 @@ import { mapBusRow, BusRow, mapSeatRow, SeatRow } from './bus.service';
 function makeRow(overrides: Partial<BusRow> = {}): BusRow {
   return {
     id: '1',
-    operator: 'Coast Bus',
+    operators: { name: 'Coast Bus', logo_url: null },
     bus_type: 'Luxury',
     base_price: '1800',
     departure_time: '2026-08-27T06:30:00Z',

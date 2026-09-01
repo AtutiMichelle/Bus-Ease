@@ -6,6 +6,7 @@ export interface BusClassOption {
 export interface Bus {
   id: string;
   operator: string;
+  operatorLogo?: string;
   from: string;
   to: string;
   date: string;

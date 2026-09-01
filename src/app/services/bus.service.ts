@@ -38,7 +38,7 @@ export interface BusAmenityRow {
 
 export interface BusRow {
   id: string;
-  operator: string;
+  operators: { name: string; logo_url: string | null };
   bus_type: string;
   base_price: string | number;
   departure_time: string;
@@ -55,7 +55,7 @@ export interface BusRow {
 }
 
 export const BUS_ROW_SELECT =
-  'id, operator, bus_type, base_price, departure_time, arrival_time, total_seats, available_seats, routes!inner(origin, destination, duration_minutes)';
+  'id, bus_type, base_price, departure_time, arrival_time, total_seats, available_seats, routes!inner(origin, destination, duration_minutes), operators!inner(name, logo_url)';
 
 export const BUS_ROW_SELECT_WITH_CLASSES = `${BUS_ROW_SELECT}, bus_classes(class_name, price), bus_amenities(amenity)`;
 
@@ -74,7 +74,8 @@ function mapAmenities(rows: BusAmenityRow[] | undefined): string[] {
 export function mapBusRow(row: BusRow): Bus {
   return {
     id: row.id,
-    operator: row.operator,
+    operator: row.operators.name,
+    operatorLogo: row.operators.logo_url ?? undefined,
     from: row.routes.origin,
     to: row.routes.destination,
     date: toDateString(row.departure_time),

@@ -43,7 +43,7 @@
 /* ---- Toolbar (search bar + results summary share one panel) ---- */
 
 .results-toolbar {
-  background: linear-gradient(155deg, var(--color-primary-dark, #12294d), #0b1b34);
+  background: linear-gradient(155deg, var(--color-primary, #12294d), #0b1b34);
   color: white;
   /* Read by the compact search bar's field labels below, so they stay legible on this dark panel. */
   --color-text: #fff;
@@ -73,6 +73,9 @@
 
 .results-sidebar {
   flex: 0 0 320px;
+  /* Sits left of the results list on desktop, ahead of .results-main in
+     visual order despite coming after it in the markup. */
+  order: -1;
   position: sticky;
   top: var(--space-4, 24px);
 }
@@ -88,6 +91,7 @@
   }
 
   .results-sidebar {
+    order: 0;
     flex-basis: auto;
     width: 100%;
     position: static;
@@ -110,7 +114,7 @@
 
 .state-icon {
   font-size: 1.75rem;
-  color: var(--color-primary, #1a3a6b);
+  color: var(--color-primary-light, #1e88e5);
   opacity: 0.5;
   margin-bottom: var(--space-1, 4px);
 }
@@ -150,11 +154,14 @@
 
 /* ---- Bus card ---- */
 
+/* Grid (not flex) so the price panel's badge/prices/button can be placed
+   into the exact same rows as the main content's top-row/info-row/times-row
+   via grid-row — guaranteed pixel alignment instead of margin guesswork. */
 .bus-card {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  grid-template-rows: repeat(5, auto);
   align-items: stretch;
-  justify-content: space-between;
-  flex-wrap: nowrap;
   overflow-x: auto;
   overflow-y: hidden;
   background-color: var(--color-surface, #fff);
@@ -171,10 +178,11 @@
 }
 
 .bus-main {
-  display: flex;
-  flex-direction: column;
+  grid-column: 1;
+  grid-row: 1 / -1;
+  display: grid;
+  grid-template-rows: subgrid;
   gap: 8px;
-  flex: 1 1 auto;
   min-width: 0;
   padding: 14px 14px 14px 18px;
   box-sizing: border-box;
@@ -192,11 +200,11 @@
 .promo-badge {
   display: inline-flex;
   align-items: center;
-  padding: 6px 14px;
+  padding: 3px 10px;
   border-radius: 999px;
   background-color: var(--color-green, #16a34a);
   color: #fff;
-  font-size: 16px;
+  font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -205,9 +213,9 @@
   background: none;
   border: none;
   padding: 0;
-  font-size: 16px;
+  font-size: 12px;
   font-weight: 600;
-  color: var(--color-primary, #1a3a6b);
+  color: var(--color-primary-light, #1e88e5);
   text-decoration: underline;
   cursor: pointer;
   white-space: nowrap;
@@ -240,7 +248,10 @@
 
 .bus-info-left,
 .time-block-start {
-  flex: 0 0 190px;
+  /* Matches .bus-info-right/.time-block-end width exactly so the flex:1
+     center column's midpoint sits at the card's true visual center instead
+     of skewing toward whichever side is wider. */
+  flex: 0 0 250px;
   min-width: 0;
 }
 
@@ -255,7 +266,7 @@
 
 .bus-info-right,
 .time-block-end {
-  flex: 0 0 100px;
+  flex: 0 0 250px;
   min-width: 0;
 }
 
@@ -276,21 +287,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 58px;
+  height: 58px;
   border-radius: 50%;
   overflow: hidden;
   background-color: var(--color-soft-bg, #e8f1fc);
-  color: var(--color-primary, #1a3a6b);
-  font-size: 14px;
+  color: var(--color-primary-light, #1e88e5);
+  font-size: 15px;
   font-weight: 800;
   letter-spacing: 0.3px;
 }
 
 .operator-avatar img {
+  /* contain (not cover) so non-square logos show in full instead of
+     being cropped to fill the circle. */
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .bus-operator-text {
@@ -302,15 +315,17 @@
 
 .operator-name {
   max-width: 100%;
-  /* Wraps instead of truncating — a fixed-width column plus a long operator
-     name (e.g. "Prestige Shuttle") was clipping names to "Prestig...". */
-  overflow-wrap: break-word;
+  /* The column is wide enough for long names (e.g. "Prestige Shuttle") to
+     fit on one line; ellipsis stays only as a safety net for the rare
+     name that still doesn't fit. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 18px;
   font-weight: 800;
   text-transform: uppercase;
-  color: var(--color-primary, #1a3a6b);
+  color: var(--color-primary, #12294d);
   margin: 0;
-  line-height: 1.15;
 }
 
 .bus-rating-value {
@@ -411,7 +426,7 @@
      the operator/seats-left columns above), so the line reaches into that
      slack to keep its dots close to the actual time text instead of the
      column edges. */
-  margin: 0 -8px 0 -98px;
+  margin: 0 -158px 0 -158px;
   /* Dashes and the route-dot markers share one color (--color-text-muted)
      so the line reads as a single broken route, not mismatched segments. */
   background-image: repeating-linear-gradient(to right, var(--color-text-muted, #6b6b6b) 0 4px, transparent 4px 7px);
@@ -445,7 +460,9 @@
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background-color: var(--color-primary, #1a3a6b);
+  /* Neutral grey, matching the dashed line/dots it sits on, instead of a
+     brand-colored circle. */
+  background-color: var(--color-text-muted, #6b6b6b);
   color: white;
   display: flex;
   align-items: center;
@@ -470,9 +487,9 @@
 /* ---- Ticket-stub divider ---- */
 
 .ticket-divider {
-  align-self: stretch;
+  grid-column: 2;
+  grid-row: 1 / -1;
   width: 2px;
-  flex-shrink: 0;
   position: relative;
   background-image: repeating-linear-gradient(to bottom, #b3a99a 0 7px, transparent 7px 13px);
 }
@@ -508,10 +525,10 @@
 }
 
 .bus-price-cta {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  flex: 0 0 auto;
+  grid-column: 3;
+  grid-row: 1 / -1;
+  display: grid;
+  grid-template-rows: subgrid;
   box-sizing: border-box;
   background-color: var(--color-soft-bg, #e8f1fc);
   border-radius: 0 12px 12px 0;
@@ -519,29 +536,28 @@
 }
 
 .route-type-badge {
-  align-self: flex-start;
+  grid-row: 1;
+  align-self: start;
+  /* align-self alone only stops vertical stretch within the row; grid
+     items also default to justify-self: stretch on the inline axis, which
+     was widening the pill to fill the column's full width. */
+  justify-self: start;
   display: inline-flex;
   align-items: center;
-  padding: 3px 10px;
+  padding: 4px 11px;
   border-radius: 999px;
-  background-color: var(--color-danger, #d64545);
+  background-color: var(--color-primary-light, #1e88e5);
   color: #fff;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   white-space: nowrap;
 }
 
-/* Badge stays pinned to the top; everything else is centered in the
-   remaining height so pricing doesn't feel packed against the badge. */
-.price-panel-body {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 10px;
-}
-
 .class-price-list {
+  /* Placed in the same grid row as .bus-info-row (the operator-name row),
+     so it starts level with it exactly — not a few px off via margin math. */
+  grid-row: 3;
+  align-self: start;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -551,13 +567,14 @@
 .class-price-row {
   display: flex;
   align-items: center;
-  gap: 5px;
+  justify-content: space-between;
+  gap: 10px;
   box-sizing: border-box;
 }
 
 .class-chip {
   display: inline-block;
-  min-width: 60px;
+  min-width: 52px;
   flex-shrink: 0;
   white-space: nowrap;
   font-size: 12px;
@@ -583,6 +600,11 @@
 }
 
 .select-seats-btn {
+  /* Placed in the same grid row as .bus-times (the departure/arrival time
+     row) and centered within it, so it's guaranteed level with that row
+     regardless of how many price rows sit above it — not a margin guess. */
+  grid-row: 5;
+  align-self: center;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -594,7 +616,7 @@
   border: none;
   border-radius: 6px;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 16px;
   cursor: pointer;
   box-sizing: border-box;
   box-shadow: 0 6px 16px rgba(235, 31, 26, 0.25);
@@ -617,13 +639,33 @@
 }
 
 @media (max-width: 700px) {
+  /* Stacked layout: no more shared row grid between main content and the
+     price panel, so both revert to plain flex columns. */
   .bus-card {
+    display: flex;
     flex-direction: column;
     align-items: stretch;
   }
 
+  .bus-main,
+  .bus-price-cta {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* .bus-price-cta defaults to align-items: stretch as a plain flex column
+     here, which was stretching the Highway pill to full width — keep it a
+     compact, left-aligned badge like on desktop. */
+  .route-type-badge {
+    align-self: flex-start;
+  }
+
+  .class-price-list,
+  .select-seats-btn {
+    align-self: auto;
+  }
+
   .ticket-divider {
-    align-self: stretch;
     width: auto;
     height: 2px;
     background-image: repeating-linear-gradient(to right, #b3a99a 0 7px, transparent 7px 13px);
@@ -659,6 +701,7 @@
     width: 100%;
     border-radius: 0 0 12px 12px;
     padding: 12px 16px;
+    gap: 10px;
   }
 
   .class-price {

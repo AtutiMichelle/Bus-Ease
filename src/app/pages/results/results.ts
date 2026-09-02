@@ -9,7 +9,7 @@ import { BusService } from '../../services/bus.service';
 import { Bus } from '../../models/bus.model';
 import { todayDateString } from '../../utils/date';
 import { FilterState, emptyFilterState, matchesFilters } from '../../utils/bus-filters';
-import { amenityIcon, amenityColor } from '../../utils/amenity-icons';
+import { amenityIcon } from '../../utils/amenity-icons';
 
 @Component({
   imports: [SearchBar, SeatPanel, FilterPanel, DecimalPipe],
@@ -37,11 +37,17 @@ export class Results {
   filteredBuses = computed(() => this.buses().filter((bus) => matchesFilters(bus, this.filters())));
 
   amenityIcon = amenityIcon;
-  amenityColor = amenityColor;
 
   /** Shown inline on each result card; kept to the first 3-4 amenities so the row stays compact. */
   cardAmenities(bus: Bus): string[] {
     return bus.amenities.slice(0, 4);
+  }
+
+  private static readonly CLASS_ORDER: Record<string, number> = { VIP: 0, Business: 1, Normal: 2 };
+
+  /** Price panel rows always read VIP, Business, Normal (only the classes actually offered), regardless of DB row order. */
+  orderedClasses(bus: Bus): Bus['classes'] {
+    return [...bus.classes].sort((a, b) => Results.CLASS_ORDER[a.className] - Results.CLASS_ORDER[b.className]);
   }
 
   operatorInitials(name: string): string {

@@ -79,7 +79,7 @@
               @if (cardAmenities(bus).length > 0) {
                 <span class="bus-amenity-icons">
                   @for (amenity of cardAmenities(bus); track amenity) {
-                    <i class="fa-solid {{ amenityIcon(amenity) }}" [style.color]="amenityColor(amenity)" [attr.aria-label]="amenity" [title]="amenity"></i>
+                    <i class="fa-solid {{ amenityIcon(amenity) }}" [attr.aria-label]="amenity" [title]="amenity"></i>
                   }
                 </span>
               }
@@ -124,24 +124,22 @@
           <!-- Demo-only route-type label; no route-type data source yet. -->
           <span class="route-type-badge">Highway</span>
 
-          <div class="price-panel-body">
-            <div class="class-price-list">
-              @for (cls of bus.classes; track cls.className) {
-                <div class="class-price-row">
-                  <span class="class-chip">{{ cls.className }}</span>
-                  <span class="class-price"><span class="price-currency">KSh</span>{{ cls.price | number }}</span>
-                </div>
-              } @empty {
-                <div class="class-price-row">
-                  <span class="class-price"><span class="price-currency">KSh</span>{{ bus.price | number }}</span>
-                </div>
-              }
-            </div>
-
-            <button type="button" class="select-seats-btn" (click)="selectBus(bus)">
-              Select Seats <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-            </button>
+          <div class="class-price-list">
+            @for (cls of orderedClasses(bus); track cls.className) {
+              <div class="class-price-row">
+                <span class="class-chip">{{ cls.className }}</span>
+                <span class="class-price"><span class="price-currency">KSh</span>{{ cls.price | number }}</span>
+              </div>
+            } @empty {
+              <div class="class-price-row">
+                <span class="class-price"><span class="price-currency">KSh</span>{{ bus.price | number }}</span>
+              </div>
+            }
           </div>
+
+          <button type="button" class="select-seats-btn" (click)="selectBus(bus)">
+            Select Seats <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+          </button>
         </div>
       </article>
     }

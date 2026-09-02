@@ -119,11 +119,11 @@ export class SeatPanel {
     this.loading.set(true);
     this.errorMessage.set('');
     this.selectedSeats.set([]);
-    this.boardingPoint.set('');
-    this.dropoffPoint.set('');
     try {
       const [bus, seats] = await Promise.all([this.busService.getById(busId), this.busService.getSeats(busId)]);
       this.bus.set(bus);
+      this.boardingPoint.set(bus?.from ?? '');
+      this.dropoffPoint.set(bus?.to ?? '');
       this.seats.set(
         seats.map((seat) => ({ number: seat.number, status: seat.status, className: seat.className, price: seat.price })),
       );

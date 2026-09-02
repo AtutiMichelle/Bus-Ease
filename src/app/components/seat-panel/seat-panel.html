@@ -25,7 +25,6 @@
           <div class="field field-boarding">
             <label for="boarding-point"><span class="dot dot-boarding" aria-hidden="true"></span> Boarding point</label>
             <select id="boarding-point" [ngModel]="boardingPoint()" (ngModelChange)="boardingPoint.set($event)">
-              <option value="">Select boarding point</option>
               <option [value]="b.from">{{ b.from }}</option>
             </select>
           </div>
@@ -33,7 +32,6 @@
           <div class="field field-dropoff">
             <label for="dropoff-point"><span class="dot dot-dropoff" aria-hidden="true"></span> Drop-off point</label>
             <select id="dropoff-point" [ngModel]="dropoffPoint()" (ngModelChange)="dropoffPoint.set($event)">
-              <option value="">Select drop-off point</option>
               <option [value]="b.to">{{ b.to }}</option>
             </select>
           </div>

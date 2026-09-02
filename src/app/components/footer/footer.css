@@ -1,13 +1,113 @@
 .site-footer {
-  padding: var(--space-4, 24px);
-  text-align: center;
-  color: var(--color-text-muted, #6b6b6b);
-  font-size: 0.875rem;
+  flex-shrink: 0;
+  padding: 14px 0 6px;
   border-top: 3px solid var(--color-accent, #eb1f1a);
-  background-color: var(--color-primary, #12294d);
+  background: linear-gradient(
+    180deg,
+    var(--color-primary, #12294d),
+    color-mix(in srgb, var(--color-primary, #12294d) 85%, black)
+  );
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.875rem;
 }
 
-.site-footer p {
+.footer-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2, 8px) var(--space-4, 24px);
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 var(--space-4, 24px);
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  font-family: var(--font-family);
+  font-size: 1.125rem;
+  font-weight: 700;
   color: white;
+}
+
+.footer-brand i {
+  color: var(--color-accent, #eb1f1a);
+  font-size: 1.125rem;
+}
+
+.footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  font-size: 1rem;
+}
+
+.footer-nav a {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+}
+
+.footer-nav a:hover {
+  color: white;
+}
+
+.footer-nav a:not(:last-child)::after {
+  content: '\00b7';
+  margin: 0 var(--space-2, 8px);
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.footer-support {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 16px);
+  font-size: 1rem;
+}
+
+.support-email {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.support-badge {
+  padding: 4px 12px;
+  border-radius: 999px;
+  color: var(--color-success, #2fa88a);
+  background-color: color-mix(in srgb, var(--color-success, #2fa88a) 15%, transparent);
+  font-size: 0.875rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.footer-subbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2, 8px);
+  max-width: 1100px;
+  margin: var(--space-2, 8px) auto 0;
+  padding: var(--space-2, 8px) var(--space-4, 24px) 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.footer-copyright {
   margin: 0;
+}
+
+.footer-legal {
+  display: flex;
+  gap: var(--space-3, 16px);
+}
+
+.footer-legal a {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+}
+
+.footer-legal a:hover {
+  color: white;
 }

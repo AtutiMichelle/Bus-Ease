@@ -55,7 +55,7 @@
   border: none;
   border-radius: 999px;
   background-color: var(--color-soft-bg, #e8f1fc);
-  color: var(--color-primary, #1a3a6b);
+  color: var(--color-primary-light, #1e88e5);
   font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -67,7 +67,7 @@
 
 .panel-trip {
   padding: var(--space-3, 16px) var(--space-5, 56px) 10px var(--space-4, 24px);
-  background-color: var(--color-primary-dark, #12294d);
+  background-color: var(--color-primary, #12294d);
   color: white;
 }
 
@@ -105,7 +105,7 @@
 
 .panel-body h2 {
   margin: 0 0 10px 0;
-  color: var(--color-primary, #1a3a6b);
+  color: var(--color-primary, #12294d);
   font-size: 1.05rem;
   text-align: center;
 }
@@ -136,11 +136,11 @@
 
 .legend-swatch.available {
   background-color: var(--color-soft-bg, #e8f1fc);
-  border: 1px solid var(--color-primary, #1a3a6b);
+  border: 1px solid var(--color-primary-light, #1e88e5);
 }
 
 .legend-swatch.selected {
-  background-color: var(--color-primary, #1a3a6b);
+  background-color: var(--color-primary-light, #1e88e5);
 }
 
 .legend-swatch.booked {
@@ -188,7 +188,7 @@
 }
 
 .driver-indicator {
-  color: var(--color-primary, #1a3a6b);
+  color: var(--color-primary-light, #1e88e5);
   background-color: var(--color-soft-bg, #e8f1fc);
 }
 
@@ -249,8 +249,8 @@
 
 .seat.available {
   background-color: var(--color-soft-bg, #e8f1fc);
-  border: 1px solid var(--color-primary, #1a3a6b);
-  color: var(--color-primary, #1a3a6b);
+  border: 1px solid var(--color-primary-light, #1e88e5);
+  color: var(--color-primary-light, #1e88e5);
 }
 
 .seat.available:hover {
@@ -259,8 +259,8 @@
 }
 
 .seat.selected {
-  background-color: var(--color-primary, #1a3a6b);
-  border: 1px solid var(--color-primary, #1a3a6b);
+  background-color: var(--color-primary-light, #1e88e5);
+  border: 1px solid var(--color-primary-light, #1e88e5);
   color: white;
 }
 
@@ -342,7 +342,7 @@
   justify-content: space-between;
   font-weight: 700;
   font-size: 1.1rem;
-  color: var(--color-primary, #1a3a6b);
+  color: var(--color-primary-light, #1e88e5);
   margin-bottom: 10px;
 }
 

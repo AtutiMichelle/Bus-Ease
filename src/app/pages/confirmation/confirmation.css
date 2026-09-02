@@ -1,5 +1,5 @@
 .confirmation-hero {
-  background-color: var(--color-primary-dark, #12294d);
+  background-color: var(--color-primary, #12294d);
   color: white;
   text-align: center;
   padding: var(--space-6, 48px) 0;
@@ -54,7 +54,7 @@
   margin: 0;
   font-size: 1.3rem;
   font-weight: 700;
-  color: var(--color-primary, #1a3a6b);
+  color: var(--color-primary, #12294d);
   display: flex;
   align-items: center;
   gap: var(--space-2, 8px);
@@ -93,7 +93,7 @@
 }
 
 .ticket-value.total {
-  color: var(--color-primary, #1a3a6b);
+  color: var(--color-primary-light, #1e88e5);
   font-size: 1.1rem;
 }
 
@@ -146,7 +146,7 @@
 .passenger-seat {
   margin: 0 0 var(--space-3, 16px) 0;
   font-weight: 700;
-  color: var(--color-primary, #1a3a6b);
+  color: var(--color-primary-light, #1e88e5);
 }
 
 .passenger-fields {
@@ -205,7 +205,7 @@
 }
 
 .home-link {
-  color: var(--color-primary, #1a3a6b);
+  color: var(--color-primary-light, #1e88e5);
   font-weight: 600;
   text-decoration: none;
 }
@@ -221,7 +221,7 @@
 }
 
 .not-found a {
-  color: var(--color-primary, #1a3a6b);
+  color: var(--color-primary-light, #1e88e5);
 }
 
 @media (max-width: 500px) {

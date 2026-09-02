@@ -1,7 +1,8 @@
 :root {
   /* Color */
-  --color-primary: #1e88e5;
-  --color-primary-dark: #12294d;
+  --color-primary: #12294d;
+  --color-primary-light: #1e88e5;
+  --color-primary-mid: #1c4a7a;
   --color-accent: #eb1f1a;
   --color-accent-dark: #d68c0f;
   --color-danger: #d64545;

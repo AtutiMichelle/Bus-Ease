@@ -101,7 +101,7 @@
 .suggestion-list button:hover,
 .suggestion-list button:focus-visible {
   background-color: var(--color-soft-bg, #e8f1fc);
-  color: var(--color-primary, #1a3a6b);
+  color: var(--color-primary-light, #1e88e5);
   outline: none;
 }
 

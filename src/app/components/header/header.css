@@ -10,7 +10,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0 var(--space-4, 24px);
-  background: linear-gradient(120deg, var(--color-primary-dark, #12294d), var(--color-primary, #1a3a6b));
+  background: linear-gradient(120deg, var(--color-primary, #12294d), var(--color-primary-mid, #1c4a7a));
   box-shadow: 0 2px 12px rgba(18, 41, 77, 0.2);
 }
 

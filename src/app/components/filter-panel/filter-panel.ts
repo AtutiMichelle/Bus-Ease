@@ -21,8 +21,6 @@ function toggleSet<T>(set: Set<T>, value: T): Set<T> {
 })
 export class FilterPanel {
   buses = input<Bus[]>([]);
-  /** Count of buses left after all filters are applied — shown on the CTA button. */
-  resultCount = input<number>(0);
   filtersChange = output<FilterState>();
 
   options = computed(() => filterOptions(this.buses()));

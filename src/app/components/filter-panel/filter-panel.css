@@ -14,12 +14,12 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
-  padding-bottom: var(--space-3);
+  padding-bottom: 12px;
 }
 
 .filter-panel-header h2 {
   margin: 0;
-  font-size: var(--text-lg);
+  font-size: 22px;
   color: var(--color-text);
 }
 
@@ -27,7 +27,7 @@
   background: none;
   border: none;
   padding: 0;
-  font-size: var(--text-sm);
+  font-size: 16px;
   font-weight: 700;
   color: var(--color-primary);
   cursor: pointer;
@@ -40,7 +40,7 @@
 /* ---- Sections ---- */
 
 .filter-section {
-  padding: var(--space-3) 0;
+  padding: 12px 0;
   border-top: 0.5px solid var(--color-border);
 }
 
@@ -50,8 +50,8 @@
 }
 
 .filter-section-label {
-  margin: 0 0 10px 0;
-  font-size: 12px;
+  margin: 0 0 8px 0;
+  font-size: 14px;
   font-weight: 700;
   color: var(--color-text-muted);
 }
@@ -61,7 +61,7 @@
 .checkbox-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: 6px;
 }
 
 .checkbox-row {
@@ -70,7 +70,7 @@
   justify-content: space-between;
   gap: var(--space-2);
   cursor: pointer;
-  font-size: var(--text-sm);
+  font-size: 16px;
   color: var(--color-text);
 }
 
@@ -81,14 +81,14 @@
 }
 
 .checkbox-row-main input[type='checkbox'] {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   accent-color: var(--color-primary);
   cursor: pointer;
 }
 
 .checkbox-row-count {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--color-text-muted);
 }
 
@@ -97,7 +97,7 @@
 .tile-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-2);
+  gap: 6px;
 }
 
 .filter-tile {
@@ -116,11 +116,11 @@
 }
 
 .filter-tile i {
-  font-size: 18px;
+  font-size: 21px;
 }
 
 .filter-tile span {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -138,7 +138,7 @@
   width: 100%;
   padding: 10px 12px;
   font-family: var(--font-family);
-  font-size: var(--text-sm);
+  font-size: 16px;
   color: var(--color-text);
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -152,24 +152,4 @@
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px var(--color-soft-bg);
-}
-
-/* ---- CTA ---- */
-
-.show-results-btn {
-  width: 100%;
-  margin-top: var(--space-3);
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
-  background-color: var(--color-accent);
-  color: #fff;
-  font-weight: 700;
-  font-size: var(--text-base);
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-}
-
-.show-results-btn:hover {
-  background-color: #c81915;
 }

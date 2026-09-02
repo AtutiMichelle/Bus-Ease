@@ -100,13 +100,6 @@ describe('FilterPanel', () => {
     expect(component.seatTypeCounts().get('Normal')).toBe(0);
   });
 
-  it('resultCount reflects the input value passed down from the parent', () => {
-    fixture.componentRef.setInput('resultCount', 7);
-    fixture.detectChanges();
-
-    expect(component.resultCount()).toBe(7);
-  });
-
   it('clearAll resets every selection back to empty', () => {
     component.toggleSeatType('VIP');
     component.toggleAmenity('Wifi');

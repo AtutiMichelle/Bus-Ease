@@ -20,91 +20,148 @@
       <section class="confirmation-hero details-hero">
         <div class="section-container">
           <h1>Passenger Details</h1>
-          <p class="confirmation-ref">
-            {{ b.from }} → {{ b.to }} · {{ b.operator }} · {{ b.departureTime }} · {{ passengers().length }} seat(s)
-          </p>
+
+          <div class="hero-row">
+            <a class="hero-back-link" routerLink="/results" [queryParams]="backQueryParams()">
+              <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back to seat selection
+            </a>
+
+            <ol class="stepper">
+              @for (step of steps; track step; let i = $index) {
+                <li
+                  class="stepper-step"
+                  [class.completed]="i < currentStepIndex"
+                  [class.current]="i === currentStepIndex"
+                  [class.line-filled]="i > 0 && i <= currentStepIndex"
+                >
+                  <span class="stepper-dot">
+                    @if (i < currentStepIndex) {
+                      <i class="fa-solid fa-check" aria-hidden="true"></i>
+                    } @else {
+                      {{ i + 1 }}
+                    }
+                  </span>
+                  <span class="stepper-label">{{ step }}</span>
+                </li>
+              }
+            </ol>
+          </div>
         </div>
       </section>
 
       <section class="ticket-section">
         <div class="section-container">
-          <div class="ticket-card">
-            @for (passenger of passengers(); track passenger.seatNumber; let i = $index) {
-              <div class="passenger-form">
-                <p class="passenger-seat">Seat {{ passenger.seatNumber }}</p>
-
-                <div class="passenger-fields">
-                  <div class="field">
-                    <label [for]="'name-' + i">Full Name</label>
-                    <input
-                      [id]="'name-' + i"
-                      type="text"
-                      placeholder="Jane Doe"
-                      [ngModel]="passenger.fullName"
-                      (ngModelChange)="updatePassenger(i, 'fullName', $event)"
-                      [name]="'name-' + i"
-                      required
-                    />
+          <div class="booking-layout">
+            <div class="ticket-card">
+              @for (passenger of passengers(); track passenger.seatNumber; let i = $index) {
+                <div class="passenger-form">
+                  <div class="passenger-header">
+                    <h3 class="passenger-title">Passenger {{ i + 1 }}</h3>
+                    <span class="seat-badge">Seat {{ passenger.seatNumber }}</span>
                   </div>
 
-                  <div class="field">
-                    <label [for]="'mobile-' + i">Mobile</label>
-                    <input
-                      [id]="'mobile-' + i"
-                      type="tel"
-                      placeholder="07xx xxx xxx"
-                      [ngModel]="passenger.mobile"
-                      (ngModelChange)="updatePassenger(i, 'mobile', $event)"
-                      [name]="'mobile-' + i"
-                      required
-                    />
-                  </div>
+                  <div class="passenger-fields">
+                    <div class="field">
+                      <label [for]="'name-' + i">Full Name <span class="required-mark">*</span></label>
+                      <input
+                        [id]="'name-' + i"
+                        type="text"
+                        placeholder="Jane Doe"
+                        [ngModel]="passenger.fullName"
+                        (ngModelChange)="updatePassenger(i, 'fullName', $event)"
+                        [name]="'name-' + i"
+                        required
+                      />
+                    </div>
 
-                  <div class="field field-small">
-                    <label [for]="'age-' + i">Age (optional)</label>
-                    <input
-                      [id]="'age-' + i"
-                      type="number"
-                      min="0"
-                      max="120"
-                      [ngModel]="passenger.age"
-                      (ngModelChange)="updatePassengerAge(i, $event)"
-                      [name]="'age-' + i"
-                    />
-                  </div>
+                    <div class="field">
+                      <label [for]="'mobile-' + i">Mobile <span class="required-mark">*</span></label>
+                      <input
+                        [id]="'mobile-' + i"
+                        type="tel"
+                        placeholder="07xx xxx xxx"
+                        [ngModel]="passenger.mobile"
+                        (ngModelChange)="updatePassenger(i, 'mobile', $event)"
+                        [name]="'mobile-' + i"
+                        required
+                      />
+                    </div>
 
-                  <div class="field field-small">
-                    <label [for]="'gender-' + i">Gender (optional)</label>
-                    <select
-                      [id]="'gender-' + i"
-                      [ngModel]="passenger.gender"
-                      (ngModelChange)="updatePassenger(i, 'gender', $event)"
-                      [name]="'gender-' + i"
-                    >
-                      <option value="">Prefer not to say</option>
-                      <option value="female">Female</option>
-                      <option value="male">Male</option>
-                      <option value="other">Other</option>
-                    </select>
+                    <div class="field field-small">
+                      <label [for]="'age-' + i">Age (optional)</label>
+                      <input
+                        [id]="'age-' + i"
+                        type="number"
+                        min="0"
+                        max="120"
+                        [ngModel]="passenger.age"
+                        (ngModelChange)="updatePassengerAge(i, $event)"
+                        [name]="'age-' + i"
+                      />
+                    </div>
+
+                    <div class="field field-small">
+                      <label [for]="'gender-' + i">Gender (optional)</label>
+                      <select
+                        [id]="'gender-' + i"
+                        [ngModel]="passenger.gender"
+                        (ngModelChange)="updatePassenger(i, 'gender', $event)"
+                        [name]="'gender-' + i"
+                      >
+                        <option value="">Prefer not to say</option>
+                        <option value="female">Female</option>
+                        <option value="male">Male</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
+              }
+
+              @if (errorMessage()) {
+                <p class="error">{{ errorMessage() }}</p>
+              }
+
+              <p class="consent-line">
+                By confirming, you agree to BusEase's <a href="#">Cancellation Policy</a> and
+                <a href="#">Terms of Service</a>
+              </p>
+
+              <div class="ticket-actions">
+                <button
+                  type="button"
+                  class="print-cta"
+                  [disabled]="!canSubmit || phase() === 'submitting'"
+                  (click)="confirmBooking()"
+                >
+                  {{ phase() === 'submitting' ? 'Confirming…' : 'Confirm Booking · KSh ' + totalPrice() }}
+                </button>
               </div>
-            }
-
-            @if (errorMessage()) {
-              <p class="error">{{ errorMessage() }}</p>
-            }
-
-            <div class="ticket-actions">
-              <button
-                type="button"
-                class="print-cta"
-                [disabled]="!canSubmit || phase() === 'submitting'"
-                (click)="confirmBooking()"
-              >
-                {{ phase() === 'submitting' ? 'Confirming…' : 'Confirm Booking · KSh ' + totalPrice() }}
-              </button>
             </div>
+
+            <aside class="trip-summary">
+              <h2 class="summary-heading">Trip Summary</h2>
+              <p class="summary-route">{{ b.from }} → {{ b.to }}</p>
+              <p class="summary-meta">{{ b.date }} · {{ b.departureTime }} · {{ b.operator }} · {{ b.busType }}</p>
+
+              <div class="summary-lines">
+                @for (passenger of passengers(); track passenger.seatNumber) {
+                  <div class="summary-line">
+                    <span>Seat {{ passenger.seatNumber }} · {{ b.busType }}</span>
+                    <span>KSh {{ b.price }}</span>
+                  </div>
+                }
+                <div class="summary-line">
+                  <span>Service fee</span>
+                  <span>KSh 0</span>
+                </div>
+              </div>
+
+              <div class="summary-total">
+                <span>Total</span>
+                <span>KSh {{ totalPrice() }}</span>
+              </div>
+            </aside>
           </div>
         </div>
       </section>

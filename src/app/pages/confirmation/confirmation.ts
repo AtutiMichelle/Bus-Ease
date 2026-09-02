@@ -15,6 +15,9 @@ type Phase = 'loading' | 'details' | 'submitting' | 'confirmed' | 'error';
   templateUrl: './confirmation.html',
 })
 export class Confirmation {
+  readonly steps = ['Search', 'Seats', 'Details', 'Payment', 'Confirmation'];
+  readonly currentStepIndex = 2;
+
   bus = signal<Bus | undefined>(undefined);
   passengers = signal<PassengerInput[]>([]);
   phase = signal<Phase>('loading');
@@ -23,6 +26,10 @@ export class Confirmation {
 
   totalPrice = computed(() => (this.bus()?.price ?? 0) * this.passengers().length);
   seatList = computed(() => this.passengers().map((p) => p.seatNumber).join(', '));
+  backQueryParams = computed(() => {
+    const b = this.bus();
+    return b ? { origin: b.from, destination: b.to, journeyDate: b.date, busId: b.id } : {};
+  });
 
   get canSubmit(): boolean {
     return (

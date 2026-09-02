@@ -3,26 +3,21 @@
   inset: 0;
   z-index: 200;
   background-color: rgba(18, 41, 77, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: safe center;
-  overflow-y: auto;
-  padding: var(--space-3, 16px);
   animation: fade-in 0.2s ease-out;
 }
 
-/* Sized to fit the whole seat map (all 10 rows) without an internal scrollbar
-   on ordinary screens — a rider should see every seat at a glance. */
 .seat-panel {
-  position: relative;
-  width: min(560px, 100%);
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: min(480px, 100%);
   background-color: var(--color-surface, #fff);
-  border-radius: 16px;
-  box-shadow: 0 24px 64px rgba(18, 41, 77, 0.35);
+  box-shadow: -24px 0 64px rgba(18, 41, 77, 0.35);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: scale-in 0.2s ease-out;
+  animation: slide-in 0.25s ease-out;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -37,106 +32,196 @@
   to { opacity: 1; }
 }
 
-@keyframes scale-in {
-  from { opacity: 0; transform: scale(0.94); }
-  to { opacity: 1; transform: scale(1); }
+@keyframes slide-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
 }
 
 .panel-close {
   position: absolute;
-  top: var(--space-3, 16px);
-  right: var(--space-3, 16px);
+  top: clamp(10px, 1.3vh, 16px);
+  right: clamp(10px, 1.3vh, 16px);
   z-index: 1;
-  width: 36px;
-  height: 36px;
+  width: clamp(34px, 4.4vh, 40px);
+  height: clamp(34px, 4.4vh, 40px);
   display: flex;
   align-items: center;
   justify-content: center;
   border: none;
   border-radius: 999px;
-  background-color: var(--color-soft-bg, #e8f1fc);
-  color: var(--color-primary-light, #1e88e5);
-  font-size: 1rem;
+  background-color: rgba(255, 255, 255, 0.15);
+  color: white;
+  font-size: clamp(0.95rem, 2vh, 1.1rem);
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
 .panel-close:hover {
-  background-color: var(--color-border, #e4dfd6);
+  background-color: rgba(255, 255, 255, 0.28);
 }
 
+/* Every section below scales gently with viewport height (not just the seat
+   grid), so extra room on a tall drawer is shared across the header, stops,
+   legend and footer instead of all piling up as space around the seats. */
 .panel-trip {
-  padding: var(--space-3, 16px) var(--space-5, 56px) 10px var(--space-4, 24px);
+  position: relative;
+  flex: none;
+  padding: clamp(10px, 1.3vh, 20px) clamp(46px, 6vh, 56px) clamp(8px, 1vh, 16px) clamp(18px, 2.3vh, 24px);
   background-color: var(--color-primary, #12294d);
   color: white;
 }
 
 .trip-operator {
   margin: 0;
-  font-size: 1.3rem;
+  font-size: clamp(1.15rem, 2.4vh, 1.4rem);
   font-weight: 800;
   letter-spacing: 0.2px;
 }
 
 .trip-route {
-  margin: 4px 0 0 0;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
+  margin: clamp(6px, 0.8vh, 12px) 0 0 0;
   display: flex;
   align-items: center;
-  gap: var(--space-2, 8px);
+  gap: 10px;
 }
 
-.trip-route i {
-  color: var(--color-accent, #eb1f1a);
-  font-size: 0.8rem;
+.trip-route-city {
+  font-size: clamp(0.85rem, 1.8vh, 1rem);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  white-space: nowrap;
+}
+
+.trip-route-line {
+  position: relative;
+  flex: 1 1 auto;
+  height: 2px;
+  min-width: 24px;
+  background-image: repeating-linear-gradient(to right, rgba(255, 255, 255, 0.6) 0 4px, transparent 4px 7px);
+}
+
+.trip-route-dot {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.trip-route-dot:first-child {
+  left: 0;
+}
+
+.trip-route-dot:last-child {
+  right: 0;
 }
 
 .trip-meta {
-  margin: 2px 0 0 0;
-  color: rgba(255, 255, 255, 0.65);
-  font-size: 0.78rem;
+  margin: clamp(4px, 0.5vh, 8px) 0 0 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: clamp(0.78rem, 1.6vh, 0.92rem);
 }
 
 .panel-body {
-  padding: var(--space-3, 16px) var(--space-4, 24px);
-}
-
-.panel-body h2 {
-  margin: 0 0 10px 0;
-  color: var(--color-primary, #12294d);
-  font-size: 1.05rem;
-  text-align: center;
-}
-
-.seat-legend {
+  flex: 1 1 auto;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-3, 16px);
-  margin-top: var(--space-3, 16px);
-  flex-wrap: wrap;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 10px 20px;
 }
 
-.legend-item {
+.stops-row {
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: clamp(10px, 1.3vh, 16px);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.field label {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.8rem;
+  font-size: clamp(0.78rem, 1.6vh, 0.88rem);
+  font-weight: 600;
+  color: var(--color-text, #3a3a3a);
+  margin-bottom: clamp(4px, 0.5vh, 7px);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex: none;
+}
+
+.dot-boarding {
+  background-color: #14a3a0;
+}
+
+.dot-dropoff {
+  background-color: #e08a1f;
+}
+
+.field select {
+  padding: clamp(7px, 0.9vh, 11px) clamp(10px, 1.3vh, 12px);
+  border: 2px solid var(--color-border, #e4dfd6);
+  border-radius: 6px;
+  font-size: clamp(0.85rem, 1.8vh, 1rem);
+  font-family: inherit;
+  background-color: #fafafa;
+  color: var(--color-text, #3a3a3a);
+  transition: border-color 0.2s, background-color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.field select:focus {
+  outline: none;
+  border-color: var(--color-accent, #eb1f1a);
+  background-color: white;
+}
+
+.seat-legend {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: clamp(10px, 1.3vh, 16px);
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 2px;
+}
+
+.legend-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  font-size: clamp(0.76rem, 1.6vh, 0.86rem);
+  white-space: nowrap;
   color: var(--color-text-muted, #6b6b6b);
+  background-color: var(--color-soft-bg, #e8f1fc);
+  border-radius: 999px;
+  padding: clamp(4px, 0.5vh, 6px) clamp(10px, 1.3vh, 14px) clamp(4px, 0.5vh, 6px) clamp(8px, 1vh, 10px);
 }
 
 .legend-swatch {
-  width: 14px;
-  height: 14px;
+  width: clamp(12px, 1.6vh, 14px);
+  height: clamp(12px, 1.6vh, 14px);
   border-radius: 4px;
   display: inline-block;
-}
-
-.legend-swatch.available {
-  background-color: var(--color-soft-bg, #e8f1fc);
-  border: 1px solid var(--color-primary-light, #1e88e5);
 }
 
 .legend-swatch.selected {
@@ -147,104 +232,148 @@
   background-color: var(--color-border, #e4dfd6);
 }
 
-.legend-divider {
-  width: 1px;
-  align-self: stretch;
-  background-color: var(--color-border, #e4dfd6);
+.legend-swatch.class-vip {
+  background-color: #f5a623;
 }
 
-.bus-front {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  max-width: 264px;
-  margin: 0 auto 10px;
-  padding-bottom: 10px;
-  border-bottom: 1px dashed var(--color-border, #e4dfd6);
+.legend-swatch.class-business {
+  background-color: #1e6fd9;
 }
 
-.front-label {
-  color: var(--color-text-muted, #6b6b6b);
-  font-size: 0.65rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+.legend-swatch.class-normal {
+  background-color: #14a35a;
 }
 
-.door-indicator,
-.driver-indicator {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 3px 9px;
-  border-radius: 999px;
-}
-
-.door-indicator {
-  color: var(--color-success, #2fa88a);
-  background-color: rgba(47, 168, 138, 0.12);
-}
-
-.driver-indicator {
-  color: var(--color-primary-light, #1e88e5);
-  background-color: var(--color-soft-bg, #e8f1fc);
-}
-
-.seat-rows {
+/* Sizing shared between the seat grid and the door/steering-wheel markers
+   above it, so the markers land in exactly the same columns as 1A and 1D.
+   Seat size also scales gently with viewport height so the grid isn't
+   cramped on tall drawers, while staying compact enough to avoid a
+   scrollbar on short ones. Any space left over once seats hit their max
+   size is absorbed by .seat-rows (flex + space-between) as extra breathing
+   room between rows, rather than showing up as dead space below the grid. */
+.bus-shell {
+  --seat-size: clamp(34px, 4.4vh, 46px);
+  --aisle-size: clamp(38px, 4.9vh, 50px);
+  --seat-gap: clamp(4px, 0.6vh, 8px);
+  --row-number-width: clamp(18px, 2.3vh, 26px);
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  align-items: center;
+  border: 2px solid var(--color-border, #e4dfd6);
+  border-radius: 16px;
+  padding: 10px 10px 8px;
 }
 
-.seat-row {
+.bus-shell-front {
+  flex: none;
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: var(--seat-gap);
+  margin-bottom: clamp(6px, 0.9vh, 12px);
 }
 
-.seat-pair {
-  display: flex;
-  gap: 6px;
+.row-number-spacer {
+  width: var(--row-number-width);
+  flex: none;
 }
 
-/* Clear central aisle so a tap can't land on the wrong side by accident.
-   Rows with a middle seat (the 5-seat back bench row) widen to fit it. */
-.aisle {
-  width: 22px;
+.front-marker,
+.front-marker-spacer {
+  width: var(--seat-size);
+  flex: none;
+}
+
+.front-marker {
+  height: clamp(26px, 3.4vh, 36px);
+  border-radius: 999px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.aisle:has(.seat) {
-  width: 34px;
-  margin: 0 6px;
+.door-marker {
+  color: var(--color-success, #2fa88a);
+  background-color: rgba(47, 168, 138, 0.14);
+  font-size: clamp(0.85rem, 1.5vh, 1.1rem);
+}
+
+.wheel-marker {
+  color: var(--color-text-muted, #6b6b6b);
+}
+
+.wheel-marker svg {
+  width: clamp(20px, 2.6vh, 28px);
+  height: clamp(20px, 2.6vh, 28px);
+}
+
+.seat-rows {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: clamp(3px, 0.6vh, 8px);
+  /* stretch (not center) so each .seat-row spans the same full width as
+     .bus-shell-front — both then self-center their own content via
+     justify-content, which is what actually keeps the door/steering-wheel
+     markers lined up with columns A and D. */
+  align-items: stretch;
+}
+
+.seat-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--seat-gap);
+}
+
+.row-number {
+  width: var(--row-number-width);
+  flex: none;
+  text-align: right;
+  font-size: clamp(0.7rem, 1.4vh, 0.9rem);
+  font-weight: 600;
+  color: var(--color-text-muted, #6b6b6b);
+}
+
+.seat-pair {
+  display: flex;
+  gap: var(--seat-gap);
+}
+
+/* Clear central aisle so a tap can't land on the wrong side by accident.
+   Always the same width whether or not a row has a middle seat (the 5-seat
+   back bench row), so every row's A/B/C/D columns line up vertically. */
+.aisle {
+  width: var(--aisle-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .seat {
-  width: 34px;
-  height: 34px;
+  width: var(--seat-size);
+  height: var(--seat-size);
   border-radius: 7px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 0;
-  font-size: 0.75rem;
+  font-size: clamp(0.8rem, 1.7vh, 1.05rem);
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.15s, box-shadow 0.15s;
 }
 
 .seat i {
-  font-size: 0.75rem;
+  font-size: clamp(0.8rem, 1.7vh, 1.05rem);
 }
 
 .seat-number {
-  font-size: 0.5rem;
+  font-size: clamp(0.56rem, 1.2vh, 0.75rem);
 }
 
 .seat.available {
@@ -271,18 +400,6 @@
   cursor: not-allowed;
 }
 
-.legend-swatch.class-vip {
-  background-color: #f5a623;
-}
-
-.legend-swatch.class-business {
-  background-color: #1e6fd9;
-}
-
-.legend-swatch.class-normal {
-  background-color: #14a35a;
-}
-
 .seat.available.class-vip {
   background-color: #fdf1da;
   border-color: #f5a623;
@@ -301,60 +418,72 @@
   color: #0f7a43;
 }
 
-.seat.selected.class-vip {
-  background-color: #f5a623;
-  border-color: #f5a623;
-  color: #4a3200;
-}
-
-.seat.selected.class-business {
-  background-color: #1e6fd9;
-  border-color: #1e6fd9;
-  color: white;
-}
-
-.seat.selected.class-normal {
-  background-color: #14a35a;
-  border-color: #14a35a;
-  color: white;
-}
-
 .panel-footer {
+  flex: none;
   border-top: 1px solid var(--color-border, #e4dfd6);
-  padding: 12px var(--space-4, 24px);
+  padding: clamp(8px, 1vh, 14px) clamp(20px, 2.6vh, 24px);
   background-color: var(--color-surface, #fff);
 }
 
 .footer-empty {
-  margin: 0 0 6px 0;
+  margin: 0 0 clamp(5px, 0.65vh, 10px) 0;
   color: var(--color-text-muted, #6b6b6b);
-  font-size: 0.85rem;
+  font-size: clamp(0.85rem, 1.8vh, 0.95rem);
 }
 
-.footer-seats {
-  margin: 0 0 6px 0;
-  color: var(--color-text, #3a3a3a);
-  font-size: 0.85rem;
+.footer-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(5px, 0.65vh, 7px);
+  margin-bottom: clamp(6px, 0.8vh, 12px);
+}
+
+.seat-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: clamp(30px, 3.9vh, 34px);
+  padding: clamp(3px, 0.4vh, 4px) clamp(8px, 1vh, 10px);
+  border-radius: 999px;
+  font-size: clamp(0.78rem, 1.6vh, 0.85rem);
+  font-weight: 700;
+  background-color: var(--color-primary-light, #1e88e5);
+  color: white;
+}
+
+.seat-chip.class-vip {
+  background-color: #f5a623;
+  color: #4a3200;
+}
+
+.seat-chip.class-business {
+  background-color: #1e6fd9;
+  color: white;
+}
+
+.seat-chip.class-normal {
+  background-color: #14a35a;
+  color: white;
 }
 
 .footer-total {
   display: flex;
   justify-content: space-between;
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: clamp(1.1rem, 2.3vh, 1.25rem);
   color: var(--color-primary-light, #1e88e5);
-  margin-bottom: 10px;
+  margin-bottom: clamp(6px, 0.8vh, 12px);
 }
 
 .continue-cta {
   width: 100%;
-  padding: 12px;
+  padding: clamp(10px, 1.3vh, 14px);
   background-color: var(--color-accent, #eb1f1a);
   color: white;
   border: none;
   border-radius: 6px;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: clamp(0.95rem, 2vh, 1.05rem);
   cursor: pointer;
   transition: background-color 0.2s, transform 0.2s;
 }
@@ -370,6 +499,7 @@
 }
 
 .panel-status {
+  position: relative;
   flex: 1;
   display: flex;
   align-items: center;
@@ -379,26 +509,38 @@
   color: var(--color-text-muted, #6b6b6b);
 }
 
+.panel-status .panel-close {
+  background-color: var(--color-soft-bg, #e8f1fc);
+  color: var(--color-primary-light, #1e88e5);
+}
+
+.panel-status .panel-close:hover {
+  background-color: var(--color-border, #e4dfd6);
+}
+
 @media (max-width: 600px) {
-  .seat-panel-backdrop {
-    padding: var(--space-2, 8px);
-  }
-
   .seat-panel {
-    border-radius: 12px;
+    width: 100%;
   }
 
-  .seat {
-    width: 30px;
-    height: 30px;
+  .stops-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-bottom: clamp(8px, 1vh, 12px);
   }
 
-  .aisle {
-    width: 18px;
+  .field label {
+    margin-bottom: clamp(3px, 0.4vh, 5px);
   }
 
-  .aisle:has(.seat) {
-    width: 30px;
-    margin: 0 4px;
+  .field select {
+    padding: clamp(6px, 0.8vh, 9px) clamp(9px, 1.1vh, 11px);
+  }
+
+  .bus-shell {
+    --seat-size: clamp(30px, 4.4vh, 44px);
+    --aisle-size: clamp(34px, 4.9vh, 48px);
+    --seat-gap: clamp(4px, 0.6vh, 8px);
+    --row-number-width: clamp(16px, 2.2vh, 24px);
   }
 }

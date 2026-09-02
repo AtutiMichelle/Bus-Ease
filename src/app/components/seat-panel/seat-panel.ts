@@ -1,5 +1,6 @@
 import { Component, DestroyRef, HostListener, computed, effect, inject, input, output, signal } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { BusService } from '../../services/bus.service';
 import { Bus } from '../../models/bus.model';
@@ -33,7 +34,7 @@ function splitRow(rowSeats: UiSeat[]): SeatRowLayout {
   selector: 'app-seat-panel',
   styleUrl: './seat-panel.css',
   templateUrl: './seat-panel.html',
-  imports: [NgTemplateOutlet],
+  imports: [NgTemplateOutlet, FormsModule],
 })
 export class SeatPanel {
   busId = input.required<string>();
@@ -45,12 +46,19 @@ export class SeatPanel {
   loading = signal(true);
   errorMessage = signal('');
 
+  /** Optional boarding/drop-off stage picks. Purely local UI state — not
+   * wired to any backend data or the seat-selection flow. */
+  boardingPoint = signal('');
+  dropoffPoint = signal('');
+
   totalPrice = computed(() => {
     const fallback = this.bus()?.price ?? 0;
     return this.seats()
       .filter((seat) => seat.status === 'selected')
       .reduce((sum, seat) => sum + (seat.price ?? fallback), 0);
   });
+
+  selectedSeatDetails = computed(() => this.seats().filter((seat) => seat.status === 'selected'));
 
   /** Seats grouped by their real row number (the leading digits of the seat number),
    * then split left/right of the aisle — with a `middle` seat when a row has an odd
@@ -68,7 +76,7 @@ export class SeatPanel {
     }
     return Array.from(byRow.entries())
       .sort(([a], [b]) => a - b)
-      .map(([, rowSeats]) => splitRow(rowSeats));
+      .map(([rowNumber, rowSeats]) => ({ rowNumber, ...splitRow(rowSeats) }));
   });
 
   private static readonly CLASS_RANK: Record<string, number> = { VIP: 0, Business: 1, Normal: 2 };
@@ -111,6 +119,8 @@ export class SeatPanel {
     this.loading.set(true);
     this.errorMessage.set('');
     this.selectedSeats.set([]);
+    this.boardingPoint.set('');
+    this.dropoffPoint.set('');
     try {
       const [bus, seats] = await Promise.all([this.busService.getById(busId), this.busService.getSeats(busId)]);
       this.bus.set(bus);

@@ -1,23 +1,52 @@
 <div class="seat-panel-backdrop" (click)="close()">
   <aside class="seat-panel" (click)="$event.stopPropagation()">
-    <button type="button" class="panel-close" aria-label="Close seat selection" (click)="close()">
-      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-    </button>
-
     @if (bus(); as b) {
       <header class="panel-trip">
+        <button type="button" class="panel-close" aria-label="Close seat selection" (click)="close()">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+
         <p class="trip-operator">{{ b.operator }}</p>
-        <p class="trip-route">{{ b.from }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i> {{ b.to }}</p>
-        <p class="trip-meta">{{ b.departureTime }} – {{ b.arrivalTime }} · {{ b.busType }}</p>
+
+        <div class="trip-route">
+          <span class="trip-route-city">{{ b.from }}</span>
+          <span class="trip-route-line" aria-hidden="true">
+            <span class="trip-route-dot"></span>
+            <span class="trip-route-dot"></span>
+          </span>
+          <span class="trip-route-city">{{ b.to }}</span>
+        </div>
+
+        <p class="trip-meta">{{ b.departureTime }} – {{ b.arrivalTime }} · {{ b.duration }}</p>
       </header>
 
       <div class="panel-body">
-        <h2>Choose Your Seats</h2>
+        <div class="stops-row">
+          <div class="field field-boarding">
+            <label for="boarding-point"><span class="dot dot-boarding" aria-hidden="true"></span> Boarding point</label>
+            <select id="boarding-point" [ngModel]="boardingPoint()" (ngModelChange)="boardingPoint.set($event)">
+              <option value="">Select boarding point</option>
+              <option [value]="b.from">{{ b.from }}</option>
+            </select>
+          </div>
 
-        <div class="bus-front">
-          <span class="door-indicator"><i class="fa-solid fa-door-open" aria-hidden="true"></i> Door</span>
-          <span class="front-label">FRONT OF BUS</span>
-          <span class="driver-indicator"><i class="fa-solid fa-user" aria-hidden="true"></i> Driver</span>
+          <div class="field field-dropoff">
+            <label for="dropoff-point"><span class="dot dot-dropoff" aria-hidden="true"></span> Drop-off point</label>
+            <select id="dropoff-point" [ngModel]="dropoffPoint()" (ngModelChange)="dropoffPoint.set($event)">
+              <option value="">Select drop-off point</option>
+              <option [value]="b.to">{{ b.to }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="seat-legend">
+          @for (cls of legendClasses(); track cls) {
+            <span class="legend-pill">
+              <span [class]="'legend-swatch class-' + cls.toLowerCase()"></span> {{ cls }}
+            </span>
+          }
+          <span class="legend-pill"><span class="legend-swatch booked"></span> Booked</span>
+          <span class="legend-pill"><span class="legend-swatch selected"></span> Selected</span>
         </div>
 
         <ng-template #seatButton let-seat="seat">
@@ -37,40 +66,58 @@
           </button>
         </ng-template>
 
-        <div class="seat-rows">
-          @for (row of seatRows(); track $index) {
-            <div class="seat-row">
-              <div class="seat-pair">
-                @for (seat of row.left; track seat.number) {
-                  <ng-container [ngTemplateOutlet]="seatButton" [ngTemplateOutletContext]="{ seat: seat }" />
-                }
-              </div>
+        <div class="bus-shell">
+          <div class="bus-shell-front" aria-hidden="true">
+            <span class="row-number-spacer"></span>
 
-              <div class="aisle">
-                @if (row.middle; as seat) {
-                  <ng-container [ngTemplateOutlet]="seatButton" [ngTemplateOutletContext]="{ seat: seat }" />
-                }
-              </div>
-
-              <div class="seat-pair">
-                @for (seat of row.right; track seat.number) {
-                  <ng-container [ngTemplateOutlet]="seatButton" [ngTemplateOutletContext]="{ seat: seat }" />
-                }
-              </div>
+            <div class="seat-pair">
+              <span class="front-marker door-marker">
+                <i class="fa-solid fa-door-open" aria-hidden="true"></i>
+              </span>
+              <span class="front-marker-spacer"></span>
             </div>
-          }
-        </div>
 
-        <div class="seat-legend">
-          <span class="legend-item"><span class="legend-swatch available"></span> Available</span>
-          <span class="legend-item"><span class="legend-swatch selected"></span> Selected</span>
-          <span class="legend-item"><span class="legend-swatch booked"></span> Booked</span>
-          <span class="legend-divider" aria-hidden="true"></span>
-          @for (cls of legendClasses(); track cls) {
-            <span class="legend-item">
-              <span [class]="'legend-swatch class-' + cls.toLowerCase()"></span> {{ cls }}
-            </span>
-          }
+            <div class="aisle"></div>
+
+            <div class="seat-pair">
+              <span class="front-marker-spacer"></span>
+              <span class="front-marker wheel-marker">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
+                  <circle cx="12" cy="12" r="2.2" fill="currentColor" />
+                  <line x1="12" y1="3" x2="12" y2="9.8" stroke="currentColor" stroke-width="2" />
+                  <line x1="4.8" y1="16.5" x2="10.3" y2="13.5" stroke="currentColor" stroke-width="2" />
+                  <line x1="19.2" y1="16.5" x2="13.7" y2="13.5" stroke="currentColor" stroke-width="2" />
+                </svg>
+              </span>
+            </div>
+          </div>
+
+          <div class="seat-rows">
+            @for (row of seatRows(); track $index) {
+              <div class="seat-row">
+                <span class="row-number">{{ row.rowNumber }}</span>
+
+                <div class="seat-pair">
+                  @for (seat of row.left; track seat.number) {
+                    <ng-container [ngTemplateOutlet]="seatButton" [ngTemplateOutletContext]="{ seat: seat }" />
+                  }
+                </div>
+
+                <div class="aisle">
+                  @if (row.middle; as seat) {
+                    <ng-container [ngTemplateOutlet]="seatButton" [ngTemplateOutletContext]="{ seat: seat }" />
+                  }
+                </div>
+
+                <div class="seat-pair">
+                  @for (seat of row.right; track seat.number) {
+                    <ng-container [ngTemplateOutlet]="seatButton" [ngTemplateOutletContext]="{ seat: seat }" />
+                  }
+                </div>
+              </div>
+            }
+          </div>
         </div>
       </div>
 
@@ -78,7 +125,11 @@
         @if (selectedSeats().length === 0) {
           <p class="footer-empty">Select at least one seat to continue.</p>
         } @else {
-          <p class="footer-seats">Seat{{ selectedSeats().length > 1 ? 's' : '' }} {{ selectedSeats().join(', ') }}</p>
+          <div class="footer-chips">
+            @for (seat of selectedSeatDetails(); track seat.number) {
+              <span [class]="'seat-chip ' + (seat.className ? 'class-' + seat.className.toLowerCase() : '')">{{ seat.number }}</span>
+            }
+          </div>
         }
         <div class="footer-total">
           <span>Total</span>
@@ -90,10 +141,16 @@
       </footer>
     } @else if (loading()) {
       <div class="panel-status">
+        <button type="button" class="panel-close" aria-label="Close seat selection" (click)="close()">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
         <p>Loading seat map…</p>
       </div>
     } @else {
       <div class="panel-status">
+        <button type="button" class="panel-close" aria-label="Close seat selection" (click)="close()">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
         <p>{{ errorMessage() || "We couldn't find that bus." }}</p>
       </div>
     }

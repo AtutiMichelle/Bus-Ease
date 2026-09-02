@@ -20,7 +20,7 @@
 .filter-panel-header h2 {
   margin: 0;
   font-size: 22px;
-  color: var(--color-text);
+  color: var(--color-primary);
 }
 
 .clear-all {
@@ -29,7 +29,7 @@
   padding: 0;
   font-size: 16px;
   font-weight: 700;
-  color: var(--color-primary);
+  color: var(--color-primary-light);
   cursor: pointer;
 }
 
@@ -83,13 +83,21 @@
 .checkbox-row-main input[type='checkbox'] {
   width: 18px;
   height: 18px;
-  accent-color: var(--color-primary);
+  accent-color: var(--color-primary-light);
   cursor: pointer;
 }
 
 .checkbox-row-count {
-  font-size: 14px;
-  color: var(--color-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background-color: var(--color-soft-bg);
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 700;
 }
 
 /* ---- Icon-tile grids (Departure time, Amenities) ---- */
@@ -105,8 +113,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 14px 8px;
+  gap: 4px;
+  padding: 8px 6px;
   border: 1px solid var(--color-border);
   border-radius: 8px;
   background-color: var(--color-bg);
@@ -116,17 +124,18 @@
 }
 
 .filter-tile i {
-  font-size: 21px;
+  font-size: 16px;
+  color: var(--color-primary);
 }
 
 .filter-tile span {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
 }
 
 .filter-tile.active {
   /* 1px more border needs 1px less padding so the tile doesn't grow. */
-  padding: 13px 7px;
+  padding: 7px 5px;
   border: 2px solid var(--color-primary);
   background-color: var(--color-soft-bg);
   color: var(--color-primary);
@@ -150,6 +159,6 @@
 
 .operator-select:focus {
   outline: none;
-  border-color: var(--color-primary);
+  border-color: var(--color-primary-light);
   box-shadow: 0 0 0 3px var(--color-soft-bg);
 }

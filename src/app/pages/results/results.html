@@ -147,12 +147,7 @@
     }
     </div>
 
-    <app-filter-panel
-      class="results-sidebar"
-      [buses]="buses()"
-      [resultCount]="filteredBuses().length"
-      (filtersChange)="filters.set($event)"
-    />
+    <app-filter-panel class="results-sidebar" [buses]="buses()" (filtersChange)="filters.set($event)" />
   </div>
 </section>
 

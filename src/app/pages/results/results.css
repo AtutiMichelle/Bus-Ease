@@ -159,7 +159,6 @@
   overflow-y: hidden;
   background-color: var(--color-surface, #fff);
   border: 1px solid var(--color-border, #e4dfd6);
-  border-left: 4px solid var(--color-primary, #1a3a6b);
   border-radius: 12px;
   box-shadow: 0 4px 14px rgba(26, 58, 107, 0.07);
   margin-bottom: var(--space-4, 24px);
@@ -174,10 +173,10 @@
 .bus-main {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
   flex: 1 1 auto;
   min-width: 0;
-  padding: 9px 12px 9px 16px;
+  padding: 14px 14px 14px 18px;
   box-sizing: border-box;
 }
 
@@ -197,7 +196,7 @@
   border-radius: 999px;
   background-color: var(--color-green, #16a34a);
   color: #fff;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -206,7 +205,7 @@
   background: none;
   border: none;
   padding: 0;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--color-primary, #1a3a6b);
   text-decoration: underline;
@@ -241,7 +240,7 @@
 
 .bus-info-left,
 .time-block-start {
-  flex: 0 0 150px;
+  flex: 0 0 190px;
   min-width: 0;
 }
 
@@ -277,13 +276,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   overflow: hidden;
   background-color: var(--color-soft-bg, #e8f1fc);
   color: var(--color-primary, #1a3a6b);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
   letter-spacing: 0.3px;
 }
@@ -303,32 +302,33 @@
 
 .operator-name {
   max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 16px;
+  /* Wraps instead of truncating — a fixed-width column plus a long operator
+     name (e.g. "Prestige Shuttle") was clipping names to "Prestig...". */
+  overflow-wrap: break-word;
+  font-size: 18px;
   font-weight: 800;
   text-transform: uppercase;
   color: var(--color-primary, #1a3a6b);
   margin: 0;
+  line-height: 1.15;
 }
 
 .bus-rating-value {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--color-text, #3a3a3a);
 }
 
 .bus-rating-value i {
   color: var(--color-accent-dark, #d68c0f);
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .bus-seater {
-  font-size: 16px;
+  font-size: 17px;
   color: var(--color-text, #3a3a3a);
 }
 
@@ -339,7 +339,7 @@
 }
 
 .bus-amenity-icons i {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--color-text, #3a3a3a);
 }
 
@@ -357,7 +357,7 @@
   margin: 0;
   font-family: 'IBM Plex Mono', 'Courier New', monospace;
   font-variant-numeric: tabular-nums;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   letter-spacing: 0.3px;
   white-space: nowrap;
@@ -366,7 +366,7 @@
 
 .time-label {
   margin: 3px 0 0 0;
-  font-size: 15px;
+  font-size: 16px;
   color: var(--color-text, #3a3a3a);
 }
 
@@ -396,7 +396,7 @@
   /* route-bus is a 20px circle centered on the line, so its top edge sits
      10px above it — this needs to clear that or the icon paints over the label. */
   margin: 0 0 17px 0;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.4px;
@@ -411,7 +411,7 @@
      the operator/seats-left columns above), so the line reaches into that
      slack to keep its dots close to the actual time text instead of the
      column edges. */
-  margin: 0 -16px 0 -66px;
+  margin: 0 -8px 0 -98px;
   /* Dashes and the route-dot markers share one color (--color-text-muted)
      so the line reads as a single broken route, not mismatched segments. */
   background-image: repeating-linear-gradient(to right, var(--color-text-muted, #6b6b6b) 0 4px, transparent 4px 7px);
@@ -458,7 +458,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 16px;
+  font-size: 17px;
   color: var(--color-text, #3a3a3a);
 }
 
@@ -515,7 +515,7 @@
   box-sizing: border-box;
   background-color: var(--color-soft-bg, #e8f1fc);
   border-radius: 0 12px 12px 0;
-  padding: 9px 16px 9px 12px;
+  padding: 14px 16px 14px 14px;
 }
 
 .route-type-badge {

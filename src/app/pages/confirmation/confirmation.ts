@@ -7,6 +7,8 @@ import { PassengerInput } from '../../models/booking.model';
 import { FormsModule } from '@angular/forms';
 
 type Phase = 'loading' | 'details' | 'submitting' | 'confirmed' | 'error';
+type DeliveryMode = 'all' | 'select';
+type DeliveryMethod = 'whatsapp' | 'sms' | 'email';
 
 @Component({
   imports: [RouterLink, FormsModule],
@@ -23,13 +25,66 @@ export class Confirmation {
   phase = signal<Phase>('loading');
   errorMessage = signal('');
   bookingReference = signal('');
+  expandedIndex = signal<number>(0);
+  deliveryMode = signal<DeliveryMode>('all');
+  deliveryMethod = signal<DeliveryMethod>('whatsapp');
+  deliverySelectedSeats = signal<Set<string>>(new Set());
 
   totalPrice = computed(() => (this.bus()?.price ?? 0) * this.passengers().length);
   seatList = computed(() => this.passengers().map((p) => p.seatNumber).join(', '));
+  completedCount = computed(() => this.passengers().filter((p) => this.isPassengerComplete(p)).length);
   backQueryParams = computed(() => {
     const b = this.bus();
     return b ? { origin: b.from, destination: b.to, journeyDate: b.date, busId: b.id } : {};
   });
+
+  deliveryRecipientCount = computed(() => {
+    if (this.deliveryMode() === 'all') {
+      return this.passengers().length;
+    }
+    return this.deliverySelectedSeats().size;
+  });
+
+  deliveryNote = computed(() => {
+    const methodLabel = { whatsapp: 'WhatsApp', sms: 'SMS', email: 'email' }[this.deliveryMethod()];
+    const count = this.deliveryRecipientCount();
+    if (this.deliveryMode() === 'all') {
+      return `All ${count} passenger${count === 1 ? '' : 's'} will get their ticket via ${methodLabel}.`;
+    }
+    return count === 0
+      ? 'Select at least one passenger to deliver a ticket to.'
+      : `${count} selected passenger${count === 1 ? '' : 's'} will get their ticket via ${methodLabel}.`;
+  });
+
+  isPassengerComplete(p: PassengerInput): boolean {
+    return p.fullName.trim().length > 0 && p.mobile.trim().length > 0;
+  }
+
+  toggleExpand(index: number): void {
+    if (this.expandedIndex() !== index) {
+      this.expandedIndex.set(index);
+    }
+  }
+
+  setDeliveryMode(mode: DeliveryMode): void {
+    this.deliveryMode.set(mode);
+  }
+
+  setDeliveryMethod(method: DeliveryMethod): void {
+    this.deliveryMethod.set(method);
+  }
+
+  toggleDeliverySeat(seatNumber: string): void {
+    this.deliverySelectedSeats.update((seats) => {
+      const next = new Set(seats);
+      if (next.has(seatNumber)) {
+        next.delete(seatNumber);
+      } else {
+        next.add(seatNumber);
+      }
+      return next;
+    });
+  }
 
   get canSubmit(): boolean {
     return (
@@ -67,9 +122,17 @@ export class Confirmation {
         return;
       }
       this.bus.set(bus);
-      this.passengers.set(
-        this.seatNumbers.map((seatNumber) => ({ seatNumber, fullName: '', mobile: '', age: undefined, gender: undefined })),
-      );
+      const passengers = this.seatNumbers.map((seatNumber) => ({
+        seatNumber,
+        fullName: '',
+        mobile: '',
+        age: undefined,
+        gender: undefined,
+      }));
+      this.passengers.set(passengers);
+      this.deliverySelectedSeats.set(new Set(passengers.map((p) => p.seatNumber)));
+      const firstIncomplete = passengers.findIndex((p) => !this.isPassengerComplete(p));
+      this.expandedIndex.set(firstIncomplete === -1 ? 0 : firstIncomplete);
       this.phase.set('details');
     } catch {
       this.errorMessage.set('Could not load your trip. Please try again.');

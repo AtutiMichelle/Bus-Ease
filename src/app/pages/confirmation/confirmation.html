@@ -52,90 +52,196 @@
       <section class="ticket-section">
         <div class="section-container">
           <div class="booking-layout">
-            <div class="ticket-card">
-              @for (passenger of passengers(); track passenger.seatNumber; let i = $index) {
-                <div class="passenger-form">
-                  <div class="passenger-header">
-                    <h3 class="passenger-title">Passenger {{ i + 1 }}</h3>
-                    <span class="seat-badge">Seat {{ passenger.seatNumber }}</span>
+            <div class="details-column">
+              <div class="passenger-accordion">
+                <div class="accordion-summary">
+                  {{ passengers().length }} passenger{{ passengers().length === 1 ? '' : 's' }} ·
+                  {{ completedCount() }} of {{ passengers().length }} completed
+                </div>
+
+                @for (passenger of passengers(); track passenger.seatNumber; let i = $index) {
+                  <div class="accordion-row" [class.expanded]="expandedIndex() === i">
+                    <button
+                      type="button"
+                      class="accordion-row-header"
+                      [attr.aria-expanded]="expandedIndex() === i"
+                      (click)="toggleExpand(i)"
+                    >
+                      <span class="status-circle" [class.complete]="isPassengerComplete(passenger)">
+                        @if (isPassengerComplete(passenger)) {
+                          <i class="fa-solid fa-check" aria-hidden="true"></i>
+                        } @else {
+                          {{ i + 1 }}
+                        }
+                      </span>
+                      <span class="seat-badge">{{ passenger.seatNumber }}</span>
+                      <span class="row-name" [class.placeholder]="!passenger.fullName">
+                        {{ passenger.fullName || 'Not filled in yet' }}
+                      </span>
+                      <i class="fa-solid fa-chevron-down accordion-chevron" aria-hidden="true"></i>
+                    </button>
+
+                    @if (expandedIndex() === i) {
+                      <div class="accordion-row-body">
+                        <div class="passenger-fields">
+                          <div class="field">
+                            <label [for]="'name-' + i">Full Name <span class="required-mark">*</span></label>
+                            <input
+                              [id]="'name-' + i"
+                              type="text"
+                              placeholder="Jane Doe"
+                              [ngModel]="passenger.fullName"
+                              (ngModelChange)="updatePassenger(i, 'fullName', $event)"
+                              [name]="'name-' + i"
+                              required
+                            />
+                          </div>
+
+                          <div class="field">
+                            <label [for]="'mobile-' + i">Mobile <span class="required-mark">*</span></label>
+                            <input
+                              [id]="'mobile-' + i"
+                              type="tel"
+                              placeholder="07xx xxx xxx"
+                              [ngModel]="passenger.mobile"
+                              (ngModelChange)="updatePassenger(i, 'mobile', $event)"
+                              [name]="'mobile-' + i"
+                              required
+                            />
+                          </div>
+
+                          <div class="field field-small">
+                            <label [for]="'age-' + i">Age (optional)</label>
+                            <input
+                              [id]="'age-' + i"
+                              type="number"
+                              min="0"
+                              max="120"
+                              [ngModel]="passenger.age"
+                              (ngModelChange)="updatePassengerAge(i, $event)"
+                              [name]="'age-' + i"
+                            />
+                          </div>
+
+                          <div class="field field-small">
+                            <label [for]="'gender-' + i">Gender (optional)</label>
+                            <select
+                              [id]="'gender-' + i"
+                              [ngModel]="passenger.gender"
+                              (ngModelChange)="updatePassenger(i, 'gender', $event)"
+                              [name]="'gender-' + i"
+                            >
+                              <option value="">Prefer not to say</option>
+                              <option value="female">Female</option>
+                              <option value="male">Male</option>
+                              <option value="other">Other</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    }
                   </div>
+                }
+              </div>
 
-                  <div class="passenger-fields">
-                    <div class="field">
-                      <label [for]="'name-' + i">Full Name <span class="required-mark">*</span></label>
-                      <input
-                        [id]="'name-' + i"
-                        type="text"
-                        placeholder="Jane Doe"
-                        [ngModel]="passenger.fullName"
-                        (ngModelChange)="updatePassenger(i, 'fullName', $event)"
-                        [name]="'name-' + i"
-                        required
-                      />
-                    </div>
+              <div class="delivery-card">
+                <h3 class="delivery-heading">Ticket Delivery</h3>
 
-                    <div class="field">
-                      <label [for]="'mobile-' + i">Mobile <span class="required-mark">*</span></label>
-                      <input
-                        [id]="'mobile-' + i"
-                        type="tel"
-                        placeholder="07xx xxx xxx"
-                        [ngModel]="passenger.mobile"
-                        (ngModelChange)="updatePassenger(i, 'mobile', $event)"
-                        [name]="'mobile-' + i"
-                        required
-                      />
-                    </div>
+                <p class="delivery-label">Send tickets to</p>
+                <div class="delivery-mode-group">
+                  <button
+                    type="button"
+                    class="delivery-mode-btn"
+                    [class.active]="deliveryMode() === 'all'"
+                    (click)="setDeliveryMode('all')"
+                  >
+                    All passengers
+                  </button>
+                  <button
+                    type="button"
+                    class="delivery-mode-btn"
+                    [class.active]="deliveryMode() === 'select'"
+                    (click)="setDeliveryMode('select')"
+                  >
+                    Select passengers
+                  </button>
+                </div>
 
-                    <div class="field field-small">
-                      <label [for]="'age-' + i">Age (optional)</label>
-                      <input
-                        [id]="'age-' + i"
-                        type="number"
-                        min="0"
-                        max="120"
-                        [ngModel]="passenger.age"
-                        (ngModelChange)="updatePassengerAge(i, $event)"
-                        [name]="'age-' + i"
-                      />
-                    </div>
+                @if (deliveryMode() === 'select') {
+                  <ul class="delivery-checklist">
+                    @for (passenger of passengers(); track passenger.seatNumber; let i = $index) {
+                      <li>
+                        <label class="delivery-checklist-row">
+                          <input
+                            type="checkbox"
+                            [checked]="deliverySelectedSeats().has(passenger.seatNumber)"
+                            (change)="toggleDeliverySeat(passenger.seatNumber)"
+                          />
+                          <span class="seat-badge">{{ passenger.seatNumber }}</span>
+                          <span>{{ passenger.fullName || 'Passenger ' + (i + 1) }}</span>
+                        </label>
+                      </li>
+                    }
+                  </ul>
+                } @else if (deliveryMode() === 'all') {
+                  <ul class="delivery-checklist">
+                    @for (passenger of passengers(); track passenger.seatNumber; let i = $index) {
+                      <li>{{ passenger.seatNumber }} · {{ passenger.fullName || 'Passenger ' + (i + 1) }}</li>
+                    }
+                  </ul>
+                }
 
-                    <div class="field field-small">
-                      <label [for]="'gender-' + i">Gender (optional)</label>
-                      <select
-                        [id]="'gender-' + i"
-                        [ngModel]="passenger.gender"
-                        (ngModelChange)="updatePassenger(i, 'gender', $event)"
-                        [name]="'gender-' + i"
-                      >
-                        <option value="">Prefer not to say</option>
-                        <option value="female">Female</option>
-                        <option value="male">Male</option>
-                        <option value="other">Other</option>
-                      </select>
-                    </div>
+                <p class="delivery-label">Delivery method</p>
+                <div class="delivery-method-group">
+                  <button
+                    type="button"
+                    class="delivery-method-btn"
+                    [class.active]="deliveryMethod() === 'whatsapp'"
+                    (click)="setDeliveryMethod('whatsapp')"
+                  >
+                    <i class="fa-brands fa-whatsapp" aria-hidden="true"></i> WhatsApp
+                  </button>
+                  <button
+                    type="button"
+                    class="delivery-method-btn"
+                    [class.active]="deliveryMethod() === 'sms'"
+                    (click)="setDeliveryMethod('sms')"
+                  >
+                    <i class="fa-solid fa-comment-sms" aria-hidden="true"></i> SMS
+                  </button>
+                  <button
+                    type="button"
+                    class="delivery-method-btn"
+                    [class.active]="deliveryMethod() === 'email'"
+                    (click)="setDeliveryMethod('email')"
+                  >
+                    <i class="fa-solid fa-envelope" aria-hidden="true"></i> Email
+                  </button>
+                </div>
+
+                <p class="delivery-note">{{ deliveryNote() }}</p>
+
+                <div class="delivery-confirm">
+                  @if (errorMessage()) {
+                    <p class="error">{{ errorMessage() }}</p>
+                  }
+
+                  <p class="consent-line">
+                    By confirming, you agree to BusEase's <a href="#">Cancellation Policy</a> and
+                    <a href="#">Terms of Service</a>
+                  </p>
+
+                  <div class="ticket-actions">
+                    <button
+                      type="button"
+                      class="print-cta"
+                      [disabled]="!canSubmit || phase() === 'submitting'"
+                      (click)="confirmBooking()"
+                    >
+                      {{ phase() === 'submitting' ? 'Confirming…' : 'Confirm Booking · KSh ' + totalPrice() }}
+                    </button>
                   </div>
                 </div>
-              }
-
-              @if (errorMessage()) {
-                <p class="error">{{ errorMessage() }}</p>
-              }
-
-              <p class="consent-line">
-                By confirming, you agree to BusEase's <a href="#">Cancellation Policy</a> and
-                <a href="#">Terms of Service</a>
-              </p>
-
-              <div class="ticket-actions">
-                <button
-                  type="button"
-                  class="print-cta"
-                  [disabled]="!canSubmit || phase() === 'submitting'"
-                  (click)="confirmBooking()"
-                >
-                  {{ phase() === 'submitting' ? 'Confirming…' : 'Confirm Booking · KSh ' + totalPrice() }}
-                </button>
               </div>
             </div>
 

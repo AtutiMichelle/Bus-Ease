@@ -47,7 +47,6 @@ nav a {
   text-decoration: none;
   font-size: 1.10rem;
   font-weight: 500;
-  padding-bottom: 4px;
 }
 
 nav a::after {
@@ -55,7 +54,7 @@ nav a::after {
   position: absolute;
   left: 0;
   right: 100%;
-  bottom: 0;
+  bottom: -4px;
   height: 2px;
   background-color: var(--color-accent, #eb1f1a);
   transition: right 0.2s;
@@ -112,6 +111,7 @@ nav a:hover::after {
   color: white;
   background-color: transparent;
   border: 1px solid rgba(255, 255, 255, 0.5);
+  font-family: inherit;
   font-size: 0.85rem;
   font-weight: 600;
   padding: 7px 16px;

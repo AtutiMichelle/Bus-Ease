@@ -12,10 +12,7 @@ interface UiSeat {
   price?: number;
 }
 
-/** A physical seat row. Most rows split evenly into a left/right pair either
- * side of the aisle; a row with an odd seat count (the back bench row, which
- * commonly seats 5) additionally has one `middle` seat sitting in the aisle
- * gap itself. */
+
 interface SeatRowLayout {
   left: UiSeat[];
   middle?: UiSeat;
@@ -46,8 +43,7 @@ export class SeatPanel {
   loading = signal(true);
   errorMessage = signal('');
 
-  /** Optional boarding/drop-off stage picks. Purely local UI state — not
-   * wired to any backend data or the seat-selection flow. */
+  
   boardingPoint = signal('');
   dropoffPoint = signal('');
 
@@ -81,8 +77,7 @@ export class SeatPanel {
 
   private static readonly CLASS_RANK: Record<string, number> = { VIP: 0, Business: 1, Normal: 2 };
 
-  /** Distinct classes actually present on this bus's seat map, in VIP/Business/Normal
-   * order, so the legend only ever shows classes a rider could actually pick. */
+  
   legendClasses = computed(() => {
     const names = new Set(
       this.seats()

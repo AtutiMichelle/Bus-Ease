@@ -60,9 +60,7 @@
   background-color: rgba(255, 255, 255, 0.28);
 }
 
-/* Every section below scales gently with viewport height (not just the seat
-   grid), so extra room on a tall drawer is shared across the header, stops,
-   legend and footer instead of all piling up as space around the seats. */
+
 .panel-trip {
   position: relative;
   flex: none;
@@ -225,7 +223,7 @@
 }
 
 .legend-swatch.selected {
-  background-color: var(--color-primary-light, #1e88e5);
+  background-color: var(--color-accent, #eb1f1a);
 }
 
 .legend-swatch.booked {
@@ -244,13 +242,7 @@
   background-color: #14a35a;
 }
 
-/* Sizing shared between the seat grid and the door/steering-wheel markers
-   above it, so the markers land in exactly the same columns as 1A and 1D.
-   Seat size also scales gently with viewport height so the grid isn't
-   cramped on tall drawers, while staying compact enough to avoid a
-   scrollbar on short ones. Any space left over once seats hit their max
-   size is absorbed by .seat-rows (flex + space-between) as extra breathing
-   room between rows, rather than showing up as dead space below the grid. */
+
 .bus-shell {
   --seat-size: clamp(34px, 4.4vh, 46px);
   --aisle-size: clamp(38px, 4.9vh, 50px);
@@ -315,11 +307,7 @@
   flex-direction: column;
   justify-content: space-between;
   gap: clamp(3px, 0.6vh, 8px);
-  /* stretch (not center) so each .seat-row spans the same full width as
-     .bus-shell-front — both then self-center their own content via
-     justify-content, which is what actually keeps the door/steering-wheel
-     markers lined up with columns A and D. */
-  align-items: stretch;
+   align-items: stretch;
 }
 
 .seat-row {
@@ -343,9 +331,7 @@
   gap: var(--seat-gap);
 }
 
-/* Clear central aisle so a tap can't land on the wrong side by accident.
-   Always the same width whether or not a row has a middle seat (the 5-seat
-   back bench row), so every row's A/B/C/D columns line up vertically. */
+
 .aisle {
   width: var(--aisle-size);
   display: flex;
@@ -388,8 +374,8 @@
 }
 
 .seat.selected {
-  background-color: var(--color-primary-light, #1e88e5);
-  border: 1px solid var(--color-primary-light, #1e88e5);
+  background-color: var(--color-accent, #eb1f1a);
+  border: 1px solid var(--color-accent, #eb1f1a);
   color: white;
 }
 
@@ -447,7 +433,7 @@
   border-radius: 999px;
   font-size: clamp(0.78rem, 1.6vh, 0.85rem);
   font-weight: 700;
-  background-color: var(--color-primary-light, #1e88e5);
+  background-color: var(--color-accent, #eb1f1a);
   color: white;
 }
 

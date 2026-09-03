@@ -40,7 +40,7 @@ export class SearchBar {
     effect(() => {
       this.originValue.set(this.origin());
       this.destinationValue.set(this.destination());
-      this.dateValue.set(this.date());
+      this.dateValue.set(this.date() || todayDateString());
     });
   }
 

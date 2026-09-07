@@ -62,7 +62,7 @@
   <div class="section-container">
     <h2>Popular Routes</h2>
     <div class="route-cards">
-      @for (route of topRoutes; track route.from + route.to) {
+      @for (route of topRoutes(); track route.from + route.to) {
         <button type="button" class="route-card" (click)="selectRoute(route)">
           <div class="photo" [style.background-image]="'url(' + cityPhoto(route.to) + ')'">
             <span class="flag">{{ route.busType }}</span>

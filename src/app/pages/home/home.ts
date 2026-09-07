@@ -1,17 +1,19 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { SearchBar } from '../../components/search-bar/search-bar';
+import { BusService } from '../../services/bus.service';
 import { todayDateString } from '../../utils/date';
 
-interface TopRoute {
+interface RoutePair {
   from: string;
   to: string;
-  departure: string;
-  priceRange: string;
+  /** Editorial tagline, not something the database has an equivalent for. */
+  character: string;
+}
+
+interface TopRoute extends RoutePair {
   duration: string;
   busType: string;
-  character: string;
-  icon: string;
   seatsLeft: number;
 }
 
@@ -22,13 +24,18 @@ interface TopRoute {
   templateUrl: './home.html',
 })
 export class Home {
-  topRoutes: TopRoute[] = [
-    { from: 'Nairobi', to: 'Mombasa', departure: '08:00 AM', priceRange: 'KSh 1,200 - 2,500', duration: '6h 30m', busType: 'Luxury', character: 'Coastal route', icon: 'fa-solid fa-anchor', seatsLeft: 12 },
-    { from: 'Nairobi', to: 'Kisumu', departure: '07:30 AM', priceRange: 'KSh 900 - 1,800', duration: '5h 00m', busType: 'Standard', character: 'Lakeside route', icon: 'fa-solid fa-water', seatsLeft: 4 },
-    { from: 'Nairobi', to: 'Eldoret', departure: '09:00 AM', priceRange: 'KSh 800 - 1,500', duration: '4h 30m', busType: 'Express', character: 'Highland route', icon: 'fa-solid fa-mountain', seatsLeft: 22 },
-    { from: 'Mombasa', to: 'Malindi', departure: '10:00 AM', priceRange: 'KSh 400 - 800', duration: '2h 00m', busType: 'Standard', character: 'Beach route', icon: 'fa-solid fa-umbrella-beach', seatsLeft: 8 },
-    { from: 'Nairobi', to: 'Kampala', departure: '06:00 PM', priceRange: 'KSh 2,500 - 4,000', duration: '12h 00m', busType: 'Luxury', character: 'Cross-border route', icon: 'fa-solid fa-passport', seatsLeft: 6 },
+  /** The routes to feature is an editorial choice; the facts shown for each
+   * (seats left, duration, bus type) come from that route's next upcoming
+   * bus, fetched live below — not hardcoded. */
+  private readonly routePairs: RoutePair[] = [
+    { from: 'Nairobi', to: 'Mombasa', character: 'Coastal route' },
+    { from: 'Nairobi', to: 'Kisumu', character: 'Lakeside route' },
+    { from: 'Nairobi', to: 'Eldoret', character: 'Highland route' },
+    { from: 'Mombasa', to: 'Malindi', character: 'Beach route' },
+    { from: 'Nairobi', to: 'Kampala', character: 'Cross-border route' },
   ];
+
+  topRoutes = signal<TopRoute[]>([]);
 
   /** Real photos of the actual cities on offer, not stock imagery. */
   private cityPhotos: Record<string, string> = {
@@ -102,7 +109,32 @@ export class Home {
     { quote: 'Refund was instant.', name: 'Amina H.', location: 'Mombasa', date: 'Aug 2026', rating: 5 },
   ];
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private busService: BusService,
+  ) {
+    this.loadTopRoutes();
+  }
+
+  private async loadTopRoutes(): Promise<void> {
+    const today = todayDateString();
+    const routes = await Promise.all(
+      this.routePairs.map(async (pair): Promise<TopRoute | null> => {
+        const buses = await this.busService.search(pair.from, pair.to, '');
+        const nextBus = buses.filter((b) => b.date >= today)[0];
+        if (!nextBus) {
+          return null;
+        }
+        return {
+          ...pair,
+          duration: nextBus.duration,
+          busType: nextBus.busType,
+          seatsLeft: nextBus.seatsAvailable,
+        };
+      }),
+    );
+    this.topRoutes.set(routes.filter((r): r is TopRoute => r !== null));
+  }
 
   selectRoute(route: TopRoute): void {
     this.router.navigate(['/results'], {

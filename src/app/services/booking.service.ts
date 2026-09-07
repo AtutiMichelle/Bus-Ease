@@ -98,10 +98,13 @@ export class BookingService {
       throw updateSeatsError;
     }
 
-    await this.client
-      .from('buses')
-      .update({ available_seats: Math.max(bus.seatsAvailable - passengers.length, 0) })
-      .eq('id', bus.id);
+    const { error: seatsCountError } = await this.client.rpc('decrement_available_seats', {
+      p_bus_id: bus.id,
+      p_seats_booked: passengers.length,
+    });
+    if (seatsCountError) {
+      throw seatsCountError;
+    }
 
     return reference;
   }

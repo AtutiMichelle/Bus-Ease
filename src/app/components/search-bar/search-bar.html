@@ -68,13 +68,74 @@
       <i class="field-icon fa-solid fa-calendar-days" aria-hidden="true"></i>
       <input
         id="sb-date"
-        type="date"
-        [ngModel]="dateValue()"
-        (ngModelChange)="dateValue.set($event)"
-        [min]="minDate"
+        type="text"
+        inputmode="numeric"
+        placeholder="dd/mm/yyyy"
+        maxlength="10"
+        autocomplete="off"
+        [value]="dateDisplayValue()"
+        (input)="onDateInput($event)"
+        (focus)="onDateFocus()"
+        (blur)="onDateBlur()"
+        (keydown.escape)="showCalendar.set(false)"
         name="journeyDate"
       />
+      <button
+        type="button"
+        class="calendar-toggle"
+        aria-label="Choose date"
+        (mousedown)="$event.preventDefault()"
+        (click)="toggleCalendar()"
+      >
+        <i class="fa-solid fa-calendar-days" aria-hidden="true"></i>
+      </button>
+
+      @if (showCalendar()) {
+        <div class="calendar-dropdown" (mousedown)="$event.preventDefault()">
+          <div class="calendar-header">
+            <button
+              type="button"
+              class="calendar-nav"
+              aria-label="Previous month"
+              [disabled]="isPrevMonthDisabled()"
+              (click)="prevMonth()"
+            >
+              <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+            </button>
+            <span class="calendar-label">{{ calendarLabel() }}</span>
+            <button type="button" class="calendar-nav" aria-label="Next month" (click)="nextMonth()">
+              <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+            </button>
+          </div>
+          <div class="calendar-weekdays">
+            @for (d of weekdayLabels; track d) {
+              <span>{{ d }}</span>
+            }
+          </div>
+          <div class="calendar-grid">
+            @for (cell of calendarCells(); track $index) {
+              @if (cell) {
+                <button
+                  type="button"
+                  class="calendar-day"
+                  [class.selected]="cell.selected"
+                  [class.today]="cell.isToday"
+                  [disabled]="cell.disabled"
+                  (click)="selectDate(cell.iso)"
+                >
+                  {{ cell.day }}
+                </button>
+              } @else {
+                <span class="calendar-day-empty"></span>
+              }
+            }
+          </div>
+        </div>
+      }
     </div>
+    @if (dateError()) {
+      <p class="error">{{ dateError() }}</p>
+    }
   </div>
 
   <button type="submit" class="search-cta" [disabled]="!canSearch">

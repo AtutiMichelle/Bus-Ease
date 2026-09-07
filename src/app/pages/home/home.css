@@ -1,9 +1,19 @@
 /* Hero: ticket-styled card */
 .hero-ticket {
   position: relative;
-  overflow: hidden;
   padding: var(--space-2, 8px) 0 var(--space-1, 4px);
   background-image: linear-gradient(135deg, var(--color-soft-bg, #e8f1fc) 0%, var(--color-bg, #faf8f5) 65%);
+}
+
+/* Clips the decorative blobs/bleed-line to the section bounds without
+   clipping the rest of the section — otherwise dropdowns like the date
+   picker would get cut off instead of overlapping the sections below. */
+.hero-bg-clip {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .hero-bleed-line {
@@ -84,12 +94,25 @@
 .ticket-card {
   position: relative;
   z-index: 1;
-  overflow: hidden;
   background-color: var(--color-surface, #fff);
   border-radius: var(--radius-md, 8px);
   padding: var(--space-3, 16px) var(--space-5, 32px) var(--space-2, 8px);
   box-shadow: 0 20px 44px rgba(26, 58, 107, 0.14), 0 10px 30px rgba(235, 31, 26, 0.16);
   animation: ticket-float 6s ease-in-out infinite;
+}
+
+/* Clips just the ribbon's rotated corner instead of the whole card, so
+   dropdowns elsewhere in the card (e.g. the date picker) aren't clipped too. */
+.ticket-ribbon-clip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100px;
+  height: 100px;
+  overflow: hidden;
+  border-top-left-radius: var(--radius-md, 8px);
+  pointer-events: none;
+  z-index: 2;
 }
 
 @keyframes ticket-float {

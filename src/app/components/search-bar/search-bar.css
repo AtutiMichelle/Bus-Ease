@@ -67,6 +67,142 @@
   box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.1);
 }
 
+#sb-date {
+  padding-right: 40px;
+}
+
+.calendar-toggle {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  color: var(--color-text-muted, #6b6b6b);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.calendar-toggle:hover {
+  background-color: var(--color-soft-bg, #e8f1fc);
+  color: var(--color-primary, #12294d);
+}
+
+.calendar-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  width: 260px;
+  padding: 12px;
+  background-color: var(--color-surface, #fff);
+  border: 1px solid var(--color-border, #e4dfd6);
+  border-radius: var(--radius-md, 8px);
+  box-shadow: 0 12px 24px rgba(26, 58, 107, 0.18);
+  /* Same reasoning as .suggestion-list: this panel always sits on its own
+     white surface, so pin --color-text regardless of a dark host (e.g. the
+     Results toolbar) that overrides it for its own labels. */
+  --color-text: #3a3a3a;
+  --color-text-muted: #6b6b6b;
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.calendar-label {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--color-primary, #12294d);
+}
+
+.calendar-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  color: var(--color-text-muted, #6b6b6b);
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.calendar-nav:hover:not(:disabled) {
+  background-color: var(--color-soft-bg, #e8f1fc);
+  color: var(--color-primary, #12294d);
+}
+
+.calendar-nav:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-text-muted, #6b6b6b);
+  text-align: center;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.calendar-day,
+.calendar-day-empty {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+}
+
+.calendar-day {
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: var(--color-text, #3a3a3a);
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.calendar-day:hover:not(:disabled) {
+  background-color: var(--color-soft-bg, #e8f1fc);
+}
+
+.calendar-day.today {
+  font-weight: 700;
+  color: var(--color-primary, #12294d);
+}
+
+.calendar-day.selected {
+  background-color: var(--color-primary, #12294d);
+  color: #fff;
+}
+
+.calendar-day:disabled {
+  color: var(--color-border, #e4dfd6);
+  cursor: not-allowed;
+}
+
 .suggestion-list {
   position: absolute;
   top: calc(100% + 6px);

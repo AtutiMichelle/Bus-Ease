@@ -1,18 +1,21 @@
 <form class="search-form" (ngSubmit)="search()">
   <div class="field">
     <label for="sb-origin">From</label>
-    <input
-      id="sb-origin"
-      type="text"
-      placeholder="Leaving from…"
-      [ngModel]="originValue()"
-      (ngModelChange)="originValue.set($event)"
-      (focus)="showOriginSuggestions.set(true)"
-      (blur)="showOriginSuggestions.set(false)"
-      name="origin"
-      autocomplete="off"
-      required
-    />
+    <div class="input-wrap">
+      <i class="field-icon fa-solid fa-location-dot" aria-hidden="true"></i>
+      <input
+        id="sb-origin"
+        type="text"
+        placeholder="Leaving from…"
+        [ngModel]="originValue()"
+        (ngModelChange)="originValue.set($event)"
+        (focus)="showOriginSuggestions.set(true)"
+        (blur)="showOriginSuggestions.set(false)"
+        name="origin"
+        autocomplete="off"
+        required
+      />
+    </div>
     @if (showOriginSuggestions() && originSuggestions().length > 0) {
       <ul class="suggestion-list">
         @for (town of originSuggestions(); track town) {
@@ -28,18 +31,21 @@
 
   <div class="field">
     <label for="sb-destination">To</label>
-    <input
-      id="sb-destination"
-      type="text"
-      placeholder="Going to…"
-      [ngModel]="destinationValue()"
-      (ngModelChange)="destinationValue.set($event)"
-      (focus)="showDestinationSuggestions.set(true)"
-      (blur)="showDestinationSuggestions.set(false)"
-      name="destination"
-      autocomplete="off"
-      required
-    />
+    <div class="input-wrap">
+      <i class="field-icon fa-solid fa-location-dot" aria-hidden="true"></i>
+      <input
+        id="sb-destination"
+        type="text"
+        placeholder="Going to…"
+        [ngModel]="destinationValue()"
+        (ngModelChange)="destinationValue.set($event)"
+        (focus)="showDestinationSuggestions.set(true)"
+        (blur)="showDestinationSuggestions.set(false)"
+        name="destination"
+        autocomplete="off"
+        required
+      />
+    </div>
     @if (showDestinationSuggestions() && destinationSuggestions().length > 0) {
       <ul class="suggestion-list">
         @for (town of destinationSuggestions(); track town) {
@@ -58,14 +64,17 @@
 
   <div class="field">
     <label for="sb-date">Date</label>
-    <input
-      id="sb-date"
-      type="date"
-      [ngModel]="dateValue()"
-      (ngModelChange)="dateValue.set($event)"
-      [min]="minDate"
-      name="journeyDate"
-    />
+    <div class="input-wrap">
+      <i class="field-icon fa-solid fa-calendar-days" aria-hidden="true"></i>
+      <input
+        id="sb-date"
+        type="date"
+        [ngModel]="dateValue()"
+        (ngModelChange)="dateValue.set($event)"
+        [min]="minDate"
+        name="journeyDate"
+      />
+    </div>
   </div>
 
   <button type="submit" class="search-cta" [disabled]="!canSearch">

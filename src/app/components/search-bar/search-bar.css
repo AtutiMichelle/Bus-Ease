@@ -40,13 +40,22 @@
   letter-spacing: 0.5px;
 }
 
+.input-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.field-icon {
+  display: none;
+}
+
 .field input {
   padding: 12px 14px;
   border: 2px solid var(--color-border, #e4dfd6);
   border-radius: 6px;
   font-size: 1rem;
   background-color: #fafafa;
-  transition: border-color 0.2s, background-color 0.2s;
+  transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
   width: 100%;
   box-sizing: border-box;
 }
@@ -165,5 +174,73 @@
 
   :host(.compact) .search-cta {
     width: 100%;
+  }
+}
+
+/* Ticket variant: fields sit flush in a single row inside the hero ticket's search strip. */
+:host(.ticket) .search-form {
+  max-width: none;
+  border-left: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  padding: 0;
+  flex-wrap: nowrap;
+  align-items: flex-end;
+}
+
+:host(.ticket) .field {
+  min-width: 0;
+}
+
+:host(.ticket) .field-icon {
+  display: block;
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-accent, #eb1f1a);
+  font-size: 0.9rem;
+  pointer-events: none;
+}
+
+:host(.ticket) .field input {
+  padding-left: 36px;
+  background-color: #fff;
+  border-color: var(--color-border, #e4dfd6);
+  box-shadow: 0 2px 8px rgba(18, 41, 77, 0.08);
+}
+
+:host(.ticket) .field input:focus {
+  border-color: var(--color-accent, #eb1f1a);
+  background-color: #fff;
+  box-shadow: 0 0 0 3px rgba(235, 31, 26, 0.16);
+}
+
+:host(.ticket) .search-cta {
+  background-color: var(--color-accent, #eb1f1a);
+  color: #fff;
+  opacity: 1;
+  box-shadow: 0 10px 26px rgba(235, 31, 26, 0.35);
+}
+
+:host(.ticket) .search-cta:hover:not(:disabled) {
+  background-color: var(--color-accent, #eb1f1a);
+  filter: brightness(0.92);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px rgba(235, 31, 26, 0.45);
+}
+
+:host(.ticket) .search-cta:disabled {
+  background-color: var(--color-accent, #eb1f1a);
+  color: #fff;
+  opacity: 1;
+  box-shadow: 0 10px 26px rgba(235, 31, 26, 0.35);
+  cursor: not-allowed;
+}
+
+@media (max-width: 700px) {
+  :host(.ticket) .search-form {
+    flex-wrap: wrap;
   }
 }

@@ -10,10 +10,11 @@ import { todayDateString } from '../../utils/date';
   templateUrl: './search-bar.html',
   host: {
     '[class.compact]': "variant() === 'compact'",
+    '[class.ticket]': "variant() === 'ticket'",
   },
 })
 export class SearchBar {
-  variant = input<'hero' | 'compact'>('hero');
+  variant = input<'hero' | 'compact' | 'ticket'>('hero');
   origin = input('', { alias: 'origin' });
   destination = input('', { alias: 'destination' });
   date = input('', { alias: 'date' });

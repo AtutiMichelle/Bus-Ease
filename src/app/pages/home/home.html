@@ -1,21 +1,63 @@
-<section class="hero">
-  <div class="hero-inner section-container">
-    <div class="hero-copy">
-      <h1>Book your seat, skip the queue.</h1>
-      <span class="hero-rule" aria-hidden="true"></span>
-      <p class="hero-subtitle">
-        Compare routes, choose your seat, and book with Kenya's trusted coach operators. All in one place, in minutes.
-      </p>
-    </div>
-    <div class="hero-media">
-      <img src="/hero.jpg" alt="Illustration of a bus carrying passengers along a city road, skyline in the background" />
+<section class="hero-ticket">
+  <span class="hero-bleed-line" aria-hidden="true">
+    <span class="bleed-dot bleed-dot-navy"></span>
+    <span class="bleed-dot bleed-dot-orange"></span>
+  </span>
+  <span class="hero-blob hero-blob-orange" aria-hidden="true"></span>
+  <span class="hero-blob hero-blob-navy" aria-hidden="true"></span>
+
+  <div class="section-container">
+    <div class="ticket-stack">
+      <span class="ticket-ghost ticket-ghost-1" aria-hidden="true"></span>
+      <span class="ticket-ghost ticket-ghost-2" aria-hidden="true"></span>
+
+      <div class="ticket-card">
+        <span class="ticket-ribbon">E-TICKET</span>
+
+        <p class="trust-line"><span class="status-dot" aria-hidden="true"></span>Trusted by riders across Kenya</p>
+
+        <div class="ticket-headline">
+          <h1>Book your seat, <em>skip the queue.</em></h1>
+          <span class="hero-rule" aria-hidden="true"></span>
+          <p class="hero-subtitle">
+            Compare routes, choose your seat, and book with Kenya's trusted coach operators. All in one place, in minutes.
+          </p>
+        </div>
+
+        <div class="how-it-works">
+          @for (step of howItWorks; track step.title; let last = $last) {
+            <div class="how-step">
+              <span class="how-step-circle">{{ $index + 1 }}</span>
+              <p class="how-step-title">{{ step.title }}</p>
+              <p class="how-step-desc">{{ step.description }}</p>
+            </div>
+            @if (!last) {
+              <span class="how-step-connector" aria-hidden="true"></span>
+            }
+          }
+        </div>
+
+        <div class="ticket-perforation" aria-hidden="true">
+          <span class="notch notch-left"></span>
+          <span class="notch notch-right"></span>
+        </div>
+
+        <div class="ticket-search-strip">
+          <app-search-bar variant="ticket" />
+        </div>
+
+        <div class="ticket-barcode" aria-hidden="true">
+          <div class="barcode-bars">
+            @for (h of barcodeBars; track $index) {
+              <span class="bar" [style.height.%]="h"></span>
+            }
+          </div>
+          <span class="barcode-glow"></span>
+        </div>
+      </div>
     </div>
   </div>
 </section>
-
-<div class="search-card-wrapper">
-  <app-search-bar variant="hero" />
-</div>
 
 <section class="top-routes">
   <div class="section-container">
@@ -51,18 +93,15 @@
     </p>
     <div class="feature-list">
       @for (feature of features; track feature.title) {
-        <div class="feature-item">
-          <i [class]="feature.icon" aria-hidden="true"></i>
+        <div class="feature-card">
+          <span class="feature-icon"><i [class]="feature.icon" aria-hidden="true"></i></span>
           <p class="feature-title">{{ feature.title }}</p>
           <p class="feature-description">{{ feature.description }}</p>
-        </div>
-      }
-    </div>
-    <div class="about-stats">
-      @for (stat of aboutStats; track stat.label) {
-        <div class="stat-item">
-          <p class="stat-number">{{ stat.value }}</p>
-          <p class="stat-label">{{ stat.label }}</p>
+          <span class="feature-divider" aria-hidden="true"></span>
+          <p class="feature-stat">
+            <span class="feature-stat-number">{{ feature.statNumber }}</span><span class="feature-stat-suffix">{{ feature.statSuffix }}</span>
+            <span class="feature-stat-label">{{ feature.statLabel }}</span>
+          </p>
         </div>
       }
     </div>
@@ -72,6 +111,7 @@
 <section class="partners">
   <div class="section-container">
     <h2>Our Bus Partners</h2>
+    <p class="partners-subtitle">Trusted coach operators running routes across Kenya.</p>
     <div class="partner-marquee">
       <div class="partner-track">
         @for (partner of partners; track partner.name) {
@@ -86,7 +126,6 @@
         }
       </div>
     </div>
-    <a href="#" class="see-all-link">See All Partners</a>
   </div>
 </section>
 

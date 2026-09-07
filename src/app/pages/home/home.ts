@@ -44,14 +44,7 @@ export class Home {
     return this.cityPhotos[town] ?? this.cityPhotos['Nairobi'];
   }
 
-  features = [
-    { icon: 'fa-solid fa-bus', title: 'Trusted Operators', description: 'Compare real routes from licensed coaches.' },
-    { icon: 'fa-solid fa-headset', title: '24/7 Support', description: 'Help whenever you need it.' },
-    { icon: 'fa-solid fa-lock', title: 'Secure Payments', description: 'Your details are always protected.' },
-    { icon: 'fa-solid fa-rotate-left', title: 'Free Cancellation', description: 'Up to 6 hours before departure.' },
-  ];
-
-    partners = [
+  partners = [
     { name: 'Dream Line', logo: 'logos/dream-line.png' },
     { name: 'Prestige Shuttle', logo: 'logos/prestige-shuttle.png' },
     { name: 'Royal Liner', logo: 'logos/royal-liner.png' },
@@ -60,13 +53,53 @@ export class Home {
     { name: 'Garissa Coach', logo: 'logos/garissa-coach.png' },
   ];
 
-  /** "Bus Partners" is derived from the actual roster below so this
-   * number can't drift out of sync with what's really on the page. */
-  aboutStats = [
-    { value: '50,000+', label: 'Tickets Booked' },
-    { value: `${this.partners.length}`, label: 'Bus Partners' },
-    { value: '40+', label: 'Routes Covered' },
-    { value: '24/7', label: 'Customer Support' },
+  /** Each feature pairs with a stat; "Bus partners" is derived from the
+   * actual roster above so it can't drift out of sync with the page. */
+  features = [
+    {
+      icon: 'fa-solid fa-bus',
+      title: 'Trusted Operators',
+      description: 'Compare real routes from licensed coaches.',
+      statNumber: `${this.partners.length}`,
+      statSuffix: '+',
+      statLabel: 'Bus partners',
+    },
+    {
+      icon: 'fa-solid fa-headset',
+      title: '24/7 Support',
+      description: 'Help whenever you need it.',
+      statNumber: '24',
+      statSuffix: '/7',
+      statLabel: 'Always available',
+    },
+    {
+      icon: 'fa-solid fa-lock',
+      title: 'Secure Payments',
+      description: 'Your details are always protected.',
+      statNumber: '50k',
+      statSuffix: '+',
+      statLabel: 'Tickets booked',
+    },
+    {
+      icon: 'fa-solid fa-rotate-left',
+      title: 'Free Cancellation',
+      description: 'Up to 6 hours before departure.',
+      statNumber: '40',
+      statSuffix: '+',
+      statLabel: 'Routes covered',
+    },
+  ];
+
+  howItWorks = [
+    { title: 'Search Routes', description: "Pick where you're going and see available buses." },
+    { title: 'Choose Your Seat', description: 'Compare operators and pick a fare that suits you.' },
+    { title: 'Book & Travel', description: 'Pay securely and get your ticket instantly.' },
+  ];
+
+  /** Decorative bar heights (%) for the ticket hero's barcode strip. */
+  barcodeBars = [
+    40, 70, 55, 90, 30, 60, 100, 45, 80, 35, 65, 95, 50, 75, 25, 85, 60, 40, 100, 55,
+    30, 70, 90, 45, 65, 80, 35, 55, 100, 60, 40, 75, 30, 90, 50, 65, 85, 45, 70, 55,
   ];
 
     testimonials = [

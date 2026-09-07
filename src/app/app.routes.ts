@@ -5,6 +5,7 @@ export const routes: Routes = [
     {
         path: '',
         loadComponent: () => import('./pages/home/home').then((m) => m.Home),
+        title: 'BusEase - Book Bus Tickets',
     },
     {
         // Sign in/up is now a modal (see AuthModalService) that overlays whatever
@@ -20,19 +21,23 @@ export const routes: Routes = [
     {
         path: 'results',
         loadComponent: () => import('./pages/results/results').then((m) => m.Results),
+        title: 'Available Buses - BusEase',
     },
     {
         path: 'confirmation',
         loadComponent: () => import('./pages/confirmation/confirmation').then((m) => m.Confirmation),
         canActivate: [authGuard],
+        title: 'Passenger Details - BusEase',
     },
     {
         path: 'contact',
         loadComponent: () => import('./pages/contact/contact').then((m) => m.Contact),
+        title: 'Contact Us - BusEase',
     },
     {
         path: 'my-bookings',
         loadComponent: () => import('./pages/my-bookings/my-bookings').then((m) => m.MyBookings),
         canActivate: [authGuard],
+        title: 'My Bookings - BusEase',
     },
 ];

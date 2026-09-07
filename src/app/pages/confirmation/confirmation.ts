@@ -1,17 +1,18 @@
 import { Component, computed, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { BusService } from '../../services/bus.service';
-import { BookingService } from '../../services/booking.service';
+import { BookingDraftService } from '../../services/booking-draft.service';
 import { Bus } from '../../models/bus.model';
 import { PassengerInput } from '../../models/booking.model';
 import { FormsModule } from '@angular/forms';
+import { TripSummary } from '../../components/trip-summary/trip-summary';
 
-type Phase = 'loading' | 'details' | 'submitting' | 'confirmed' | 'error';
+type Phase = 'loading' | 'details' | 'error';
 type DeliveryMode = 'all' | 'select';
 type DeliveryMethod = 'whatsapp' | 'sms' | 'email';
 
 @Component({
-  imports: [RouterLink, FormsModule],
+  imports: [RouterLink, FormsModule, TripSummary],
   selector: 'app-confirmation',
   styleUrl: './confirmation.css',
   templateUrl: './confirmation.html',
@@ -24,8 +25,9 @@ export class Confirmation {
   passengers = signal<PassengerInput[]>([]);
   phase = signal<Phase>('loading');
   errorMessage = signal('');
-  bookingReference = signal('');
-  expandedIndex = signal<number>(0);
+  expandedRows = signal<Set<number>>(new Set());
+  boardingPoint = signal('');
+  dropoffPoint = signal('');
   deliveryMode = signal<DeliveryMode>('all');
   deliveryMethod = signal<DeliveryMethod>('whatsapp');
   deliverySelectedSeats = signal<Set<string>>(new Set());
@@ -61,9 +63,15 @@ export class Confirmation {
   }
 
   toggleExpand(index: number): void {
-    if (this.expandedIndex() !== index) {
-      this.expandedIndex.set(index);
-    }
+    this.expandedRows.update((rows) => {
+      const next = new Set(rows);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
   }
 
   setDeliveryMode(mode: DeliveryMode): void {
@@ -99,12 +107,15 @@ export class Confirmation {
   constructor(
     private route: ActivatedRoute,
     private busService: BusService,
-    private bookingService: BookingService,
+    private bookingDraft: BookingDraftService,
+    private router: Router,
   ) {
     const params = this.route.snapshot.queryParamMap;
     this.busId = params.get('busId') ?? '';
     const seatsParam = params.get('seats') ?? '';
     this.seatNumbers = seatsParam ? seatsParam.split(',') : [];
+    this.boardingPoint.set(params.get('boardingPoint') ?? '');
+    this.dropoffPoint.set(params.get('dropoffPoint') ?? '');
     this.load();
   }
 
@@ -122,6 +133,8 @@ export class Confirmation {
         return;
       }
       this.bus.set(bus);
+      this.boardingPoint.update((value) => value || bus.from);
+      this.dropoffPoint.update((value) => value || bus.to);
       const passengers = this.seatNumbers.map((seatNumber) => ({
         seatNumber,
         fullName: '',
@@ -131,8 +144,11 @@ export class Confirmation {
       }));
       this.passengers.set(passengers);
       this.deliverySelectedSeats.set(new Set(passengers.map((p) => p.seatNumber)));
-      const firstIncomplete = passengers.findIndex((p) => !this.isPassengerComplete(p));
-      this.expandedIndex.set(firstIncomplete === -1 ? 0 : firstIncomplete);
+      if (passengers.length > 1) {
+        this.expandedRows.set(new Set(passengers.map((_, i) => i)));
+      } else {
+        this.expandedRows.set(new Set([0]));
+      }
       this.phase.set('details');
     } catch {
       this.errorMessage.set('Could not load your trip. Please try again.');
@@ -149,24 +165,20 @@ export class Confirmation {
     this.passengers.update((list) => list.map((p, i) => (i === index ? { ...p, age } : p)));
   }
 
-  async confirmBooking(): Promise<void> {
+  confirmBooking(): void {
     const bus = this.bus();
     if (!bus || !this.canSubmit) {
       return;
     }
     this.errorMessage.set('');
-    this.phase.set('submitting');
-    try {
-      const reference = await this.bookingService.createBooking(bus, this.passengers());
-      this.bookingReference.set(reference);
-      this.phase.set('confirmed');
-    } catch (error) {
-      this.errorMessage.set(error instanceof Error ? error.message : 'Could not complete your booking. Please try again.');
-      this.phase.set('details');
-    }
-  }
-
-  print(): void {
-    window.print();
+    this.bookingDraft.set({
+      bus,
+      passengers: this.passengers(),
+      boardingPoint: this.boardingPoint(),
+      dropoffPoint: this.dropoffPoint(),
+    });
+    this.router.navigate(['/payment'], {
+      queryParams: { busId: bus.id, seats: this.seatNumbers.join(',') },
+    });
   }
 }

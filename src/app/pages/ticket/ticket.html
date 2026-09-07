@@ -1,0 +1,94 @@
+@switch (phase()) {
+  @case ('loading') {
+    <section class="not-found">
+      <div class="section-container">
+        <p>Loading your ticket…</p>
+      </div>
+    </section>
+  }
+
+  @case ('error') {
+    <section class="not-found">
+      <div class="section-container">
+        <p>{{ errorMessage() }} <a routerLink="/">Go back home</a>.</p>
+      </div>
+    </section>
+  }
+
+  @case ('ready') {
+    @if (bus(); as b) {
+      <section class="confirmation-hero">
+        <div class="section-container">
+          <div class="confirmation-icon"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></div>
+          <h1>Booking Confirmed</h1>
+          <p class="confirmation-ref">Reference: <strong>{{ reference() }}</strong></p>
+
+          <ol class="stepper">
+            @for (step of steps; track step; let i = $index) {
+              <li
+                class="stepper-step"
+                [class.completed]="i < currentStepIndex"
+                [class.current]="i === currentStepIndex"
+                [class.line-filled]="i > 0 && i <= currentStepIndex"
+              >
+                <span class="stepper-dot">
+                  @if (i < currentStepIndex) {
+                    <i class="fa-solid fa-check" aria-hidden="true"></i>
+                  } @else {
+                    {{ i + 1 }}
+                  }
+                </span>
+                <span class="stepper-label">{{ step }}</span>
+              </li>
+            }
+          </ol>
+        </div>
+      </section>
+
+      <section class="ticket-section">
+        <div class="section-container">
+          <div class="ticket-card">
+            <div class="ticket-route">
+              <p class="route-cities">{{ b.from }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i> {{ b.to }}</p>
+              <p class="route-date">{{ b.date }}</p>
+            </div>
+
+            <div class="ticket-grid">
+              <div>
+                <p class="ticket-label">Operator</p>
+                <p class="ticket-value">{{ b.operator }}</p>
+              </div>
+              <div>
+                <p class="ticket-label">Bus Type</p>
+                <p class="ticket-value">{{ b.busType }}</p>
+              </div>
+              <div>
+                <p class="ticket-label">Departure</p>
+                <p class="ticket-value">{{ b.departureTime }}</p>
+              </div>
+              <div>
+                <p class="ticket-label">Arrival</p>
+                <p class="ticket-value">{{ b.arrivalTime }}</p>
+              </div>
+              <div>
+                <p class="ticket-label">Seats</p>
+                <p class="ticket-value">{{ seatList() }}</p>
+              </div>
+              <div>
+                <p class="ticket-label">Total Paid</p>
+                <p class="ticket-value total">KSh {{ totalPrice() }}</p>
+              </div>
+            </div>
+
+            <div class="ticket-actions">
+              <button type="button" class="print-cta" (click)="print()">
+                <i class="fa-solid fa-print" aria-hidden="true"></i> Print Ticket
+              </button>
+              <a routerLink="/" class="home-link">Back to Home</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    }
+  }
+}

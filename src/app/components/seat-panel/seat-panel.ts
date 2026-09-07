@@ -157,6 +157,8 @@ export class SeatPanel {
         destination: bus.to,
         journeyDate: bus.date,
         seats: this.selectedSeats().join(','),
+        boardingPoint: this.boardingPoint(),
+        dropoffPoint: this.dropoffPoint(),
       },
     });
   }

@@ -30,6 +30,18 @@ export const routes: Routes = [
         title: 'Passenger Details - BusEase',
     },
     {
+        path: 'payment',
+        loadComponent: () => import('./pages/payment/payment').then((m) => m.Payment),
+        canActivate: [authGuard],
+        title: 'Payment - BusEase',
+    },
+    {
+        path: 'ticket',
+        loadComponent: () => import('./pages/ticket/ticket').then((m) => m.Ticket),
+        canActivate: [authGuard],
+        title: 'Booking Confirmed - BusEase',
+    },
+    {
         path: 'contact',
         loadComponent: () => import('./pages/contact/contact').then((m) => m.Contact),
         title: 'Contact Us - BusEase',

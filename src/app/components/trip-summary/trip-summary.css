@@ -1,0 +1,112 @@
+:host {
+  display: block;
+}
+
+.trip-summary {
+  background-color: var(--color-surface, #fff);
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--color-border, #e4dfd6);
+  border-top: 3px solid var(--color-primary, #12294d);
+  box-shadow: 0 20px 48px rgba(18, 41, 77, 0.15);
+  padding: var(--space-4, 24px);
+}
+
+.summary-heading {
+  margin: 0 0 var(--space-3, 16px) 0;
+  padding-bottom: var(--space-2, 8px);
+  border-bottom: 1px solid var(--color-border, #e4dfd6);
+  color: var(--color-text, #3a3a3a);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.summary-route {
+  margin: 0 0 var(--space-1, 4px) 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-primary, #12294d);
+}
+
+.summary-route i {
+  color: var(--color-accent, #eb1f1a);
+  font-size: 0.95rem;
+}
+
+.summary-meta {
+  margin: 0 0 var(--space-3, 16px) 0;
+  color: var(--color-text, #3a3a3a);
+  font-size: 0.9rem;
+}
+
+.summary-stops {
+  margin-bottom: var(--space-3, 16px);
+  padding-bottom: var(--space-3, 16px);
+  border-bottom: 1px dashed var(--color-border, #e4dfd6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1, 4px);
+}
+
+.summary-stop {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  margin: 0;
+  color: var(--color-text, #3a3a3a);
+  font-size: 0.9rem;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex: none;
+}
+
+.dot-boarding {
+  background-color: var(--color-success, #2fa88a);
+}
+
+.dot-dropoff {
+  background-color: var(--color-accent, #eb1f1a);
+}
+
+.summary-lines {
+  padding-top: var(--space-3, 16px);
+  border-top: 1px dashed var(--color-border, #e4dfd6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 8px);
+}
+
+.summary-stops + .summary-lines {
+  padding-top: 0;
+  border-top: none;
+}
+
+.summary-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2, 8px);
+  font-size: 0.95rem;
+  color: var(--color-text, #3a3a3a);
+}
+
+.summary-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-top: var(--space-3, 16px);
+  padding-top: var(--space-3, 16px);
+  border-top: 1px solid var(--color-border, #e4dfd6);
+  font-weight: 700;
+  color: var(--color-primary, #12294d);
+  font-size: 1.15rem;
+}

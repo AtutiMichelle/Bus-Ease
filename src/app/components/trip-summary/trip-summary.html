@@ -1,0 +1,34 @@
+<aside class="trip-summary">
+  <h2 class="summary-heading">Trip Summary</h2>
+  <p class="summary-route">{{ bus().from }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i> {{ bus().to }}</p>
+  <p class="summary-meta">{{ bus().date }} · {{ bus().departureTime }} · {{ bus().operator }} · {{ bus().busType }}</p>
+
+  @if (boardingPoint() || dropoffPoint()) {
+    <div class="summary-stops">
+      @if (boardingPoint()) {
+        <p class="summary-stop"><span class="dot dot-boarding" aria-hidden="true"></span> Board at {{ boardingPoint() }}</p>
+      }
+      @if (dropoffPoint()) {
+        <p class="summary-stop"><span class="dot dot-dropoff" aria-hidden="true"></span> Drop off at {{ dropoffPoint() }}</p>
+      }
+    </div>
+  }
+
+  <div class="summary-lines">
+    @for (passenger of passengers(); track passenger.seatNumber) {
+      <div class="summary-line">
+        <span>Seat {{ passenger.seatNumber }} · {{ bus().busType }}</span>
+        <span>KSh {{ bus().price }}</span>
+      </div>
+    }
+    <div class="summary-line">
+      <span>Service fee</span>
+      <span>KSh 0</span>
+    </div>
+  </div>
+
+  <div class="summary-total">
+    <span>Total</span>
+    <span>KSh {{ totalPrice() }}</span>
+  </div>
+</aside>

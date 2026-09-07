@@ -1,0 +1,153 @@
+@switch (phase()) {
+  @case ('missing') {
+    <section class="not-found">
+      <div class="section-container">
+        <p>We couldn't find your booking details. Please <a routerLink="/">start again from home</a>.</p>
+      </div>
+    </section>
+  }
+
+  @default {
+    @if (bus(); as b) {
+      <section class="payment-hero">
+        <div class="section-container">
+          <h1>Payment</h1>
+
+          <div class="hero-row">
+            <a class="hero-back-link" routerLink="/confirmation" [queryParams]="backQueryParams()">
+              <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back to passenger details
+            </a>
+
+            <ol class="stepper">
+              @for (step of steps; track step; let i = $index) {
+                <li
+                  class="stepper-step"
+                  [class.completed]="i < currentStepIndex"
+                  [class.current]="i === currentStepIndex"
+                  [class.line-filled]="i > 0 && i <= currentStepIndex"
+                >
+                  <span class="stepper-dot">
+                    @if (i < currentStepIndex) {
+                      <i class="fa-solid fa-check" aria-hidden="true"></i>
+                    } @else {
+                      {{ i + 1 }}
+                    }
+                  </span>
+                  <span class="stepper-label">{{ step }}</span>
+                </li>
+              }
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <section class="payment-section">
+        <div class="section-container">
+          <div class="payment-layout">
+            <div class="method-card">
+              <h2 class="method-heading">Choose Payment Method</h2>
+              <p class="method-sublabel">Select how you'd like to pay for this booking</p>
+
+              <div class="method-toggle">
+                <button type="button" class="method-chip" [class.active]="method() === 'mpesa'" (click)="selectMethod('mpesa')">
+                  <i class="fa-solid fa-mobile-screen" aria-hidden="true"></i> M-Pesa
+                </button>
+                <button type="button" class="method-chip" [class.active]="method() === 'airtel'" (click)="selectMethod('airtel')">
+                  <i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i> Airtel Money
+                </button>
+                <button type="button" class="method-chip" [class.active]="method() === 'card'" (click)="selectMethod('card')">
+                  <i class="fa-solid fa-credit-card" aria-hidden="true"></i> Card
+                </button>
+              </div>
+
+              @if (method() === 'mpesa' || method() === 'airtel') {
+                <div class="field">
+                  <label for="phone">{{ method() === 'mpesa' ? 'M-Pesa' : 'Airtel Money' }} number</label>
+                  <div class="phone-input">
+                    <span class="phone-prefix">+254</span>
+                    <input
+                      id="phone"
+                      type="tel"
+                      placeholder="7xx xxx xxx"
+                      [ngModel]="phone()"
+                      (ngModelChange)="phone.set($event)"
+                      name="phone"
+                    />
+                  </div>
+                  <p class="method-note">
+                    <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                    You'll get a prompt on your phone to enter your PIN and confirm KSh {{ totalPrice() }}.
+                  </p>
+                </div>
+              } @else {
+                <div class="card-fields">
+                  <div class="field">
+                    <label for="cardName">Cardholder Name</label>
+                    <input
+                      id="cardName"
+                      type="text"
+                      placeholder="Jane Doe"
+                      [ngModel]="cardName()"
+                      (ngModelChange)="cardName.set($event)"
+                      name="cardName"
+                    />
+                  </div>
+                  <div class="field">
+                    <label for="cardNumber">Card Number</label>
+                    <input
+                      id="cardNumber"
+                      type="text"
+                      inputmode="numeric"
+                      placeholder="4242 4242 4242 4242"
+                      [ngModel]="cardNumber()"
+                      (ngModelChange)="updateCardNumber($event)"
+                      name="cardNumber"
+                    />
+                  </div>
+                  <div class="field field-small">
+                    <label for="cardExpiry">Expiry</label>
+                    <input
+                      id="cardExpiry"
+                      type="text"
+                      placeholder="MM/YY"
+                      [ngModel]="cardExpiry()"
+                      (ngModelChange)="cardExpiry.set($event)"
+                      name="cardExpiry"
+                    />
+                  </div>
+                  <div class="field field-small">
+                    <label for="cardCvv">CVV</label>
+                    <input
+                      id="cardCvv"
+                      type="text"
+                      inputmode="numeric"
+                      placeholder="123"
+                      [ngModel]="cardCvv()"
+                      (ngModelChange)="cardCvv.set($event)"
+                      name="cardCvv"
+                    />
+                  </div>
+                </div>
+              }
+
+              @if (errorMessage()) {
+                <p class="error">
+                  {{ errorMessage() }}
+                  <button type="button" class="retry-link" (click)="pay()">Retry</button>
+                </p>
+              }
+
+              <button type="button" class="pay-cta" [disabled]="!canPay() || phase() === 'processing'" (click)="pay()">
+                {{ phase() === 'processing' ? 'Processing…' : 'Pay · KSh ' + totalPrice() }}
+              </button>
+
+              <p class="secure-note"><i class="fa-solid fa-lock" aria-hidden="true"></i> Payments are encrypted and securely processed.</p>
+            </div>
+
+            <app-trip-summary [bus]="b" [passengers]="passengers()" [boardingPoint]="boardingPoint()" [dropoffPoint]="dropoffPoint()" />
+          </div>
+        </div>
+      </section>
+    }
+  }
+}

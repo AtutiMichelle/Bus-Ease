@@ -148,26 +148,28 @@
                 <h3 class="delivery-heading">Ticket Delivery</h3>
 
                 <p class="delivery-label">Send tickets to</p>
-                <div class="delivery-mode-group">
-                  <button
-                    type="button"
-                    class="delivery-mode-btn"
-                    [class.active]="deliveryMode() === 'all'"
-                    (click)="setDeliveryMode('all')"
-                  >
-                    All passengers
-                  </button>
-                  <button
-                    type="button"
-                    class="delivery-mode-btn"
-                    [class.active]="deliveryMode() === 'select'"
-                    (click)="setDeliveryMode('select')"
-                  >
-                    Select passengers
-                  </button>
-                </div>
+                @if (passengers().length > 1) {
+                  <div class="delivery-mode-group">
+                    <button
+                      type="button"
+                      class="delivery-mode-btn"
+                      [class.active]="deliveryMode() === 'all'"
+                      (click)="setDeliveryMode('all')"
+                    >
+                      All passengers
+                    </button>
+                    <button
+                      type="button"
+                      class="delivery-mode-btn"
+                      [class.active]="deliveryMode() === 'select'"
+                      (click)="setDeliveryMode('select')"
+                    >
+                      Select passengers
+                    </button>
+                  </div>
+                }
 
-                @if (deliveryMode() === 'select') {
+                @if (deliveryMode() === 'select' && passengers().length > 1) {
                   <ul class="delivery-checklist">
                     @for (passenger of passengers(); track passenger.seatNumber; let i = $index) {
                       <li>
@@ -183,10 +185,13 @@
                       </li>
                     }
                   </ul>
-                } @else if (deliveryMode() === 'all') {
+                } @else {
                   <ul class="delivery-checklist">
                     @for (passenger of passengers(); track passenger.seatNumber; let i = $index) {
-                      <li>{{ passenger.seatNumber }} · {{ passenger.fullName || 'Passenger ' + (i + 1) }}</li>
+                      <li class="delivery-checklist-row">
+                        <span class="seat-badge">{{ passenger.seatNumber }}</span>
+                        <span>{{ passenger.fullName || 'Passenger ' + (i + 1) }}</span>
+                      </li>
                     }
                   </ul>
                 }

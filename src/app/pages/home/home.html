@@ -1,9 +1,9 @@
 <section class="hero-ticket">
   <span class="hero-bleed-line" aria-hidden="true">
     <span class="bleed-dot bleed-dot-navy"></span>
-    <span class="bleed-dot bleed-dot-orange"></span>
+    <span class="bleed-dot bleed-dot-red"></span>
   </span>
-  <span class="hero-blob hero-blob-orange" aria-hidden="true"></span>
+  <span class="hero-blob hero-blob-red" aria-hidden="true"></span>
   <span class="hero-blob hero-blob-navy" aria-hidden="true"></span>
 
   <div class="section-container">
@@ -17,6 +17,11 @@
         <p class="trust-line"><span class="status-dot" aria-hidden="true"></span>Trusted by riders across Kenya</p>
 
         <div class="ticket-headline">
+          <svg class="headline-watermark" viewBox="0 0 600 100" aria-hidden="true" focusable="false">
+            <path d="M10,80 C150,10 450,10 590,80" fill="none" stroke="var(--color-primary)" stroke-width="3" stroke-dasharray="2 12" stroke-linecap="round" />
+            <circle cx="10" cy="80" r="6" fill="var(--color-primary)" />
+            <circle cx="590" cy="80" r="6" fill="var(--color-accent)" />
+          </svg>
           <h1>Book your seat, <em>skip the queue.</em></h1>
           <span class="hero-rule" aria-hidden="true"></span>
           <p class="hero-subtitle">
@@ -24,17 +29,8 @@
           </p>
         </div>
 
-        <div class="how-it-works">
-          @for (step of howItWorks; track step.title; let last = $last) {
-            <div class="how-step">
-              <span class="how-step-circle">{{ $index + 1 }}</span>
-              <p class="how-step-title">{{ step.title }}</p>
-              <p class="how-step-desc">{{ step.description }}</p>
-            </div>
-            @if (!last) {
-              <span class="how-step-connector" aria-hidden="true"></span>
-            }
-          }
+        <div class="ticket-search-strip">
+          <app-search-bar variant="ticket" />
         </div>
 
         <div class="ticket-perforation" aria-hidden="true">
@@ -42,17 +38,16 @@
           <span class="notch notch-right"></span>
         </div>
 
-        <div class="ticket-search-strip">
-          <app-search-bar variant="ticket" />
-        </div>
-
-        <div class="ticket-barcode" aria-hidden="true">
-          <div class="barcode-bars">
-            @for (h of barcodeBars; track $index) {
-              <span class="bar" [style.height.%]="h"></span>
+        <div class="how-it-works-compact">
+          @for (step of howItWorks; track step.title; let last = $last) {
+            <span class="how-step-compact" [attr.title]="step.description">
+              <span class="how-step-compact-circle">{{ $index + 1 }}</span>
+              {{ step.title }}
+            </span>
+            @if (!last) {
+              <span class="how-step-compact-dot" aria-hidden="true">&middot;</span>
             }
-          </div>
-          <span class="barcode-glow"></span>
+          }
         </div>
       </div>
     </div>

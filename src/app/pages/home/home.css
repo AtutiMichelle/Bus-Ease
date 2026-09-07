@@ -2,7 +2,7 @@
 .hero-ticket {
   position: relative;
   overflow: hidden;
-  padding: var(--space-7, 64px) 0;
+  padding: var(--space-2, 8px) 0 var(--space-1, 4px);
   background-image: linear-gradient(135deg, var(--color-soft-bg, #e8f1fc) 0%, var(--color-bg, #faf8f5) 65%);
 }
 
@@ -28,7 +28,7 @@
   background-color: var(--color-primary, #12294d);
 }
 
-.bleed-dot-orange {
+.bleed-dot-red {
   right: 6%;
   background-color: var(--color-accent, #eb1f1a);
 }
@@ -44,7 +44,7 @@
   pointer-events: none;
 }
 
-.hero-blob-orange {
+.hero-blob-red {
   top: -120px;
   left: -100px;
   background-color: var(--color-accent, #eb1f1a);
@@ -72,12 +72,12 @@
 }
 
 .ticket-ghost-1 {
-  transform: rotate(-3deg);
+  inset: -8px;
   opacity: 0.5;
 }
 
 .ticket-ghost-2 {
-  transform: rotate(4deg);
+  inset: -16px;
   opacity: 0.25;
 }
 
@@ -87,7 +87,7 @@
   overflow: hidden;
   background-color: var(--color-surface, #fff);
   border-radius: var(--radius-md, 8px);
-  padding: var(--space-5, 32px);
+  padding: var(--space-3, 16px) var(--space-5, 32px) var(--space-2, 8px);
   box-shadow: 0 20px 44px rgba(26, 58, 107, 0.14), 0 10px 30px rgba(235, 31, 26, 0.16);
   animation: ticket-float 6s ease-in-out infinite;
 }
@@ -144,8 +144,23 @@
   text-align: center;
 }
 
+.headline-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 640px;
+  height: auto;
+  aspect-ratio: 6 / 1;
+  opacity: 0.07;
+  z-index: 0;
+  pointer-events: none;
+}
+
 .ticket-headline h1 {
   position: relative;
+  z-index: 1;
   font-size: 3rem;
   font-weight: 700;
   line-height: 1.15;
@@ -159,6 +174,8 @@
 }
 
 .hero-rule {
+  position: relative;
+  z-index: 1;
   display: block;
   width: 56px;
   height: 4px;
@@ -169,6 +186,7 @@
 
 .hero-subtitle {
   position: relative;
+  z-index: 1;
   max-width: 640px;
   margin: 0 auto;
   font-size: 1.35rem;
@@ -176,58 +194,42 @@
   color: var(--color-text-muted, #6b6b6b);
 }
 
-.how-it-works {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  gap: var(--space-2, 8px);
-  margin: var(--space-6, 48px) auto 0;
-  max-width: 900px;
-}
-
-.how-step {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  flex: 1 1 0;
-  min-width: 0;
-}
-
-.how-step-circle {
+.how-it-works-compact {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background-color: var(--color-primary, #12294d);
-  color: #fff;
-  font-weight: 700;
-  font-size: 1.15rem;
+  flex-wrap: wrap;
+  row-gap: 6px;
+  column-gap: 10px;
+  margin: var(--space-4, 24px) auto 0;
+  font-size: 0.85rem;
 }
 
-.how-step-title {
-  margin: var(--space-2, 8px) 0 2px;
-  font-weight: 700;
-  font-size: 1.35rem;
-  color: var(--color-primary, #12294d);
-}
-
-.how-step-desc {
-  margin: 0;
-  font-size: 1.1rem;
-  line-height: 1.4;
+.how-step-compact {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
   color: var(--color-text-muted, #6b6b6b);
 }
 
-.how-step-connector {
-  flex: 0 1 48px;
-  align-self: flex-start;
-  margin-top: 16px;
-  height: 0;
-  border-top: 2px dashed var(--color-border, #e4dfd6);
+.how-step-compact-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: var(--color-primary, #12294d);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.how-step-compact-dot {
+  color: var(--color-border, #e4dfd6);
+  font-weight: 700;
 }
 
 .ticket-perforation {
@@ -266,90 +268,38 @@
   margin-top: var(--space-5, 32px);
   padding: var(--space-4, 24px);
   border-radius: var(--radius-md, 8px);
-  background-color: rgba(18, 41, 77, 0.04);
-  border-top: 3px solid var(--color-accent, #eb1f1a);
-}
-
-.ticket-barcode {
-  position: relative;
-  height: 30px;
-  max-width: 280px;
-  margin: var(--space-5, 32px) auto 0;
-  overflow: hidden;
-  opacity: 0.7;
-}
-
-.barcode-bars {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 3px;
-  height: 100%;
-}
-
-.bar {
-  width: 2px;
-  border-radius: 1px;
-  background-color: var(--color-primary, #12294d);
-  opacity: 0.2;
-}
-
-.barcode-glow {
-  position: absolute;
-  top: 0;
-  left: -40%;
-  width: 40%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(235, 31, 26, 0.35), transparent);
-  animation: barcode-sweep 3.5s linear infinite;
-}
-
-@keyframes barcode-sweep {
-  from {
-    left: -40%;
-  }
-  to {
-    left: 100%;
-  }
+  background-color: var(--color-surface, #fff);
+  border: 1px solid rgba(235, 31, 26, 0.18);
+  box-shadow: 0 18px 40px rgba(235, 31, 26, 0.14), 0 6px 18px rgba(18, 41, 77, 0.08);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ticket-card,
-  .barcode-glow {
+  .ticket-card {
     animation: none;
   }
 }
 
 @media (max-width: 800px) {
   .hero-ticket {
-    padding: var(--space-5, 32px) 0;
+    padding: var(--space-4, 24px) 0;
   }
 
   .ticket-headline h1 {
     font-size: 2rem;
-  }
-
-  .how-it-works {
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--space-4, 24px);
-  }
-
-  .how-step-connector {
-    display: none;
   }
 }
 
 /* Top Routes */
 /* Top Routes */
 .top-routes {
-  padding: var(--space-6, 48px) 0;
+  padding: var(--space-2, 8px) 0 var(--space-4, 24px);
   background-color: #f5f3f0;
   text-align: center;
 }
 
 .top-routes h2 {
   color: var(--color-primary, #12294d);
+  margin-top: 0;
   margin-bottom: var(--space-4, 24px);
   text-align: center;
   max-width: 1200px;
@@ -462,13 +412,14 @@
 /* Why Choose Us */
 .why-choose-us {
   scroll-margin-top: 80px;
-  padding: var(--space-6, 48px) 0;
+  padding: var(--space-3, 16px) 0;
   text-align: center;
   background-color: var(--color-surface, #fff);
 }
 
 .why-choose-us h2 {
   color: var(--color-primary, #12294d);
+  margin-top: 0;
   margin-bottom: var(--space-3, 16px);
   text-align: center;
 }
@@ -562,7 +513,7 @@
 
 /* Partners */
 .partners {
-  padding: var(--space-6, 48px) 0;
+  padding: var(--space-3, 16px) 0;
   text-align: center;
   background-color: #f5f3f0;
   overflow: hidden;
@@ -570,6 +521,7 @@
 
 .partners h2 {
   color: var(--color-primary, #12294d);
+  margin-top: 0;
   margin-bottom: var(--space-2, 8px);
   padding: 0 var(--space-4, 24px);
   text-align: center;
@@ -645,13 +597,14 @@
 
 /* Testimonials */
 .testimonials {
-  padding: var(--space-6, 48px) 0;
+  padding: var(--space-3, 16px) 0;
   text-align: center;
   background-color: var(--color-surface, #fff);
 }
 
 .testimonials h2 {
   color: var(--color-primary, #12294d);
+  margin-top: 0;
   margin-bottom: var(--space-5, 32px);
   text-align: center;
 }
@@ -721,7 +674,7 @@
   gap: var(--space-6, 48px);
   align-items: center;
   justify-content: center;
-  padding: var(--space-7, 64px) var(--space-4, 24px);
+  padding: var(--space-3, 16px) var(--space-4, 24px);
   background: linear-gradient(135deg, var(--color-primary-light, #1e88e5), var(--color-primary, #12294d));
   color: white;
   flex-wrap: wrap;
@@ -729,6 +682,7 @@
 
 .app-download-text h2 {
   font-size: 1.75rem;
+  margin-top: 0;
   margin-bottom: var(--space-3, 16px);
 }
 

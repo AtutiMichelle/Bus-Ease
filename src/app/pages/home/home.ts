@@ -96,13 +96,7 @@ export class Home {
     { title: 'Book & Travel', description: 'Pay securely and get your ticket instantly.' },
   ];
 
-  /** Decorative bar heights (%) for the ticket hero's barcode strip. */
-  barcodeBars = [
-    40, 70, 55, 90, 30, 60, 100, 45, 80, 35, 65, 95, 50, 75, 25, 85, 60, 40, 100, 55,
-    30, 70, 90, 45, 65, 80, 35, 55, 100, 60, 40, 75, 30, 90, 50, 65, 85, 45, 70, 55,
-  ];
-
-    testimonials = [
+  testimonials = [
     { quote: 'Booking took two minutes.', name: 'Wanjiru K.', location: 'Nairobi', date: 'Jul 2026', rating: 5 },
     { quote: 'Seat map was clear.', name: 'Otieno M.', location: 'Kisumu', date: 'Jun 2026', rating: 4 },
     { quote: 'Refund was instant.', name: 'Amina H.', location: 'Mombasa', date: 'Aug 2026', rating: 5 },

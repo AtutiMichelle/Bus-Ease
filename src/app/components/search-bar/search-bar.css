@@ -97,11 +97,11 @@
   display: block;
   width: 100%;
   text-align: left;
-  padding: 10px 12px;
+  padding: 12px 14px;
   border: none;
   background: none;
   border-radius: 4px;
-  font-size: 0.95rem;
+  font-size: 1.1rem;
   font-family: inherit;
   color: var(--color-text, #3a3a3a);
   cursor: pointer;
@@ -239,8 +239,18 @@
   cursor: not-allowed;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 860px) {
   :host(.ticket) .search-form {
-    flex-wrap: wrap;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+  }
+
+  :host(.ticket) .field {
+    width: 100%;
+  }
+
+  :host(.ticket) .search-cta {
+    width: 100%;
   }
 }

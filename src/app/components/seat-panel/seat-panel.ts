@@ -3,7 +3,12 @@ import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { BusService } from '../../services/bus.service';
+import { AuthService } from '../../services/auth.service';
+import { AuthModalService } from '../../services/auth-modal.service';
 import { Bus } from '../../models/bus.model';
+
+/** No one, logged in or not, can select more than this many seats in one booking. */
+const MAX_SEATS_PER_BOOKING = 6;
 
 interface UiSeat {
   number: string;
@@ -42,6 +47,9 @@ export class SeatPanel {
   selectedSeats = signal<string[]>([]);
   loading = signal(true);
   errorMessage = signal('');
+  selectionNotice = signal('');
+
+  readonly maxSeats = MAX_SEATS_PER_BOOKING;
 
   
   boardingPoint = signal('');
@@ -89,6 +97,10 @@ export class SeatPanel {
 
   private busService = inject(BusService);
   private router = inject(Router);
+  private authService = inject(AuthService);
+  private authModal = inject(AuthModalService);
+
+  isGuest = computed(() => !this.authService.user());
 
   constructor() {
     document.body.style.overflow = 'hidden';
@@ -137,6 +149,19 @@ export class SeatPanel {
       return;
     }
     const isSelected = seat.status === 'selected';
+
+    if (!isSelected) {
+      if (this.selectedSeats().length >= this.maxSeats) {
+        this.selectionNotice.set(`You can book up to ${this.maxSeats} seats at a time.`);
+        return;
+      }
+      if (!this.authService.user() && this.selectedSeats().length >= 1) {
+        this.authModal.open('login', this.router.url);
+        return;
+      }
+    }
+
+    this.selectionNotice.set('');
     this.seats.update((seats) =>
       seats.map((s) => (s.number === seat.number ? { ...s, status: isSelected ? 'available' : 'selected' } : s)),
     );

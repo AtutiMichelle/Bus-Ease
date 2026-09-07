@@ -47,6 +47,10 @@
           <span class="legend-pill"><span class="legend-swatch selected"></span> Selected</span>
         </div>
 
+        @if (isGuest()) {
+          <p class="guest-hint">Booking as a guest: 1 seat max. Log in to book up to {{ maxSeats }}.</p>
+        }
+
         <ng-template #seatButton let-seat="seat">
           <button
             type="button"
@@ -120,6 +124,9 @@
       </div>
 
       <footer class="panel-footer">
+        @if (selectionNotice()) {
+          <p class="footer-notice">{{ selectionNotice() }}</p>
+        }
         @if (selectedSeats().length === 0) {
           <p class="footer-empty">Select at least one seat to continue.</p>
         } @else {

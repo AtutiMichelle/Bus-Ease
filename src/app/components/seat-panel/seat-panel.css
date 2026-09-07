@@ -189,6 +189,19 @@
   background-color: white;
 }
 
+.guest-hint {
+  flex: none;
+  margin: 0 0 clamp(10px, 1.3vh, 16px);
+  font-size: clamp(0.76rem, 1.6vh, 0.86rem);
+  color: var(--color-text-muted, #6b6b6b);
+}
+
+.footer-notice {
+  margin: 0 0 clamp(5px, 0.65vh, 10px) 0;
+  color: var(--color-danger, #d64545);
+  font-size: clamp(0.85rem, 1.8vh, 0.95rem);
+}
+
 .seat-legend {
   flex: none;
   display: flex;

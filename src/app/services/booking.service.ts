@@ -109,6 +109,26 @@ export class BookingService {
     return reference;
   }
 
+  /** Books a single seat with no account (guest checkout). Everything —
+   * seat/price lookup, the booking + passenger rows, marking the seat
+   * booked, and the available_seats decrement — happens server-side in one
+   * function, since an anonymous caller has no RLS access to write any of
+   * those tables directly. */
+  async createGuestBooking(bus: Bus, passenger: PassengerInput): Promise<string> {
+    const { data, error } = await this.client.rpc('create_guest_booking', {
+      p_bus_id: bus.id,
+      p_seat_number: passenger.seatNumber,
+      p_full_name: passenger.fullName,
+      p_mobile: passenger.mobile,
+      p_age: passenger.age ?? null,
+      p_gender: passenger.gender ?? null,
+    });
+    if (error) {
+      throw error;
+    }
+    return data as string;
+  }
+
   async getMyBookings(): Promise<SavedBooking[]> {
     const user = this.authService.user();
     if (!user) {

@@ -3,6 +3,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BookingDraftService } from '../../services/booking-draft.service';
 import { BookingService } from '../../services/booking.service';
+import { AuthService } from '../../services/auth.service';
 import { Bus } from '../../models/bus.model';
 import { PassengerInput } from '../../models/booking.model';
 import { TripSummary } from '../../components/trip-summary/trip-summary';
@@ -67,6 +68,7 @@ export class Payment {
     private router: Router,
     private bookingDraft: BookingDraftService,
     private bookingService: BookingService,
+    private authService: AuthService,
   ) {
     const draft = this.bookingDraft.current();
     if (!draft) {
@@ -103,7 +105,9 @@ export class Payment {
     this.phase.set('processing');
     try {
       await new Promise((resolve) => setTimeout(resolve, GATEWAY_DELAY_MS));
-      const reference = await this.bookingService.createBooking(bus, this.passengers());
+      const reference = this.authService.user()
+        ? await this.bookingService.createBooking(bus, this.passengers())
+        : await this.bookingService.createGuestBooking(bus, this.passengers()[0]);
       this.bookingDraft.clear();
       this.router.navigate(['/ticket'], {
         queryParams: {

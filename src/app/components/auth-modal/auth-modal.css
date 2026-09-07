@@ -64,9 +64,10 @@
 }
 
 .auth-eyebrow {
+  font-family: var(--font-family);
   color: var(--color-primary-light, #1e88e5);
   font-weight: 700;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin: 0 0 4px 0;
@@ -81,7 +82,7 @@
 
 .auth-subtitle {
   color: var(--color-text-muted, #6b6b6b);
-  font-size: 0.9rem;
+  font-size: 1.1rem;
   margin: 0 0 var(--space-4, 24px) 0;
   text-align: center;
 }
@@ -99,7 +100,7 @@
 }
 
 .field label {
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--color-text, #3a3a3a);
   margin-bottom: 6px;
@@ -127,7 +128,7 @@
 
 .forgot-link {
   align-self: flex-end;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   color: var(--color-primary-light, #1e88e5);
   text-decoration: none;
   margin-top: -8px;
@@ -139,7 +140,7 @@
 
 .error {
   color: var(--color-danger, #d64545);
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   margin: -8px 0 0 0;
 }
 
@@ -179,7 +180,7 @@
 
 .auth-switch {
   text-align: center;
-  font-size: 0.875rem;
+  font-size: 0.95rem;
   color: var(--color-text-muted, #6b6b6b);
   margin: var(--space-4, 24px) 0 0 0;
 }

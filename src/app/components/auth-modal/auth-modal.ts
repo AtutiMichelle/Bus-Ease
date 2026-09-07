@@ -30,6 +30,9 @@ export class AuthModal {
   signupError = signal('');
   needsEmailConfirmation = signal(false);
 
+  showWelcome = signal(false);
+  displayName = this.authService.displayName;
+
   get loginCanSubmit(): boolean {
     return this.loginEmail().trim().length > 0 && this.loginPassword().trim().length > 0 && !this.loginSubmitting();
   }
@@ -64,12 +67,22 @@ export class AuthModal {
   }
 
   close(): void {
+    this.showWelcome.set(false);
     this.authModal.close();
   }
 
   switchMode(mode: 'login' | 'signup'): void {
     this.needsEmailConfirmation.set(false);
     this.authModal.open(mode);
+  }
+
+  continueAfterWelcome(): void {
+    this.showWelcome.set(false);
+    const returnUrl = this.authModal.returnUrl();
+    this.authModal.close();
+    if (returnUrl) {
+      this.router.navigateByUrl(returnUrl);
+    }
   }
 
   async login(): Promise<void> {
@@ -80,7 +93,7 @@ export class AuthModal {
     this.loginSubmitting.set(true);
     try {
       await this.authService.signIn(this.loginEmail().trim(), this.loginPassword());
-      this.finishSuccess();
+      this.showWelcome.set(true);
     } catch (error) {
       this.loginError.set(error instanceof Error ? error.message : 'Could not log in. Please try again.');
     } finally {
@@ -103,20 +116,12 @@ export class AuthModal {
       if (needsEmailConfirmation) {
         this.needsEmailConfirmation.set(true);
       } else {
-        this.finishSuccess();
+        this.showWelcome.set(true);
       }
     } catch (error) {
       this.signupError.set(error instanceof Error ? error.message : 'Could not create your account. Please try again.');
     } finally {
       this.signupSubmitting.set(false);
-    }
-  }
-
-  private finishSuccess(): void {
-    const returnUrl = this.authModal.returnUrl();
-    this.authModal.close();
-    if (returnUrl) {
-      this.router.navigateByUrl(returnUrl);
     }
   }
 }

@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './guards/auth.guard';
+import { authGuard, bookingAccessGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
     {
@@ -26,19 +26,19 @@ export const routes: Routes = [
     {
         path: 'confirmation',
         loadComponent: () => import('./pages/confirmation/confirmation').then((m) => m.Confirmation),
-        canActivate: [authGuard],
+        canActivate: [bookingAccessGuard],
         title: 'Passenger Details - BusEase',
     },
     {
         path: 'payment',
         loadComponent: () => import('./pages/payment/payment').then((m) => m.Payment),
-        canActivate: [authGuard],
+        canActivate: [bookingAccessGuard],
         title: 'Payment - BusEase',
     },
     {
         path: 'ticket',
         loadComponent: () => import('./pages/ticket/ticket').then((m) => m.Ticket),
-        canActivate: [authGuard],
+        canActivate: [bookingAccessGuard],
         title: 'Booking Confirmed - BusEase',
     },
     {

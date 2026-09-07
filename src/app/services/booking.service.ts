@@ -69,7 +69,7 @@ export class BookingService {
         bus_id: bus.id,
         booking_reference: reference,
         contact_email: user.email,
-        total_fare: bus.price * passengers.length,
+        total_fare: passengers.reduce((sum, p) => sum + (p.price ?? bus.price), 0),
         status: 'confirmed',
       })
       .select('id')

@@ -14,5 +14,8 @@ export class TripSummary {
   boardingPoint = input('');
   dropoffPoint = input('');
 
-  totalPrice = computed(() => (this.bus()?.price ?? 0) * this.passengers().length);
+  totalPrice = computed(() => {
+    const fallback = this.bus()?.price ?? 0;
+    return this.passengers().reduce((sum, p) => sum + (p.price ?? fallback), 0);
+  });
 }

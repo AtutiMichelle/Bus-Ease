@@ -40,7 +40,10 @@ export class Payment {
   cardExpiry = signal('');
   cardCvv = signal('');
 
-  totalPrice = computed(() => (this.bus()?.price ?? 0) * this.passengers().length);
+  totalPrice = computed(() => {
+    const fallback = this.bus()?.price ?? 0;
+    return this.passengers().reduce((sum, p) => sum + (p.price ?? fallback), 0);
+  });
 
   backQueryParams = computed(() => {
     const b = this.bus();

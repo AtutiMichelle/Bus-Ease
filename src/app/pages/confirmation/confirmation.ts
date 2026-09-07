@@ -32,7 +32,7 @@ export class Confirmation {
   deliveryMethod = signal<DeliveryMethod>('whatsapp');
   deliverySelectedSeats = signal<Set<string>>(new Set());
 
-  totalPrice = computed(() => (this.bus()?.price ?? 0) * this.passengers().length);
+  totalPrice = computed(() => this.passengers().reduce((sum, p) => sum + (p.price ?? 0), 0));
   seatList = computed(() => this.passengers().map((p) => p.seatNumber).join(', '));
   completedCount = computed(() => this.passengers().filter((p) => this.isPassengerComplete(p)).length);
   backQueryParams = computed(() => {
@@ -135,12 +135,15 @@ export class Confirmation {
       this.bus.set(bus);
       this.boardingPoint.update((value) => value || bus.from);
       this.dropoffPoint.update((value) => value || bus.to);
+      const seats = await this.busService.getSeats(this.busId);
+      const priceByNumber = new Map(seats.map((s) => [s.number, s.price ?? bus.price]));
       const passengers = this.seatNumbers.map((seatNumber) => ({
         seatNumber,
         fullName: '',
         mobile: '',
         age: undefined,
         gender: undefined,
+        price: priceByNumber.get(seatNumber) ?? bus.price,
       }));
       this.passengers.set(passengers);
       this.deliverySelectedSeats.set(new Set());

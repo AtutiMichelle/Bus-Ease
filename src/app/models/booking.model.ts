@@ -6,6 +6,8 @@ export interface PassengerInput {
   mobile: string;
   age?: number;
   gender?: string;
+  /** The seat's actual class price, as priced during seat selection. */
+  price?: number;
 }
 
 export interface SavedBooking {

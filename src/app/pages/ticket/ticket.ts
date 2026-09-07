@@ -1,6 +1,6 @@
 import { Component, computed, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { BusService } from '../../services/bus.service';
+import { BusService, Seat } from '../../services/bus.service';
 import { Bus } from '../../models/bus.model';
 
 type Phase = 'loading' | 'ready' | 'error';
@@ -16,13 +16,18 @@ export class Ticket {
   readonly currentStepIndex = 4;
 
   bus = signal<Bus | undefined>(undefined);
+  seats = signal<Seat[]>([]);
   phase = signal<Phase>('loading');
   errorMessage = signal('');
   reference = signal('');
   seatNumbers = signal<string[]>([]);
 
   seatList = computed(() => this.seatNumbers().join(', '));
-  totalPrice = computed(() => (this.bus()?.price ?? 0) * this.seatNumbers().length);
+  totalPrice = computed(() => {
+    const fallback = this.bus()?.price ?? 0;
+    const priceByNumber = new Map(this.seats().map((s) => [s.number, s.price ?? fallback]));
+    return this.seatNumbers().reduce((sum, n) => sum + (priceByNumber.get(n) ?? fallback), 0);
+  });
 
   private busId: string;
 
@@ -52,6 +57,7 @@ export class Ticket {
         return;
       }
       this.bus.set(bus);
+      this.seats.set(await this.busService.getSeats(this.busId));
       this.phase.set('ready');
     } catch {
       this.errorMessage.set('Could not load your ticket. Please try again.');

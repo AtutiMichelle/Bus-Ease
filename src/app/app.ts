@@ -1,4 +1,5 @@
 import { Component, inject } from '@angular/core';
+import { ViewportScroller } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { Header } from './components/header/header';
 import { Footer } from './components/footer/footer';
@@ -13,4 +14,9 @@ import { AuthModalService } from './services/auth-modal.service';
 })
 export class App {
   authModal = inject(AuthModalService);
+
+  constructor() {
+    // Keep anchor scrolls (e.g. #about) from landing under the fixed header.
+    inject(ViewportScroller).setOffset([0, 80]);
+  }
 }

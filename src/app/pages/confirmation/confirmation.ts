@@ -143,7 +143,7 @@ export class Confirmation {
         gender: undefined,
       }));
       this.passengers.set(passengers);
-      this.deliverySelectedSeats.set(new Set(passengers.map((p) => p.seatNumber)));
+      this.deliverySelectedSeats.set(new Set());
       if (passengers.length > 1) {
         this.expandedRows.set(new Set(passengers.map((_, i) => i)));
       } else {

@@ -128,41 +128,36 @@
   </div>
 </section>
 
-<section class="testimonials">
-  <div class="section-container">
-    <h2>What Travelers Say</h2>
-    <div class="testimonial-cards">
-      @for (t of testimonials; track t.name) {
-        <div class="testimonial-card">
-          <span class="stars" [attr.aria-label]="'Rated ' + t.rating + ' out of 5 stars'">
-            @for (star of [1, 2, 3, 4, 5]; track star) {
-              <span [class.filled]="star <= t.rating">★</span>
-            }
-          </span>
-          <p class="quote">"{{ t.quote }}"</p>
-          <p class="attribution">{{ t.name }}, {{ t.location }} · {{ t.date }}</p>
-        </div>
-      }
-    </div>
-    <a href="#" class="see-all-link">Read More Reviews</a>
-  </div>
-</section>
-
 <section class="app-download">
-  <div class="app-download-text">
-    <h2>Book on the Go</h2>
-    <ul>
-      <li>Instant Booking</li>
-      <li>Live Bus Tracking</li>
-      <li>Easy Cancellation</li>
-    </ul>
-  </div>
+  <div class="section-container app-download-grid">
+    <div class="app-download-info">
+      <span class="app-download-eyebrow"><span class="status-dot" aria-hidden="true"></span>Mobile App</span>
+      <h2>Book on the go</h2>
+      <p class="app-download-subtitle">Search routes, track your bus in real time, and manage bookings from your phone, wherever you are.</p>
 
-  <div class="app-download-badges">
-    <div class="qr-placeholder" aria-hidden="true">QR</div>
-    <div class="store-badges">
-      <span class="store-badge"><i class="fa-brands fa-apple"></i> App Store</span>
-      <span class="store-badge"><i class="fa-brands fa-google-play"></i> Google Play</span>
+      <div class="app-download-actions">
+        <a href="#" class="store-badge store-badge-dark"><i class="fa-solid fa-play" aria-hidden="true"></i> App Store</a>
+        <a href="#" class="store-badge store-badge-dark"><i class="fa-solid fa-play" aria-hidden="true"></i> Google Play</a>
+      </div>
+    </div>
+
+    <div class="app-download-list">
+      @for (item of appFeatures; track item.title) {
+        <p class="app-download-row">
+          <span [class]="'app-download-row-icon app-download-row-icon-' + item.tone">
+            <i [class]="item.icon" aria-hidden="true"></i>
+          </span>
+          <span class="app-download-row-title">{{ item.title }}</span> {{ item.description }}
+        </p>
+      }
+
+      <div class="app-download-scan-row">
+        <span class="app-download-scan-icon"><i class="fa-solid fa-qrcode" aria-hidden="true"></i></span>
+        <div>
+          <p class="app-download-row-title">Scan to download</p>
+          <p class="app-download-row-desc">iOS &amp; Android</p>
+        </div>
+      </div>
     </div>
   </div>
 </section>

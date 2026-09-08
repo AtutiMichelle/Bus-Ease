@@ -97,16 +97,16 @@ export class Home {
     },
   ];
 
+  appFeatures = [
+    { icon: 'fa-solid fa-bolt', tone: 'red', title: 'Instant Booking', description: 'Confirmed in seconds, no waiting' },
+    { icon: 'fa-solid fa-location-dot', tone: 'teal', title: 'Live Bus Tracking', description: 'Know exactly when it arrives' },
+    { icon: 'fa-solid fa-rotate-left', tone: 'navy', title: 'Easy Cancellation', description: 'Cancel or rebook in one tap' },
+  ];
+
   howItWorks = [
     { title: 'Search Routes', description: "Pick where you're going and see available buses." },
     { title: 'Choose Your Seat', description: 'Compare operators and pick a fare that suits you.' },
     { title: 'Book & Travel', description: 'Pay securely and get your ticket instantly.' },
-  ];
-
-  testimonials = [
-    { quote: 'Booking took two minutes.', name: 'Wanjiru K.', location: 'Nairobi', date: 'Jul 2026', rating: 5 },
-    { quote: 'Seat map was clear.', name: 'Otieno M.', location: 'Kisumu', date: 'Jun 2026', rating: 4 },
-    { quote: 'Refund was instant.', name: 'Amina H.', location: 'Mombasa', date: 'Aug 2026', rating: 5 },
   ];
 
   constructor(

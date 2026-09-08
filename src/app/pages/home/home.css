@@ -618,170 +618,164 @@
   }
 }
 
-/* Testimonials */
-.testimonials {
-  padding: var(--space-3, 16px) 0;
-  text-align: center;
-  background-color: var(--color-surface, #fff);
-}
-
-.testimonials h2 {
-  color: var(--color-primary, #12294d);
-  margin-top: 0;
-  margin-bottom: var(--space-5, 32px);
-  text-align: center;
-}
-
-.testimonial-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: var(--space-4, 24px);
-}
-
-.testimonial-card {
-  position: relative;
-  text-align: left;
-  background-color: var(--color-surface, #fff);
-  border-radius: var(--radius-md, 8px);
-  border-left: 4px solid var(--color-primary-light, #1e88e5);
-  box-shadow: 0 6px 20px rgba(26, 58, 107, 0.12);
-  padding: var(--space-4, 24px);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.testimonial-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 32px rgba(26, 58, 107, 0.18);
-}
-
-.testimonial-card::before {
-  content: '"';
-  position: absolute;
-  top: 8px;
-  right: 16px;
-  font-size: 3.5rem;
-  color: var(--color-border, #e4dfd6);
-  line-height: 1;
-}
-
-.stars {
-  color: var(--color-border, #e4dfd6);
-  font-size: 1rem;
-}
-
-.stars .filled {
-  color: var(--color-accent, #f5a623);
-}
-
-.quote {
-  font-style: italic;
-  margin: var(--space-2, 8px) 0;
-  position: relative;
-}
-
-.attribution {
-  font-size: 0.8rem;
-  color: var(--color-text-muted, #6b6b6b);
-  margin: 0;
-}
-
-@media (max-width: 600px) {
-  .testimonial-cards {
-    grid-template-columns: 1fr;
-  }
-}
-
 /* App Download */
 .app-download {
-  display: flex;
-  gap: var(--space-6, 48px);
+  padding: var(--space-3, 16px) 0;
+  background-color: var(--color-surface, #fff);
+}
+
+.app-download-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: var(--space-4, 24px);
+  row-gap: var(--space-1, 4px);
+  align-items: start;
+}
+
+.app-download-info {
+  text-align: left;
+}
+
+.app-download-eyebrow {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: var(--space-3, 16px) var(--space-4, 24px);
-  background: linear-gradient(135deg, var(--color-primary-light, #1e88e5), var(--color-primary, #12294d));
-  color: white;
+  gap: var(--space-2, 8px);
+  padding: 4px 12px;
+  border-radius: 999px;
+  background-color: color-mix(in srgb, var(--color-success, #2fa88a) 12%, white);
+  color: var(--color-success, #2fa88a);
+  font-weight: 700;
+  font-size: 0.8rem;
+  margin: 0 0 var(--space-2, 8px);
+}
+
+.app-download h2 {
+  color: var(--color-primary, #12294d);
+  margin: 0 0 var(--space-2, 8px);
+  text-align: left;
+}
+
+.app-download-subtitle {
+  margin: 0 0 var(--space-3, 16px);
+  color: var(--color-text-muted, #6b6b6b);
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.app-download-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
   flex-wrap: wrap;
-}
-
-.app-download-text h2 {
-  font-size: 1.75rem;
-  margin-top: 0;
-  margin-bottom: var(--space-3, 16px);
-}
-
-.app-download-text ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.app-download-text li {
-  margin-bottom: var(--space-2, 8px);
-  font-size: 0.95rem;
-  display: flex;
-  align-items: center;
-  gap: var(--space-2, 8px);
-}
-
-.app-download-text li::before {
-  content: '✓';
-  color: var(--color-accent, #f5a623);
-  font-weight: bold;
-}
-
-.app-download-badges {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4, 24px);
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-md, 8px);
-  padding: var(--space-4, 24px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-}
-
-.qr-placeholder {
-  width: 80px;
-  height: 80px;
-  background-color: white;
-  color: var(--color-primary-light, #1e88e5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  border-radius: var(--radius-sm, 4px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-}
-
-.store-badges {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2, 8px);
+  margin-top: var(--space-2, 8px);
 }
 
 .store-badge {
   display: flex;
   align-items: center;
   gap: var(--space-2, 8px);
-  border: 2px solid rgba(255, 255, 255, 0.5);
+  border: none;
   border-radius: 999px;
-  padding: 10px 20px;
-  font-size: 0.85rem;
+  padding: 10px 18px;
+  font-size: 0.9rem;
   font-weight: 600;
-  transition: background-color 0.2s, border-color 0.2s;
+  text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .store-badge:hover {
-  background-color: rgba(255, 255, 255, 0.15);
-  border-color: white;
+  transform: translateY(-2px);
 }
 
-@media (max-width: 600px) {
-  .app-download {
-    flex-direction: column;
+.store-badge-dark {
+  background-color: var(--color-primary, #12294d);
+  color: white;
+}
+
+.app-download-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 8px);
+}
+
+.app-download-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  margin: 0;
+  color: var(--color-text-muted, #6b6b6b);
+  font-size: 1.05rem;
+}
+
+.app-download-row-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  font-size: 1rem;
+}
+
+.app-download-row-icon-red {
+  color: var(--color-accent, #eb1f1a);
+}
+
+.app-download-row-icon-teal {
+  color: var(--color-success, #2fa88a);
+}
+
+.app-download-row-icon-navy {
+  color: var(--color-primary, #12294d);
+}
+
+.app-download-row-title {
+  font-weight: 700;
+  color: var(--color-primary, #12294d);
+}
+
+.app-download-scan-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  margin-top: var(--space-2, 8px);
+}
+
+.app-download-scan-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm, 4px);
+  border: 2px solid var(--color-success, #2fa88a);
+  color: var(--color-success, #2fa88a);
+  font-size: 0.9rem;
+}
+
+.app-download-scan-row .app-download-row-title {
+  font-size: 0.9rem;
+}
+
+.app-download-scan-row .app-download-row-desc {
+  font-size: 0.8rem;
+}
+
+@media (max-width: 800px) {
+  .app-download-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .app-download-info {
     text-align: center;
   }
 
-  .app-download-badges {
-    flex-direction: column;
+  .app-download h2 {
+    text-align: center;
+  }
+
+  .app-download-actions {
+    justify-content: center;
   }
 }

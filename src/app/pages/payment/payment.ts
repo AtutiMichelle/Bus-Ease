@@ -1,5 +1,6 @@
 import { Component, computed, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BookingDraftService } from '../../services/booking-draft.service';
 import { BookingService } from '../../services/booking.service';
@@ -7,8 +8,9 @@ import { AuthService } from '../../services/auth.service';
 import { Bus } from '../../models/bus.model';
 import { PassengerInput } from '../../models/booking.model';
 import { TripSummary } from '../../components/trip-summary/trip-summary';
+import { environment } from '../../../environment';
 
-type PaymentMethod = 'mpesa' | 'airtel' | 'card';
+type PaymentMethod = 'mpesa' | 'airtel' | 'wallet';
 type Phase = 'ready' | 'processing' | 'error' | 'missing';
 
 /** How long the simulated gateway prompt (STK push / card auth) takes before
@@ -17,7 +19,7 @@ type Phase = 'ready' | 'processing' | 'error' | 'missing';
 const GATEWAY_DELAY_MS = 1500;
 
 @Component({
-  imports: [RouterLink, FormsModule, TripSummary],
+  imports: [RouterLink, FormsModule, TripSummary, DecimalPipe],
   selector: 'app-payment',
   styleUrl: './payment.css',
   templateUrl: './payment.html',
@@ -36,10 +38,8 @@ export class Payment {
 
   method = signal<PaymentMethod>('mpesa');
   phone = signal('');
-  cardName = signal('');
-  cardNumber = signal('');
-  cardExpiry = signal('');
-  cardCvv = signal('');
+
+  readonly paymentLogos = environment.assets.paymentLogos;
 
   totalPrice = computed(() => {
     const fallback = this.bus()?.price ?? 0;
@@ -52,13 +52,8 @@ export class Payment {
   });
 
   canPay = computed(() => {
-    if (this.method() === 'card') {
-      return (
-        this.cardName().trim().length > 0 &&
-        /^\d{13,19}$/.test(this.cardNumber().replace(/\s+/g, '')) &&
-        /^(0[1-9]|1[0-2])\/\d{2}$/.test(this.cardExpiry().trim()) &&
-        /^\d{3,4}$/.test(this.cardCvv().trim())
-      );
+    if (this.method() === 'wallet') {
+      return true;
     }
     return /^\d{9}$/.test(this.phone().trim());
   });
@@ -85,15 +80,6 @@ export class Payment {
   selectMethod(method: PaymentMethod): void {
     this.method.set(method);
     this.errorMessage.set('');
-  }
-
-  private formatCardNumber(value: string): string {
-    const digitsOnly = value.replace(/\D/g, '').slice(0, 19);
-    return digitsOnly.replace(/(.{4})/g, '$1 ').trim();
-  }
-
-  updateCardNumber(value: string): void {
-    this.cardNumber.set(this.formatCardNumber(value));
   }
 
   async pay(): Promise<void> {

@@ -148,35 +148,99 @@
 
 .method-toggle {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2, 8px);
+  gap: 12px;
   margin-bottom: var(--space-4, 24px);
 }
 
 .method-chip {
+  position: relative;
   display: flex;
+  flex: 1;
   align-items: center;
   gap: var(--space-2, 8px);
-  padding: 12px 18px;
-  border-radius: var(--radius-md, 8px);
+  padding: 8px 10px;
+  border-radius: 12px;
   border: 2px solid var(--color-border, #e4dfd6);
   background-color: var(--color-surface, #fff);
   color: var(--color-text, #3a3a3a);
   font-family: inherit;
   font-size: 1rem;
   font-weight: 600;
+  text-align: left;
   cursor: pointer;
-  transition: border-color 0.2s, color 0.2s, background-color 0.2s;
+  transition: border-color 0.2s, color 0.2s, background-color 0.2s, transform 0.2s;
 }
 
-.method-chip i {
-  font-size: 1.05rem;
+.method-chip:hover {
+  border-color: var(--color-primary, #12294d);
+  transform: translateY(-2px);
+}
+
+.method-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background-color: var(--color-soft-bg, #e8f1fc);
+  color: var(--color-primary, #12294d);
+  font-size: 1.1rem;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.method-icon img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.method-name {
+  flex: 1;
+}
+
+.method-check {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background-color: var(--color-success, #2fa88a);
+  color: white;
+  font-size: 0.7rem;
+  box-shadow: 0 2px 4px rgba(18, 41, 77, 0.25);
 }
 
 .method-chip.active {
   border-color: var(--color-success, #2fa88a);
   color: var(--color-success, #2fa88a);
   background-color: color-mix(in srgb, var(--color-success, #2fa88a) 10%, white);
+}
+
+.method-chip.active .method-icon {
+  background-color: var(--color-success, #2fa88a);
+  color: white;
+}
+
+/* Airtel's brand color is red, not the shared teal "selected" tint. */
+.method-chip-airtel.active {
+  border-color: var(--color-accent, #eb1f1a);
+  color: var(--color-accent, #eb1f1a);
+  background-color: color-mix(in srgb, var(--color-accent, #eb1f1a) 10%, white);
+}
+
+.method-chip-airtel.active .method-icon {
+  background-color: var(--color-accent, #eb1f1a);
+  color: white;
+}
+
+.method-chip-airtel.active .method-check {
+  background-color: var(--color-accent, #eb1f1a);
 }
 
 .field {
@@ -194,7 +258,7 @@
 }
 
 .field input {
-  padding: 9px 12px;
+  padding: 6px 12px;
   border: 2px solid var(--color-border, #e4dfd6);
   border-radius: 6px;
   font-size: 1.1rem;
@@ -250,17 +314,6 @@
 .method-note i {
   margin-top: 2px;
   color: var(--color-primary-light, #1e88e5);
-}
-
-.card-fields {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0 var(--space-2, 8px);
-}
-
-.card-fields .field:first-child,
-.card-fields .field:nth-child(2) {
-  grid-column: span 2;
 }
 
 .error {
@@ -357,13 +410,3 @@
   }
 }
 
-@media (max-width: 500px) {
-  .card-fields {
-    grid-template-columns: 1fr;
-  }
-
-  .card-fields .field:first-child,
-  .card-fields .field:nth-child(2) {
-    grid-column: span 1;
-  }
-}

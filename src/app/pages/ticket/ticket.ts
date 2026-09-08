@@ -1,12 +1,13 @@
 import { Component, computed, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { DecimalPipe } from '@angular/common';
 import { BusService, Seat } from '../../services/bus.service';
 import { Bus } from '../../models/bus.model';
 
 type Phase = 'loading' | 'ready' | 'error';
 
 @Component({
-  imports: [RouterLink],
+  imports: [RouterLink, DecimalPipe],
   selector: 'app-ticket',
   styleUrl: './ticket.css',
   templateUrl: './ticket.html',

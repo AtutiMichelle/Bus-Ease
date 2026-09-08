@@ -238,7 +238,7 @@
 
                   <div class="ticket-actions">
                     <button type="button" class="print-cta" [disabled]="!canSubmit" (click)="confirmBooking()">
-                      Confirm Booking · KSh {{ totalPrice() }}
+                      Confirm Booking · KSh {{ totalPrice() | number }}
                     </button>
                   </div>
                 </div>

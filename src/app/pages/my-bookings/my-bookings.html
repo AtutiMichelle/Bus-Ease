@@ -34,7 +34,7 @@
 
           <div class="booking-side">
             <p class="booking-ref">Ref: {{ booking.reference }}</p>
-            <p class="booking-total">KSh {{ booking.total }}</p>
+            <p class="booking-total">KSh {{ booking.total | number }}</p>
           </div>
         </article>
       }

@@ -138,7 +138,7 @@
         }
         <div class="footer-total">
           <span>Total</span>
-          <span>KSh {{ totalPrice() }}</span>
+          <span>KSh {{ totalPrice() | number }}</span>
         </div>
         <button type="button" class="continue-cta" [disabled]="selectedSeats().length === 0" (click)="continue()">
           Continue

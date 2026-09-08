@@ -1,10 +1,12 @@
 import { Component, computed, input } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 import { Bus } from '../../models/bus.model';
 import { PassengerInput } from '../../models/booking.model';
 
 @Component({
   selector: 'app-trip-summary',
   standalone: true,
+  imports: [DecimalPipe],
   styleUrl: './trip-summary.css',
   templateUrl: './trip-summary.html',
 })

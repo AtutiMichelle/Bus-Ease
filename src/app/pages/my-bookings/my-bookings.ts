@@ -1,10 +1,11 @@
 import { Component, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { DecimalPipe } from '@angular/common';
 import { BookingService } from '../../services/booking.service';
 import { SavedBooking } from '../../models/booking.model';
 
 @Component({
-  imports: [RouterLink],
+  imports: [RouterLink, DecimalPipe],
   selector: 'app-my-bookings',
   styleUrl: './my-bookings.css',
   templateUrl: './my-bookings.html',

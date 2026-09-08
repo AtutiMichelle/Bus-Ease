@@ -18,7 +18,7 @@
     @for (passenger of passengers(); track passenger.seatNumber) {
       <div class="summary-line">
         <span>Seat {{ passenger.seatNumber }} · {{ bus().busType }}</span>
-        <span>KSh {{ passenger.price ?? bus().price }}</span>
+        <span>KSh {{ (passenger.price ?? bus().price) | number }}</span>
       </div>
     }
     <div class="summary-line">
@@ -29,6 +29,6 @@
 
   <div class="summary-total">
     <span>Total</span>
-    <span>KSh {{ totalPrice() }}</span>
+    <span>KSh {{ totalPrice() | number }}</span>
   </div>
 </aside>

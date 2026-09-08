@@ -1,5 +1,6 @@
 import { Component, computed, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { DecimalPipe } from '@angular/common';
 import { BusService } from '../../services/bus.service';
 import { BookingDraftService } from '../../services/booking-draft.service';
 import { Bus } from '../../models/bus.model';
@@ -12,7 +13,7 @@ type DeliveryMode = 'all' | 'select';
 type DeliveryMethod = 'whatsapp' | 'sms' | 'email';
 
 @Component({
-  imports: [RouterLink, FormsModule, TripSummary],
+  imports: [RouterLink, FormsModule, TripSummary, DecimalPipe],
   selector: 'app-confirmation',
   styleUrl: './confirmation.css',
   templateUrl: './confirmation.html',

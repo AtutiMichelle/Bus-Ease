@@ -1,5 +1,5 @@
 import { Component, DestroyRef, HostListener, computed, effect, inject, input, output, signal } from '@angular/core';
-import { NgTemplateOutlet } from '@angular/common';
+import { DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { BusService } from '../../services/bus.service';
@@ -36,7 +36,7 @@ function splitRow(rowSeats: UiSeat[]): SeatRowLayout {
   selector: 'app-seat-panel',
   styleUrl: './seat-panel.css',
   templateUrl: './seat-panel.html',
-  imports: [NgTemplateOutlet, FormsModule],
+  imports: [NgTemplateOutlet, FormsModule, DecimalPipe],
 })
 export class SeatPanel {
   busId = input.required<string>();

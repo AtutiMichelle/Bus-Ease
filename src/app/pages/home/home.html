@@ -1,58 +1,48 @@
-<section class="hero-ticket">
-  <div class="hero-bg-clip" aria-hidden="true">
-    <span class="hero-bleed-line">
-      <span class="bleed-dot bleed-dot-navy"></span>
-      <span class="bleed-dot bleed-dot-red"></span>
-    </span>
-    <span class="hero-blob hero-blob-red"></span>
-    <span class="hero-blob hero-blob-navy"></span>
-  </div>
+<section class="hero-illustrated">
+  <div class="hero-illustration-bg" aria-hidden="true"></div>
+  <div class="hero-veil" aria-hidden="true"></div>
+  <div class="hero-skyline-fade" aria-hidden="true"></div>
+  <div class="hero-vignette" aria-hidden="true"></div>
+  <div class="hero-bottom-fade" aria-hidden="true"></div>
 
-  <div class="section-container">
-    <div class="ticket-stack">
-      <span class="ticket-ghost ticket-ghost-1" aria-hidden="true"></span>
-      <span class="ticket-ghost ticket-ghost-2" aria-hidden="true"></span>
+  <div class="section-container hero-illustrated-content">
+    <span class="eticket-badge" aria-hidden="true">E-TICKET</span>
 
-      <div class="ticket-card">
-        <span class="ticket-ribbon-clip">
-          <span class="ticket-ribbon">E-TICKET</span>
+    <p class="trust-line"><span class="status-dot" aria-hidden="true"></span>Trusted by riders across Kenya</p>
+
+    <div class="departure-board" aria-hidden="true">
+      <div class="departure-pill">
+        <span class="departure-row" [class.is-fading]="departureFading()">
+          <span class="departure-route">
+            {{ departureBoard[departureIndex()].route }}
+            <span class="departure-time">{{ departureBoard[departureIndex()].time }}</span>
+          </span>
+          <span class="departure-status">{{ departureBoard[departureIndex()].status }}</span>
         </span>
+      </div>
+    </div>
 
-        <p class="trust-line"><span class="status-dot" aria-hidden="true"></span>Trusted by riders across Kenya</p>
+    <div class="ticket-headline">
+      <h1>Book your seat, <em>skip the queue.</em></h1>
+      <span class="hero-rule" aria-hidden="true"></span>
+      <p class="hero-subtitle">
+        Compare routes, choose your seat, and book with Kenya's trusted coach operators. All in one place, in minutes.
+      </p>
+    </div>
 
-        <div class="ticket-headline">
-          <svg class="headline-watermark" viewBox="0 0 600 100" aria-hidden="true" focusable="false">
-            <path d="M10,80 C150,10 450,10 590,80" fill="none" stroke="var(--color-primary)" stroke-width="3" stroke-dasharray="2 12" stroke-linecap="round" />
-            <circle cx="10" cy="80" r="6" fill="var(--color-primary)" />
-            <circle cx="590" cy="80" r="6" fill="var(--color-accent)" />
-          </svg>
-          <h1>Book your seat, <em>skip the queue.</em></h1>
-          <span class="hero-rule" aria-hidden="true"></span>
-          <p class="hero-subtitle">
-            Compare routes, choose your seat, and book with Kenya's trusted coach operators. All in one place, in minutes.
-          </p>
-        </div>
+    <div class="hero-search-card">
+      <app-search-bar variant="ticket" />
 
-        <div class="ticket-search-strip">
-          <app-search-bar variant="ticket" />
-        </div>
-
-        <div class="ticket-perforation" aria-hidden="true">
-          <span class="notch notch-left"></span>
-          <span class="notch notch-right"></span>
-        </div>
-
-        <div class="how-it-works-compact">
-          @for (step of howItWorks; track step.title; let last = $last) {
-            <span class="how-step-compact" [attr.title]="step.description">
-              <span class="how-step-compact-circle">{{ $index + 1 }}</span>
-              {{ step.title }}
-            </span>
-            @if (!last) {
-              <span class="how-step-compact-dot" aria-hidden="true">&middot;</span>
-            }
+      <div class="how-it-works-compact">
+        @for (step of howItWorks; track step.title; let last = $last) {
+          <span class="how-step-compact" [attr.title]="step.description">
+            <span class="how-step-compact-circle">{{ $index + 1 }}</span>
+            {{ step.title }}
+          </span>
+          @if (!last) {
+            <span class="how-step-compact-dot" aria-hidden="true">&middot;</span>
           }
-        </div>
+        }
       </div>
     </div>
   </div>

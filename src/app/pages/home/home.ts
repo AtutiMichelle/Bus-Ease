@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { SearchBar } from '../../components/search-bar/search-bar';
 import { BusService } from '../../services/bus.service';
@@ -23,7 +23,7 @@ interface TopRoute extends RoutePair {
   styleUrl: './home.css',
   templateUrl: './home.html',
 })
-export class Home {
+export class Home implements OnInit, OnDestroy {
   /** The routes to feature is an editorial choice; the facts shown for each
    * (seats left, duration, bus type) come from that route's next upcoming
    * bus, fetched live below — not hardcoded. */
@@ -109,11 +109,42 @@ export class Home {
     { title: 'Book & Travel', description: 'Pay securely and get your ticket instantly.' },
   ];
 
+  /** Decorative departure-board display in the hero; cycles on an interval,
+   * not tied to real-time bus data. */
+  departureBoard = [
+    { route: 'Nairobi → Mombasa', time: '14:20', status: 'BOARDING' },
+    { route: 'Nairobi → Kisumu', time: '09:45', status: 'ON TIME' },
+    { route: 'Nairobi → Eldoret', time: '11:10', status: 'ON TIME' },
+    { route: 'Mombasa → Malindi', time: '16:30', status: 'BOARDING' },
+  ];
+
+  departureIndex = signal(0);
+  departureFading = signal(false);
+  private departureTimer?: ReturnType<typeof setInterval>;
+  private departureFadeTimeout?: ReturnType<typeof setTimeout>;
+
   constructor(
     private router: Router,
     private busService: BusService,
   ) {
     this.loadTopRoutes();
+  }
+
+  ngOnInit(): void {
+    this.departureTimer = setInterval(() => this.cycleDepartureBoard(), 4500);
+  }
+
+  ngOnDestroy(): void {
+    clearInterval(this.departureTimer);
+    clearTimeout(this.departureFadeTimeout);
+  }
+
+  private cycleDepartureBoard(): void {
+    this.departureFading.set(true);
+    this.departureFadeTimeout = setTimeout(() => {
+      this.departureIndex.set((this.departureIndex() + 1) % this.departureBoard.length);
+      this.departureFading.set(false);
+    }, 400);
   }
 
   private async loadTopRoutes(): Promise<void> {

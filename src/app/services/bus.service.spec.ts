@@ -70,6 +70,8 @@ describe('mapSeatRow', () => {
       id: 's1',
       seat_number: '3B',
       status: 'available',
+      reserved_until: null,
+      held_by: null,
       bus_classes: { class_name: 'VIP', price: '4200' },
     };
 
@@ -87,6 +89,8 @@ describe('mapSeatRow', () => {
       id: 's2',
       seat_number: '1A',
       status: 'booked',
+      reserved_until: null,
+      held_by: null,
       bus_classes: { class_name: 'Normal', price: '1800' },
     };
 
@@ -98,6 +102,8 @@ describe('mapSeatRow', () => {
       id: 's3',
       seat_number: '5A',
       status: 'available',
+      reserved_until: null,
+      held_by: null,
       bus_classes: null,
     };
 

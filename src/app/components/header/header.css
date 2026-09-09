@@ -105,6 +105,11 @@ nav a:hover::after {
   color: white;
   font-size: 1.10rem;
   font-weight: 600;
+  text-decoration: none;
+}
+
+.user-name:hover {
+  text-decoration: underline;
 }
 
 .logout-cta {

@@ -1,0 +1,89 @@
+<section class="page-header">
+  <div class="section-container">
+    <h1>My Account</h1>
+    <p>Manage your profile and password.</p>
+  </div>
+</section>
+
+<section class="account-content">
+  <div class="section-container">
+    <div class="account-panel">
+    <form class="account-card" (ngSubmit)="saveProfile()">
+      <h2>Profile</h2>
+
+      <div class="field">
+        <label for="account-name">Full Name</label>
+        <input
+          id="account-name"
+          type="text"
+          [ngModel]="name()"
+          (ngModelChange)="name.set($event)"
+          name="name"
+          required
+        />
+      </div>
+
+      <div class="field">
+        <label for="account-email">Email</label>
+        <input id="account-email" type="email" [value]="authService.user()?.email" disabled />
+      </div>
+
+      @if (profileMessage()) {
+        <p class="success">{{ profileMessage() }}</p>
+      }
+      @if (profileError()) {
+        <p class="error">{{ profileError() }}</p>
+      }
+
+      <button type="submit" class="save-cta" [disabled]="savingProfile()">
+        {{ savingProfile() ? 'Saving…' : 'Save Profile' }}
+      </button>
+    </form>
+
+    <form class="account-card" (ngSubmit)="savePassword()">
+      <h2>Change Password</h2>
+
+      <div class="field">
+        <label for="account-new-password">New Password</label>
+        <input
+          id="account-new-password"
+          type="password"
+          placeholder="Enter a new password"
+          [ngModel]="newPassword()"
+          (ngModelChange)="newPassword.set($event)"
+          name="newPassword"
+          required
+        />
+      </div>
+
+      <div class="field">
+        <label for="account-confirm-password">Confirm Password</label>
+        <input
+          id="account-confirm-password"
+          type="password"
+          placeholder="Re-enter the new password"
+          [ngModel]="confirmPassword()"
+          (ngModelChange)="confirmPassword.set($event)"
+          name="confirmPassword"
+          required
+        />
+      </div>
+
+      @if (passwordMessage()) {
+        <p class="success">{{ passwordMessage() }}</p>
+      }
+      @if (passwordError()) {
+        <p class="error">{{ passwordError() }}</p>
+      }
+
+      <button type="submit" class="save-cta" [disabled]="savingPassword()">
+        {{ savingPassword() ? 'Saving…' : 'Update Password' }}
+      </button>
+    </form>
+
+    <a routerLink="/my-bookings" class="account-link">
+      <i class="fa-solid fa-ticket" aria-hidden="true"></i> View My Bookings
+    </a>
+    </div>
+  </div>
+</section>

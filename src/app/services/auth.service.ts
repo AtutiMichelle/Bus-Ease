@@ -45,4 +45,18 @@ export class AuthService {
   async signOut(): Promise<void> {
     await this.client.auth.signOut();
   }
+
+  async updateProfile(name: string): Promise<void> {
+    const { error } = await this.client.auth.updateUser({ data: { name } });
+    if (error) {
+      throw error;
+    }
+  }
+
+  async updatePassword(newPassword: string): Promise<void> {
+    const { error } = await this.client.auth.updateUser({ password: newPassword });
+    if (error) {
+      throw error;
+    }
+  }
 }

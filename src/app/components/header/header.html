@@ -11,10 +11,10 @@
 
     @if (authService.user(); as user) {
       <div class="user-menu">
-        <span class="user-name">
+        <a routerLink="/account" class="user-name">
           <i class="fa-solid fa-circle-user" aria-hidden="true"></i>
           {{ authService.displayName() }}
-        </span>
+        </a>
         <button type="button" class="logout-cta" (click)="logout()">Logout</button>
       </div>
     } @else {

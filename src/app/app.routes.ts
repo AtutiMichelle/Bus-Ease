@@ -52,4 +52,10 @@ export const routes: Routes = [
         canActivate: [authGuard],
         title: 'My Bookings - BusEase',
     },
+    {
+        path: 'account',
+        loadComponent: () => import('./pages/account/account').then((m) => m.Account),
+        canActivate: [authGuard],
+        title: 'My Account - BusEase',
+    },
 ];

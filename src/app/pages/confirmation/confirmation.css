@@ -16,10 +16,10 @@
 
 .booking-layout {
   display: grid;
-  grid-template-columns: minmax(0, 560px) 300px;
+  grid-template-columns: minmax(0, 700px) 370px;
   align-items: start;
   gap: 22px;
-  max-width: 900px;
+  max-width: 1110px;
   margin: 0 auto;
 }
 

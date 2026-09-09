@@ -6,6 +6,7 @@ import { BusService } from '../../services/bus.service';
 import { AuthService } from '../../services/auth.service';
 import { AuthModalService } from '../../services/auth-modal.service';
 import { Bus } from '../../models/bus.model';
+import { getGuestToken } from '../../utils/guest-token';
 
 /** No one, logged in or not, can select more than this many seats in one booking. */
 const MAX_SEATS_PER_BOOKING = 6;
@@ -127,7 +128,8 @@ export class SeatPanel {
     this.errorMessage.set('');
     this.selectedSeats.set([]);
     try {
-      const [bus, seats] = await Promise.all([this.busService.getById(busId), this.busService.getSeats(busId)]);
+      const heldBy = this.authService.user()?.id ?? getGuestToken();
+      const [bus, seats] = await Promise.all([this.busService.getById(busId), this.busService.getSeats(busId, heldBy)]);
       this.bus.set(bus);
       this.boardingPoint.set(bus?.from ?? '');
       this.dropoffPoint.set(bus?.to ?? '');

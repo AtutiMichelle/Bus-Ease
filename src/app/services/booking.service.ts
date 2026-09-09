@@ -5,16 +5,6 @@ import { BUS_ROW_SELECT, BusRow, mapBusRow } from './bus.service';
 import { Bus } from '../models/bus.model';
 import { PassengerInput, SavedBooking } from '../models/booking.model';
 
-const REFERENCE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-
-function generateReference(): string {
-  let reference = '';
-  for (let i = 0; i < 8; i++) {
-    reference += REFERENCE_CHARS[Math.floor(Math.random() * REFERENCE_CHARS.length)];
-  }
-  return reference;
-}
-
 interface BookingRow {
   booking_reference: string;
   total_fare: string | number;
@@ -28,100 +18,45 @@ export class BookingService {
   private client = inject(Supabase).getClient();
   private authService = inject(AuthService);
 
-  /** Books the given seats for the current user, or returns the existing
-   * booking's reference if this exact bus+seats combo was already booked
-   * (protects against double-submitting the confirmation form). */
-  async createBooking(bus: Bus, passengers: PassengerInput[]): Promise<string> {
-    const user = this.authService.user();
-    if (!user) {
-      throw new Error('You must be logged in to book.');
-    }
-    if (passengers.length === 0) {
-      throw new Error('Select at least one seat.');
-    }
-
-    const seatNumbers = passengers.map((p) => p.seatNumber);
-    const { data: seatRows, error: seatsError } = await this.client
-      .from('seats')
-      .select('id, seat_number, status')
-      .eq('bus_id', bus.id)
-      .in('seat_number', seatNumbers);
-    if (seatsError) {
-      throw seatsError;
-    }
-
-    const foundNumbers = new Set((seatRows ?? []).map((s) => s.seat_number));
-    const missing = seatNumbers.filter((n) => !foundNumbers.has(n));
-    if (missing.length > 0) {
-      throw new Error(`Seat(s) ${missing.join(', ')} could not be found for this bus.`);
-    }
-
-    const stillAvailable = (seatRows ?? []).every((s) => s.status === 'available');
-    if (!stillAvailable) {
-      throw new Error('One or more selected seats were just booked by someone else. Please pick different seats.');
-    }
-
-    const reference = generateReference();
-    const { data: booking, error: bookingError } = await this.client
-      .from('bookings')
-      .insert({
-        user_id: user.id,
-        bus_id: bus.id,
-        booking_reference: reference,
-        contact_email: user.email,
-        total_fare: passengers.reduce((sum, p) => sum + (p.price ?? bus.price), 0),
-        status: 'confirmed',
-      })
-      .select('id')
-      .single();
-    if (bookingError) {
-      throw bookingError;
-    }
-
-    const seatIdByNumber = new Map((seatRows ?? []).map((s) => [s.seat_number, s.id]));
-    const passengerRows = passengers.map((p) => ({
-      booking_id: booking.id,
-      seat_id: seatIdByNumber.get(p.seatNumber),
-      full_name: p.fullName,
-      mobile: p.mobile,
-      age: p.age ?? null,
-      gender: p.gender ?? null,
-    }));
-    const { error: passengersError } = await this.client.from('passengers').insert(passengerRows);
-    if (passengersError) {
-      throw passengersError;
-    }
-
-    const seatIds = (seatRows ?? []).map((s) => s.id);
-    const { error: updateSeatsError } = await this.client.from('seats').update({ status: 'booked' }).in('id', seatIds);
-    if (updateSeatsError) {
-      throw updateSeatsError;
-    }
-
-    const { error: seatsCountError } = await this.client.rpc('decrement_available_seats', {
-      p_bus_id: bus.id,
-      p_seats_booked: passengers.length,
+  /** Places a temporary hold (default 15 min) on the given seats, atomically
+   * — either every seat is claimed or none are. Returns when the hold
+   * expires, so the payment page can count it down. `heldBy` is the
+   * logged-in user's id, or a per-browser token for guests, so the same
+   * caller reloading or retrying refreshes their own hold instead of
+   * failing against it. */
+  async reserveSeats(busId: string, seatNumbers: string[], heldBy: string, holdMinutes = 15): Promise<string> {
+    const { data, error } = await this.client.rpc('reserve_seats', {
+      p_bus_id: busId,
+      p_seat_numbers: seatNumbers,
+      p_held_by: heldBy,
+      p_hold_minutes: holdMinutes,
     });
-    if (seatsCountError) {
-      throw seatsCountError;
+    if (error) {
+      throw error;
     }
-
-    return reference;
+    return data as string;
   }
 
-  /** Books a single seat with no account (guest checkout). Everything —
-   * seat/price lookup, the booking + passenger rows, marking the seat
-   * booked, and the available_seats decrement — happens server-side in one
-   * function, since an anonymous caller has no RLS access to write any of
-   * those tables directly. */
-  async createGuestBooking(bus: Bus, passenger: PassengerInput): Promise<string> {
-    const { data, error } = await this.client.rpc('create_guest_booking', {
+  /** Turns a valid hold into a real booking: verifies every seat is still
+   * held by `heldBy` and hasn't expired, then creates the booking and
+   * passenger rows, marks the seats booked, and decrements the bus's
+   * available_seats — all atomically, server-side. Works for both a
+   * logged-in booking and a guest one (pass a null user/email for guests). */
+  async confirmBooking(bus: Bus, passengers: PassengerInput[], heldBy: string): Promise<string> {
+    const user = this.authService.user();
+    const { data, error } = await this.client.rpc('confirm_booking', {
       p_bus_id: bus.id,
-      p_seat_number: passenger.seatNumber,
-      p_full_name: passenger.fullName,
-      p_mobile: passenger.mobile,
-      p_age: passenger.age ?? null,
-      p_gender: passenger.gender ?? null,
+      p_seat_numbers: passengers.map((p) => p.seatNumber),
+      p_held_by: heldBy,
+      p_user_id: user?.id ?? null,
+      p_contact_email: user?.email ?? null,
+      p_passengers: passengers.map((p) => ({
+        seat_number: p.seatNumber,
+        full_name: p.fullName,
+        mobile: p.mobile,
+        age: p.age ?? null,
+        gender: p.gender ?? null,
+      })),
     });
     if (error) {
       throw error;

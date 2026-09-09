@@ -43,13 +43,25 @@
 
       <section class="payment-section">
         <div class="section-container">
+          @if (phase() === 'reserving') {
+            <div class="method-card">
+              <p class="method-sublabel">Holding your seats…</p>
+            </div>
+          } @else {
           <div class="payment-layout">
             <div class="method-card">
               <h2 class="method-heading">Choose Payment Method</h2>
               <p class="method-sublabel">Select how you'd like to pay for this booking</p>
 
+              @if (phase() === 'ready' || phase() === 'processing') {
+                <p class="hold-timer" [class.hold-timer-low]="remainingSeconds() < 120">
+                  <i class="fa-solid fa-clock" aria-hidden="true"></i>
+                  Seats held for {{ remainingLabel() }}
+                </p>
+              }
+
               <div class="method-toggle">
-                <button type="button" class="method-chip" [class.active]="method() === 'mpesa'" (click)="selectMethod('mpesa')">
+                <button type="button" class="method-chip" [class.active]="method() === 'mpesa'" [disabled]="phase() === 'expired'" (click)="selectMethod('mpesa')">
                   <span class="method-icon">
                     <img [src]="paymentLogos.mpesa" alt="" />
                   </span>
@@ -58,7 +70,7 @@
                     <span class="method-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
                   }
                 </button>
-                <button type="button" class="method-chip method-chip-airtel" [class.active]="method() === 'airtel'" (click)="selectMethod('airtel')">
+                <button type="button" class="method-chip method-chip-airtel" [class.active]="method() === 'airtel'" [disabled]="phase() === 'expired'" (click)="selectMethod('airtel')">
                   <span class="method-icon">
                     <img [src]="paymentLogos.airtelMoney" alt="" />
                   </span>
@@ -67,7 +79,7 @@
                     <span class="method-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
                   }
                 </button>
-                <button type="button" class="method-chip" [class.active]="method() === 'wallet'" (click)="selectMethod('wallet')">
+                <button type="button" class="method-chip" [class.active]="method() === 'wallet'" [disabled]="phase() === 'expired'" (click)="selectMethod('wallet')">
                   <span class="method-icon">
                     <i class="fa-solid fa-wallet" aria-hidden="true"></i>
                   </span>
@@ -89,6 +101,7 @@
                       placeholder="7xx xxx xxx"
                       [ngModel]="phone()"
                       (ngModelChange)="phone.set($event)"
+                      [disabled]="phase() === 'expired'"
                       name="phone"
                     />
                   </div>
@@ -102,11 +115,11 @@
               @if (errorMessage()) {
                 <p class="error">
                   {{ errorMessage() }}
-                  <button type="button" class="retry-link" (click)="pay()">Retry</button>
+                  <button type="button" class="retry-link" (click)="retry()">Retry</button>
                 </p>
               }
 
-              <button type="button" class="pay-cta" [disabled]="!canPay() || phase() === 'processing'" (click)="pay()">
+              <button type="button" class="pay-cta" [disabled]="phase() === 'expired' || !canPay() || phase() !== 'ready'" (click)="pay()">
                 {{ phase() === 'processing' ? 'Processing…' : 'Pay · KSh ' + (totalPrice() | number) }}
               </button>
 
@@ -115,8 +128,20 @@
 
             <app-trip-summary [bus]="b" [passengers]="passengers()" [boardingPoint]="boardingPoint()" [dropoffPoint]="dropoffPoint()" />
           </div>
+          }
         </div>
       </section>
+
+      @if (phase() === 'expired') {
+        <div class="modal-backdrop">
+          <div class="modal-card">
+            <i class="fa-solid fa-clock-rotate-left modal-icon" aria-hidden="true"></i>
+            <h3>Your seat hold has expired</h3>
+            <p>We can only hold seats for {{ holdMinutes }} minutes. Please select your seats again to continue.</p>
+            <button type="button" class="pay-cta" (click)="backToSeatSelection()">Select seats again</button>
+          </div>
+        </div>
+      }
     }
   }
 }

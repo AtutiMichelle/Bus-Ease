@@ -14,14 +14,22 @@ export interface SeatRow {
   id: string;
   seat_number: string;
   status: string;
+  reserved_until: string | null;
+  held_by: string | null;
   bus_classes: { class_name: string; price: string | number } | null;
 }
 
-export function mapSeatRow(row: SeatRow): Seat {
+/** `heldBy` is the current viewer's own guest token or user id — a seat they
+ * themselves are holding should never read as unavailable to them, even
+ * mid-hold, so a failed payment doesn't lock them out of reselecting it. */
+export function mapSeatRow(row: SeatRow, heldBy?: string): Seat {
+  const holdExpired = row.status === 'pending' && (!row.reserved_until || new Date(row.reserved_until).getTime() <= Date.now());
+  const heldByViewer = row.status === 'pending' && !!heldBy && row.held_by === heldBy;
+  const isAvailable = row.status === 'available' || holdExpired || heldByViewer;
   return {
     id: row.id,
     number: row.seat_number,
-    status: (row.status === 'available' ? 'available' : 'booked') as Seat['status'],
+    status: (isAvailable ? 'available' : 'booked') as Seat['status'],
     className: row.bus_classes ? (row.bus_classes.class_name as Seat['className']) : undefined,
     price: row.bus_classes ? Number(row.bus_classes.price) : undefined,
   };
@@ -161,10 +169,10 @@ export class BusService {
     return bus;
   }
 
-  async getSeats(busId: string): Promise<Seat[]> {
+  async getSeats(busId: string, heldBy?: string): Promise<Seat[]> {
     const { data, error } = await this.client
       .from('seats')
-      .select('id, seat_number, status, bus_classes(class_name, price)')
+      .select('id, seat_number, status, reserved_until, held_by, bus_classes(class_name, price)')
       .eq('bus_id', busId);
 
     if (error) {
@@ -172,7 +180,7 @@ export class BusService {
     }
 
     return ((data ?? []) as unknown as SeatRow[])
-      .map(mapSeatRow)
+      .map((row) => mapSeatRow(row, heldBy))
       .sort((a, b) => {
         const [rowA, colA] = seatSortKey(a.number);
         const [rowB, colB] = seatSortKey(b.number);

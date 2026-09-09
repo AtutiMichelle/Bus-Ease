@@ -117,19 +117,23 @@ export class Home {
   }
 
   private async loadTopRoutes(): Promise<void> {
-    const today = todayDateString();
+    // This is a marketing preview of routes we run, not a live "book today"
+    // list, so it doesn't require an actual upcoming departure — that would
+    // make the whole section silently go blank once today's seeded buses
+    // age into the past. Any bus for the route is enough to show typical
+    // duration, class, and seat count.
     const routes = await Promise.all(
       this.routePairs.map(async (pair): Promise<TopRoute | null> => {
         const buses = await this.busService.search(pair.from, pair.to, '');
-        const nextBus = buses.filter((b) => b.date >= today)[0];
-        if (!nextBus) {
+        const bus = buses[0];
+        if (!bus) {
           return null;
         }
         return {
           ...pair,
-          duration: nextBus.duration,
-          busType: nextBus.busType,
-          seatsLeft: nextBus.seatsAvailable,
+          duration: bus.duration,
+          busType: bus.busType,
+          seatsLeft: bus.seatsAvailable,
         };
       }),
     );

@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal, WritableSignal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
@@ -137,12 +137,19 @@ export class AccountPageComponent {
   savingContact = signal(false);
   contactSaved = signal(false);
 
-  changingPassword = signal(false);
+  currentPassword = signal('');
   newPassword = signal('');
   confirmPassword = signal('');
   savingPassword = signal(false);
   passwordMessage = signal('');
-  passwordError = signal('');
+  passwordFormError = signal('');
+  currentPasswordError = signal('');
+  newPasswordError = signal('');
+  confirmPasswordError = signal('');
+
+  showCurrentPassword = signal(false);
+  showNewPassword = signal(false);
+  showConfirmPassword = signal(false);
 
   confirmingDelete = signal(false);
   accountDeleted = signal(false);
@@ -202,39 +209,66 @@ export class AccountPageComponent {
     this.preferencesService.toggleNotification(key);
   }
 
-  requestPasswordChange(): void {
-    this.changingPassword.set(true);
-  }
-
-  cancelPasswordChange(): void {
-    this.changingPassword.set(false);
+  resetPasswordForm(): void {
+    this.currentPassword.set('');
     this.newPassword.set('');
     this.confirmPassword.set('');
     this.passwordMessage.set('');
-    this.passwordError.set('');
+    this.passwordFormError.set('');
+    this.currentPasswordError.set('');
+    this.newPasswordError.set('');
+    this.confirmPasswordError.set('');
+    this.showCurrentPassword.set(false);
+    this.showNewPassword.set(false);
+    this.showConfirmPassword.set(false);
+  }
+
+  toggleVisibility(field: WritableSignal<boolean>): void {
+    field.update((visible) => !visible);
   }
 
   async savePassword(): Promise<void> {
     this.passwordMessage.set('');
-    this.passwordError.set('');
+    this.passwordFormError.set('');
+    this.currentPasswordError.set('');
+    this.newPasswordError.set('');
+    this.confirmPasswordError.set('');
 
-    if (this.newPassword().length < 6) {
-      this.passwordError.set('Password must be at least 6 characters.');
-      return;
+    let hasError = false;
+    if (!this.currentPassword()) {
+      this.currentPasswordError.set('Enter your current password.');
+      hasError = true;
     }
-    if (this.newPassword() !== this.confirmPassword()) {
-      this.passwordError.set('Passwords do not match.');
+    if (this.newPassword().length < 8) {
+      this.newPasswordError.set('Password must be at least 8 characters.');
+      hasError = true;
+    } else if (this.newPassword() === this.currentPassword()) {
+      this.newPasswordError.set('New password must be different from your current password.');
+      hasError = true;
+    }
+    if (this.confirmPassword() !== this.newPassword()) {
+      this.confirmPasswordError.set('Passwords do not match.');
+      hasError = true;
+    }
+    if (hasError) {
       return;
     }
 
     this.savingPassword.set(true);
     try {
+      const verified = await this.authService.verifyPassword(this.currentPassword());
+      if (!verified) {
+        this.currentPasswordError.set('Current password is incorrect.');
+        return;
+      }
+
       await this.authService.updatePassword(this.newPassword());
+      this.passwordMessage.set('Password updated.');
+      this.currentPassword.set('');
       this.newPassword.set('');
       this.confirmPassword.set('');
-      this.passwordMessage.set('Password updated.');
     } catch (error) {
-      this.passwordError.set(error instanceof Error ? error.message : 'Could not update your password. Please try again.');
+      this.passwordFormError.set(error instanceof Error ? error.message : 'Could not update your password. Please try again.');
     } finally {
       this.savingPassword.set(false);
     }

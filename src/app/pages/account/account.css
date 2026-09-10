@@ -137,7 +137,8 @@
 .outline-btn:focus-visible,
 .text-btn:focus-visible,
 .save-btn:focus-visible,
-.empty-cta:focus-visible {
+.empty-cta:focus-visible,
+.password-toggle:focus-visible {
   outline: 2px solid var(--color-primary-light, #1e88e5);
   outline-offset: 2px;
 }
@@ -377,6 +378,43 @@
   color: var(--color-text-muted, #6b6b6b);
 }
 
+.password-input-wrap {
+  position: relative;
+}
+
+.password-input-wrap input {
+  width: 100%;
+  padding-right: 44px;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  color: var(--color-text-muted, #6b6b6b);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.password-toggle:hover {
+  color: var(--color-primary, #12294d);
+}
+
+.password-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
 .save-confirm {
   margin: 0;
   font-size: 1rem;
@@ -464,12 +502,60 @@
   color: var(--color-text, #3a3a3a);
 }
 
-.password-form {
+.password-section {
+  padding: var(--space-4, 24px) 0;
+}
+
+.password-heading {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--color-primary, #12294d);
+}
+
+.password-panel {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4, 24px);
+  margin-top: var(--space-4, 24px);
+}
+
+.password-fields {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 600px;
   display: flex;
   flex-direction: column;
   gap: var(--space-3, 16px);
-  max-width: 320px;
-  padding-bottom: var(--space-4, 24px);
+}
+
+.password-requirements {
+  flex: 0 0 260px;
+  width: 260px;
+  box-sizing: border-box;
+  background-color: var(--color-bg, #faf8f5);
+  border: 1px solid var(--color-border, #e4dfd6);
+  border-radius: var(--radius-md, 8px);
+  padding: var(--space-3, 16px);
+}
+
+.requirements-title {
+  margin: 0 0 var(--space-2, 8px) 0;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--color-text, #3a3a3a);
+}
+
+.password-requirements ul {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.password-requirements li {
+  font-size: 0.95rem;
+  color: var(--color-text, #3a3a3a);
 }
 
 .password-form-actions {
@@ -575,6 +661,17 @@
 }
 
 /* ---- Responsive ---- */
+
+@media (max-width: 960px) {
+  .password-panel {
+    flex-direction: column;
+  }
+
+  .password-requirements {
+    flex: none;
+    width: 100%;
+  }
+}
 
 @media (max-width: 700px) {
   .field-grid {

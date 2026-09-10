@@ -61,4 +61,16 @@ export class AuthService {
       throw error;
     }
   }
+
+  /** Supabase has no standalone "check this password" call — signing in
+   * again with it is the only way to verify it's correct. A success just
+   * refreshes the existing session for the same user. */
+  async verifyPassword(password: string): Promise<boolean> {
+    const email = this.user()?.email;
+    if (!email) {
+      return false;
+    }
+    const { error } = await this.client.auth.signInWithPassword({ email, password });
+    return !error;
+  }
 }

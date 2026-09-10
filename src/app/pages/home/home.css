@@ -351,10 +351,6 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
-.panel-luxury .seats {
-  color: #7fd9bf;
-}
-
 .route-cities {
   font-weight: 700;
   font-size: 1.13rem;
@@ -376,14 +372,6 @@
   color: var(--color-text-muted, #6b6b6b);
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.seats {
-  flex: 0 0 auto;
-  margin-left: auto;
-  font-size: 0.9rem;
-  color: var(--color-success, #2fa88a);
   white-space: nowrap;
 }
 

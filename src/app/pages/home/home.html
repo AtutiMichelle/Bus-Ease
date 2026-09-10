@@ -55,14 +55,20 @@
       @for (route of topRoutes(); track route.from + route.to) {
         <button type="button" class="route-card" (click)="selectRoute(route)">
           <div class="photo" [style.background-image]="'url(' + cityPhoto(route.to) + ')'">
-            <span class="flag">{{ route.busType }}</span>
+            @if (route.busType) {
+              <span class="flag">{{ route.busType }}</span>
+            }
           </div>
 
           <div class="panel" [class.panel-luxury]="route.busType === 'Luxury'">
             <p class="route-cities">{{ route.from }} &rarr; {{ route.to }}</p>
             <div class="route-meta-row">
-              <span class="route-character">{{ route.duration }} · {{ route.character }}</span>
-              <span class="seats">{{ route.seatsLeft }} left</span>
+              <span class="route-character">
+                @if (route.duration) {
+                  {{ route.duration }} ·
+                }
+                {{ route.character }}
+              </span>
             </div>
           </div>
         </button>

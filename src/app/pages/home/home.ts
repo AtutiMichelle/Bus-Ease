@@ -12,9 +12,10 @@ interface RoutePair {
 }
 
 interface TopRoute extends RoutePair {
-  duration: string;
-  busType: string;
-  seatsLeft: number;
+  /** Typical facts from any bus on this route, when one exists — the route
+   * itself always shows regardless, so these are optional. */
+  duration?: string;
+  busType?: string;
 }
 
 @Component({
@@ -24,9 +25,10 @@ interface TopRoute extends RoutePair {
   templateUrl: './home.html',
 })
 export class Home implements OnInit, OnDestroy {
-  /** The routes to feature is an editorial choice; the facts shown for each
-   * (seats left, duration, bus type) come from that route's next upcoming
-   * bus, fetched live below — not hardcoded. */
+  /** The routes to feature is an editorial choice, always shown regardless
+   * of whether a bus is actually running right now; the duration/bus type
+   * facts shown for each come from that route's buses when any exist,
+   * fetched live below — not hardcoded. */
   private readonly routePairs: RoutePair[] = [
     { from: 'Nairobi', to: 'Mombasa', character: 'Coastal route' },
     { from: 'Nairobi', to: 'Kisumu', character: 'Lakeside route' },
@@ -149,26 +151,18 @@ export class Home implements OnInit, OnDestroy {
 
   private async loadTopRoutes(): Promise<void> {
     // This is a marketing preview of routes we run, not a live "book today"
-    // list, so it doesn't require an actual upcoming departure — that would
-    // make the whole section silently go blank once today's seeded buses
-    // age into the past. Any bus for the route is enough to show typical
-    // duration, class, and seat count.
+    // list — every featured route shows whether or not it has a bus running
+    // right now. Any bus for the route (any date) is just a source for
+    // typical duration/class facts; a route with none still shows, minus
+    // those facts.
     const routes = await Promise.all(
-      this.routePairs.map(async (pair): Promise<TopRoute | null> => {
+      this.routePairs.map(async (pair): Promise<TopRoute> => {
         const buses = await this.busService.search(pair.from, pair.to, '');
         const bus = buses[0];
-        if (!bus) {
-          return null;
-        }
-        return {
-          ...pair,
-          duration: bus.duration,
-          busType: bus.busType,
-          seatsLeft: bus.seatsAvailable,
-        };
+        return { ...pair, duration: bus?.duration, busType: bus?.busType };
       }),
     );
-    this.topRoutes.set(routes.filter((r): r is TopRoute => r !== null));
+    this.topRoutes.set(routes);
   }
 
   selectRoute(route: TopRoute): void {

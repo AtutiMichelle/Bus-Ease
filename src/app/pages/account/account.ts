@@ -1,41 +1,224 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { DecimalPipe } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
+import { BookingService } from '../../services/booking.service';
+import { SavedBooking } from '../../models/booking.model';
+import { AccountPreferencesService } from './account-preferences.service';
+import { AccountBooking, BookingStatus, NotificationSettings } from './account.model';
+import { todayDateString } from '../../utils/date';
+
+type AccountTab = 'bookings' | 'profile' | 'settings';
+type BookingFilter = 'all' | 'upcoming' | 'completed' | 'cancelled';
+
+const FILTERS: { id: BookingFilter; label: string }[] = [
+  { id: 'all', label: 'All' },
+  { id: 'upcoming', label: 'Upcoming' },
+  { id: 'completed', label: 'Completed' },
+  { id: 'cancelled', label: 'Cancelled' },
+];
+
+const STATUS_LABEL: Record<BookingStatus, string> = {
+  confirmed: 'Confirmed',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
+};
+
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) {
+    return '?';
+  }
+  return parts
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('');
+}
+
+function memberSinceLabel(dateString: string): string {
+  return new Date(dateString).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+}
+
+function daysUntil(dateString: string): number {
+  const today = new Date(`${todayDateString()}T00:00:00`);
+  const target = new Date(`${dateString}T00:00:00`);
+  return Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+/** The bookings table has no cancellation flag yet, so status can only be
+ * inferred from whether the trip's day has already passed — every past
+ * booking reads as "completed" until real cancellation tracking exists.
+ * Bus.departureTime is a display-formatted string ("01:30 PM"), not a raw
+ * time, so this compares at the day level rather than parsing it. */
+function bookingStatus(dateString: string): BookingStatus {
+  return dateString >= todayDateString() ? 'confirmed' : 'completed';
+}
+
+function toAccountBooking(saved: SavedBooking): AccountBooking {
+  return {
+    reference: saved.reference,
+    from: saved.bus.from,
+    to: saved.bus.to,
+    date: saved.bus.date,
+    time: saved.bus.departureTime,
+    seats: saved.seats,
+    fare: saved.total,
+    status: bookingStatus(saved.bus.date),
+  };
+}
 
 @Component({
-  imports: [RouterLink, FormsModule],
+  imports: [RouterLink, FormsModule, DecimalPipe],
   selector: 'app-account',
   styleUrl: './account.css',
   templateUrl: './account.html',
 })
-export class Account {
-  authService = inject(AuthService);
+export class AccountPageComponent {
+  private authService = inject(AuthService);
+  private bookingService = inject(BookingService);
+  private preferencesService = inject(AccountPreferencesService);
 
-  name = signal(this.authService.user()?.user_metadata?.['name'] ?? '');
+  readonly filters = FILTERS;
+  readonly statusLabel = STATUS_LABEL;
+
+  activeTab = signal<AccountTab>('bookings');
+  activeFilter = signal<BookingFilter>('all');
+
+  displayName = computed(() => this.authService.displayName());
+  avatarInitials = computed(() => initials(this.displayName()));
+  email = computed(() => this.authService.user()?.email ?? '');
+  memberSince = computed(() => {
+    const createdAt = this.authService.user()?.created_at;
+    return createdAt ? memberSinceLabel(createdAt) : '';
+  });
+
+  private savedBookings = signal<SavedBooking[]>([]);
+  bookingsLoading = signal(true);
+  bookingsError = signal('');
+
+  bookings = computed(() => this.savedBookings().map(toAccountBooking));
+  tripsTaken = computed(() => this.bookings().length);
+  upcomingTrips = computed(() => this.bookings().filter((booking) => booking.status === 'confirmed').length);
+
+  filteredBookings = computed(() => {
+    const filter = this.activeFilter();
+    const bookings = this.bookings();
+    if (filter === 'all') {
+      return bookings;
+    }
+    if (filter === 'upcoming') {
+      return bookings.filter((booking) => booking.status === 'confirmed');
+    }
+    return bookings.filter((booking) => booking.status === filter);
+  });
+
+  emergencyContact = this.preferencesService.getEmergencyContact();
+  notifications = this.preferencesService.getNotifications();
+
+  // Profile form state, seeded from the loaded user once (not on every
+  // change) so it doesn't clobber an in-progress edit.
+  private profileSeeded = signal(false);
+  fullName = signal('');
+  phone = signal('');
+  savingProfile = signal(false);
+  profileSaved = signal(false);
+
+  contactName = signal(this.emergencyContact().contactName);
+  contactPhone = signal(this.emergencyContact().contactPhone);
+  savingContact = signal(false);
+  contactSaved = signal(false);
+
+  changingPassword = signal(false);
   newPassword = signal('');
   confirmPassword = signal('');
-
-  savingProfile = signal(false);
-  profileMessage = signal('');
-  profileError = signal('');
-
   savingPassword = signal(false);
   passwordMessage = signal('');
   passwordError = signal('');
 
-  async saveProfile(): Promise<void> {
-    this.profileMessage.set('');
-    this.profileError.set('');
-    this.savingProfile.set(true);
+  confirmingDelete = signal(false);
+  accountDeleted = signal(false);
+
+  constructor() {
+    effect(() => {
+      const user = this.authService.user();
+      if (user && !this.profileSeeded()) {
+        this.fullName.set((user.user_metadata?.['name'] as string) ?? '');
+        this.phone.set((user.user_metadata?.['phone'] as string) ?? '');
+        this.profileSeeded.set(true);
+      }
+    });
+    this.loadBookings();
+  }
+
+  private async loadBookings(): Promise<void> {
+    this.bookingsLoading.set(true);
+    this.bookingsError.set('');
     try {
-      await this.authService.updateProfile(this.name().trim());
-      this.profileMessage.set('Profile updated.');
-    } catch (error) {
-      this.profileError.set(error instanceof Error ? error.message : 'Could not update your profile. Please try again.');
+      this.savedBookings.set(await this.bookingService.getMyBookings());
+    } catch {
+      this.bookingsError.set('Could not load your bookings. Please try again.');
+    } finally {
+      this.bookingsLoading.set(false);
+    }
+  }
+
+  setTab(tab: AccountTab): void {
+    this.activeTab.set(tab);
+  }
+
+  setFilter(filter: BookingFilter): void {
+    this.activeFilter.set(filter);
+  }
+
+  isUpcoming(booking: AccountBooking): boolean {
+    return booking.status === 'confirmed' && daysUntil(booking.date) >= 0;
+  }
+
+  countdownLabel(booking: AccountBooking): string {
+    const days = daysUntil(booking.date);
+    if (days <= 0) {
+      return 'today';
+    }
+    if (days === 1) {
+      return 'in 1 day';
+    }
+    return `in ${days} days`;
+  }
+
+  async saveProfile(): Promise<void> {
+    this.savingProfile.set(true);
+    this.profileSaved.set(false);
+    try {
+      await this.authService.updateProfile({ name: this.fullName().trim(), phone: this.phone().trim() });
+      this.profileSaved.set(true);
     } finally {
       this.savingProfile.set(false);
     }
+  }
+
+  saveContact(): void {
+    this.savingContact.set(true);
+    this.contactSaved.set(false);
+    this.preferencesService.updateEmergencyContact(this.contactName().trim(), this.contactPhone().trim());
+    this.savingContact.set(false);
+    this.contactSaved.set(true);
+  }
+
+  toggleNotification(key: keyof NotificationSettings): void {
+    this.preferencesService.toggleNotification(key);
+  }
+
+  requestPasswordChange(): void {
+    this.changingPassword.set(true);
+  }
+
+  cancelPasswordChange(): void {
+    this.changingPassword.set(false);
+    this.newPassword.set('');
+    this.confirmPassword.set('');
+    this.passwordMessage.set('');
+    this.passwordError.set('');
   }
 
   async savePassword(): Promise<void> {
@@ -62,5 +245,20 @@ export class Account {
     } finally {
       this.savingPassword.set(false);
     }
+  }
+
+  requestDeleteAccount(): void {
+    this.confirmingDelete.set(true);
+  }
+
+  cancelDeleteAccount(): void {
+    this.confirmingDelete.set(false);
+  }
+
+  /** Demo-only: self-service account deletion needs an admin-privileged
+   * backend call, which doesn't exist yet. */
+  deleteAccount(): void {
+    this.confirmingDelete.set(false);
+    this.accountDeleted.set(true);
   }
 }

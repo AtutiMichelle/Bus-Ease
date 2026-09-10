@@ -47,14 +47,14 @@ export const routes: Routes = [
         title: 'Contact Us - BusEase',
     },
     {
+        // My Bookings is now a tab on the account page rather than its own
+        // page — this redirect just keeps old /my-bookings links from dead-ending.
         path: 'my-bookings',
-        loadComponent: () => import('./pages/my-bookings/my-bookings').then((m) => m.MyBookings),
-        canActivate: [authGuard],
-        title: 'My Bookings - BusEase',
+        redirectTo: '/account',
     },
     {
         path: 'account',
-        loadComponent: () => import('./pages/account/account').then((m) => m.Account),
+        loadComponent: () => import('./pages/account/account').then((m) => m.AccountPageComponent),
         canActivate: [authGuard],
         title: 'My Account - BusEase',
     },

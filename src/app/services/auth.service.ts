@@ -46,8 +46,10 @@ export class AuthService {
     await this.client.auth.signOut();
   }
 
-  async updateProfile(name: string): Promise<void> {
-    const { error } = await this.client.auth.updateUser({ data: { name } });
+  async updateProfile(data: { name: string; phone?: string }): Promise<void> {
+    const { error } = await this.client.auth.updateUser({
+      data: { ...this.user()?.user_metadata, ...data },
+    });
     if (error) {
       throw error;
     }

@@ -5,6 +5,7 @@ import { Header } from './components/header/header';
 import { Footer } from './components/footer/footer';
 import { AuthModal } from './components/auth-modal/auth-modal';
 import { AuthModalService } from './services/auth-modal.service';
+import { recoverFromStaleChunkLoad } from './utils/stale-chunk-recovery';
 
 @Component({
   selector: 'app-root',
@@ -18,5 +19,6 @@ export class App {
   constructor() {
     // Keep anchor scrolls (e.g. #about) from landing under the fixed header.
     inject(ViewportScroller).setOffset([0, 80]);
+    recoverFromStaleChunkLoad();
   }
 }

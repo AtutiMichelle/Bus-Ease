@@ -11,7 +11,6 @@
     <div class="banner-stats">
       <span class="stat-chip"><strong>{{ tripsTaken() }}</strong> Trips taken</span>
       <span class="stat-chip"><strong>{{ upcomingTrips() }}</strong> Upcoming</span>
-      <span class="stat-chip"><strong>{{ memberSince() }}</strong> Member since</span>
     </div>
   </div>
 </section>
@@ -76,17 +75,17 @@
 
           @if (bookingsLoading()) {
             <div class="empty-state">
-              <p>Loading your bookings…</p>
+              <p class="empty-title">Loading your bookings…</p>
             </div>
           } @else if (bookingsError()) {
             <div class="empty-state">
-              <p>{{ bookingsError() }}</p>
+              <p class="empty-title">{{ bookingsError() }}</p>
             </div>
           } @else if (filteredBookings().length === 0) {
             <div class="empty-state">
-              <i class="fa-solid fa-ticket" aria-hidden="true"></i>
-              <p>No bookings match this filter.</p>
-              <a routerLink="/" class="cta-link">Book a new trip</a>
+              <p class="empty-title">Nothing here yet</p>
+              <p class="empty-subtext">No bookings match this filter.</p>
+              <a routerLink="/" class="empty-cta">Book your next trip</a>
             </div>
           } @else {
             <div class="booking-list">
@@ -94,28 +93,20 @@
                 <article class="booking-card">
                   <div class="booking-main">
                     <p class="booking-route">
-                      {{ booking.from }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i> {{ booking.to }}
+                      {{ booking.from }} <span class="route-arrow" aria-hidden="true">&rarr;</span> {{ booking.to }}
+                      @if (booking.seats.length > 1) {
+                        <span class="badge-neutral">{{ booking.seats.length }} passengers</span>
+                      }
                     </p>
-                    <p class="booking-meta">{{ booking.date }} · {{ booking.time }} · Seat{{ booking.seats.length > 1 ? 's' : '' }} {{ booking.seats.join(', ') }}</p>
+                    <p class="booking-meta">
+                      {{ formatBookingDate(booking.date) }} · {{ booking.time }} · Seat{{ booking.seats.length > 1 ? 's' : '' }}
+                      {{ booking.seats.join(', ') }}
+                    </p>
                   </div>
 
                   <div class="booking-side">
                     <span class="booking-fare">KSh {{ booking.fare | number }}</span>
-
-                    <div class="status-group">
-                      <span class="status-pill" [class]="'status-' + booking.status">
-                        @if (booking.status === 'confirmed') {
-                          <i class="fa-solid fa-check" aria-hidden="true"></i>
-                        } @else if (booking.status === 'cancelled') {
-                          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-                        }
-                        {{ statusLabel[booking.status] }}
-                      </span>
-
-                      @if (isUpcoming(booking)) {
-                        <span class="countdown-label">{{ countdownLabel(booking) }}</span>
-                      }
-                    </div>
+                    <span class="status-pill" [class]="'status-' + booking.status">{{ statusLabel[booking.status] }}</span>
                   </div>
                 </article>
               }
@@ -126,80 +117,88 @@
 
       @if (activeTab() === 'profile') {
         <div class="tab-panel" id="panel-profile" role="tabpanel" aria-labelledby="tab-profile">
-          <div class="profile-grid">
-            <form class="info-card" (ngSubmit)="saveProfile()">
+          <div class="profile-sections">
+            <section class="profile-section">
               <h2>Personal Info</h2>
+              <form class="info-box" (ngSubmit)="saveProfile()">
+                <div class="field-grid">
+                  <div class="field">
+                    <label for="profile-name">Full name</label>
+                    <input
+                      id="profile-name"
+                      type="text"
+                      name="fullName"
+                      required
+                      [ngModel]="fullName()"
+                      (ngModelChange)="fullName.set($event)"
+                    />
+                  </div>
 
-              <div class="field">
-                <label for="profile-name">Full Name</label>
-                <input
-                  id="profile-name"
-                  type="text"
-                  name="fullName"
-                  required
-                  [ngModel]="fullName()"
-                  (ngModelChange)="fullName.set($event)"
-                />
-              </div>
+                  <div class="field">
+                    <label for="profile-phone">Phone number</label>
+                    <input
+                      id="profile-phone"
+                      type="tel"
+                      name="phone"
+                      [ngModel]="phone()"
+                      (ngModelChange)="phone.set($event)"
+                    />
+                  </div>
+                </div>
 
-              <div class="field">
-                <label for="profile-phone">Phone</label>
-                <input
-                  id="profile-phone"
-                  type="tel"
-                  name="phone"
-                  [ngModel]="phone()"
-                  (ngModelChange)="phone.set($event)"
-                />
-              </div>
+                <div class="field">
+                  <label for="profile-email">Email address</label>
+                  <input id="profile-email" type="email" [value]="email()" disabled />
+                </div>
 
-              <div class="field">
-                <label for="profile-email">Email</label>
-                <input id="profile-email" type="email" [value]="email()" disabled />
-              </div>
+                @if (profileSaved()) {
+                  <p class="save-confirm">Profile updated.</p>
+                }
 
-              @if (profileSaved()) {
-                <p class="save-confirm">Profile updated.</p>
-              }
+                <button type="submit" class="save-btn" [disabled]="savingProfile()">
+                  {{ savingProfile() ? 'Saving…' : 'Save changes' }}
+                </button>
+              </form>
+            </section>
 
-              <button type="submit" class="save-btn" [disabled]="savingProfile()">
-                {{ savingProfile() ? 'Saving…' : 'Save changes' }}
-              </button>
-            </form>
-
-            <form class="info-card" (ngSubmit)="saveContact()">
+            <section class="profile-section">
               <h2>Emergency Contact</h2>
+              <form class="info-box" (ngSubmit)="saveContact()">
+                <div class="field-grid">
+                  <div class="field">
+                    <label for="contact-name">Contact name</label>
+                    <input
+                      id="contact-name"
+                      type="text"
+                      name="contactName"
+                      placeholder="e.g. John Kamau"
+                      [ngModel]="contactName()"
+                      (ngModelChange)="contactName.set($event)"
+                    />
+                  </div>
 
-              <div class="field">
-                <label for="contact-name">Contact Name</label>
-                <input
-                  id="contact-name"
-                  type="text"
-                  name="contactName"
-                  [ngModel]="contactName()"
-                  (ngModelChange)="contactName.set($event)"
-                />
-              </div>
+                  <div class="field">
+                    <label for="contact-phone">Contact phone</label>
+                    <input
+                      id="contact-phone"
+                      type="tel"
+                      name="contactPhone"
+                      placeholder="+254 7..."
+                      [ngModel]="contactPhone()"
+                      (ngModelChange)="contactPhone.set($event)"
+                    />
+                  </div>
+                </div>
 
-              <div class="field">
-                <label for="contact-phone">Contact Phone</label>
-                <input
-                  id="contact-phone"
-                  type="tel"
-                  name="contactPhone"
-                  [ngModel]="contactPhone()"
-                  (ngModelChange)="contactPhone.set($event)"
-                />
-              </div>
+                @if (contactSaved()) {
+                  <p class="save-confirm">Contact updated.</p>
+                }
 
-              @if (contactSaved()) {
-                <p class="save-confirm">Contact updated.</p>
-              }
-
-              <button type="submit" class="save-btn" [disabled]="savingContact()">
-                {{ savingContact() ? 'Saving…' : 'Save contact' }}
-              </button>
-            </form>
+                <button type="submit" class="outline-btn" [disabled]="savingContact()">
+                  {{ savingContact() ? 'Saving…' : 'Save contact' }}
+                </button>
+              </form>
+            </section>
           </div>
         </div>
       }
@@ -207,139 +206,143 @@
       @if (activeTab() === 'settings') {
         <div class="tab-panel" id="panel-settings" role="tabpanel" aria-labelledby="tab-settings">
           <div class="settings-groups">
-            <section class="settings-section">
-              <h2>Account</h2>
-              <div class="settings-row">
-                <div class="settings-row-text">
-                  <p class="settings-row-label">Password</p>
-                  <p class="settings-row-desc">Update the password used to sign in.</p>
+            <section class="settings-group">
+              <p class="group-label">Account</p>
+              <div class="settings-box">
+                <div class="settings-row">
+                  <div class="settings-row-text">
+                    <p class="settings-row-label">Password</p>
+                    <p class="settings-row-desc">Update the password used to sign in.</p>
+                  </div>
+                  @if (!changingPassword()) {
+                    <button type="button" class="outline-btn" (click)="requestPasswordChange()">Change password</button>
+                  }
                 </div>
-                @if (!changingPassword()) {
-                  <button type="button" class="outline-btn" (click)="requestPasswordChange()">Change password</button>
+
+                @if (changingPassword()) {
+                  <form class="password-form" (ngSubmit)="savePassword()">
+                    <div class="field">
+                      <label for="new-password">New Password</label>
+                      <input
+                        id="new-password"
+                        type="password"
+                        name="newPassword"
+                        required
+                        [ngModel]="newPassword()"
+                        (ngModelChange)="newPassword.set($event)"
+                      />
+                    </div>
+
+                    <div class="field">
+                      <label for="confirm-password">Confirm Password</label>
+                      <input
+                        id="confirm-password"
+                        type="password"
+                        name="confirmPassword"
+                        required
+                        [ngModel]="confirmPassword()"
+                        (ngModelChange)="confirmPassword.set($event)"
+                      />
+                    </div>
+
+                    @if (passwordMessage()) {
+                      <p class="save-confirm">{{ passwordMessage() }}</p>
+                    }
+                    @if (passwordError()) {
+                      <p class="field-error">{{ passwordError() }}</p>
+                    }
+
+                    <div class="password-form-actions">
+                      <button type="submit" class="save-btn" [disabled]="savingPassword()">
+                        {{ savingPassword() ? 'Saving…' : 'Update password' }}
+                      </button>
+                      <button type="button" class="text-btn" (click)="cancelPasswordChange()">Cancel</button>
+                    </div>
+                  </form>
                 }
-              </div>
-
-              @if (changingPassword()) {
-                <form class="password-form" (ngSubmit)="savePassword()">
-                  <div class="field">
-                    <label for="new-password">New Password</label>
-                    <input
-                      id="new-password"
-                      type="password"
-                      name="newPassword"
-                      required
-                      [ngModel]="newPassword()"
-                      (ngModelChange)="newPassword.set($event)"
-                    />
-                  </div>
-
-                  <div class="field">
-                    <label for="confirm-password">Confirm Password</label>
-                    <input
-                      id="confirm-password"
-                      type="password"
-                      name="confirmPassword"
-                      required
-                      [ngModel]="confirmPassword()"
-                      (ngModelChange)="confirmPassword.set($event)"
-                    />
-                  </div>
-
-                  @if (passwordMessage()) {
-                    <p class="save-confirm">{{ passwordMessage() }}</p>
-                  }
-                  @if (passwordError()) {
-                    <p class="field-error">{{ passwordError() }}</p>
-                  }
-
-                  <div class="password-form-actions">
-                    <button type="submit" class="save-btn" [disabled]="savingPassword()">
-                      {{ savingPassword() ? 'Saving…' : 'Update password' }}
-                    </button>
-                    <button type="button" class="text-btn" (click)="cancelPasswordChange()">Cancel</button>
-                  </div>
-                </form>
-              }
-            </section>
-
-            <section class="settings-section">
-              <h2>Notifications</h2>
-
-              <div class="settings-row">
-                <div class="settings-row-text">
-                  <p class="settings-row-label" id="notif-confirmations">Booking confirmations</p>
-                  <p class="settings-row-desc">Emails when a booking is made or changed.</p>
-                </div>
-                <button
-                  type="button"
-                  role="switch"
-                  class="toggle"
-                  [class.on]="notifications().bookingConfirmations"
-                  [attr.aria-checked]="notifications().bookingConfirmations"
-                  aria-labelledby="notif-confirmations"
-                  (click)="toggleNotification('bookingConfirmations')"
-                >
-                  <span class="toggle-thumb" aria-hidden="true"></span>
-                </button>
-              </div>
-
-              <div class="settings-row">
-                <div class="settings-row-text">
-                  <p class="settings-row-label" id="notif-reminders">Trip reminders</p>
-                  <p class="settings-row-desc">A heads-up before your trip departs.</p>
-                </div>
-                <button
-                  type="button"
-                  role="switch"
-                  class="toggle"
-                  [class.on]="notifications().tripReminders"
-                  [attr.aria-checked]="notifications().tripReminders"
-                  aria-labelledby="notif-reminders"
-                  (click)="toggleNotification('tripReminders')"
-                >
-                  <span class="toggle-thumb" aria-hidden="true"></span>
-                </button>
-              </div>
-
-              <div class="settings-row">
-                <div class="settings-row-text">
-                  <p class="settings-row-label" id="notif-promotions">Promotions</p>
-                  <p class="settings-row-desc">Discounts and offers from BusEase.</p>
-                </div>
-                <button
-                  type="button"
-                  role="switch"
-                  class="toggle"
-                  [class.on]="notifications().promotions"
-                  [attr.aria-checked]="notifications().promotions"
-                  aria-labelledby="notif-promotions"
-                  (click)="toggleNotification('promotions')"
-                >
-                  <span class="toggle-thumb" aria-hidden="true"></span>
-                </button>
               </div>
             </section>
 
-            <section class="settings-section danger-zone">
-              <h2>Danger Zone</h2>
-
-              <div class="settings-row">
-                <div class="settings-row-text">
-                  <p class="settings-row-label">Delete account</p>
-                  <p class="settings-row-desc">Permanently remove your account and booking history.</p>
+            <section class="settings-group">
+              <p class="group-label">Notifications</p>
+              <div class="settings-box">
+                <div class="settings-row">
+                  <div class="settings-row-text">
+                    <p class="settings-row-label" id="notif-confirmations">Booking confirmations</p>
+                    <p class="settings-row-desc">Get an email when a booking is confirmed.</p>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    class="toggle"
+                    [class.on]="notifications().bookingConfirmations"
+                    [attr.aria-checked]="notifications().bookingConfirmations"
+                    aria-labelledby="notif-confirmations"
+                    (click)="toggleNotification('bookingConfirmations')"
+                  >
+                    <span class="toggle-thumb" aria-hidden="true"></span>
+                  </button>
                 </div>
 
-                @if (accountDeleted()) {
-                  <span class="settings-row-desc">Your account has been scheduled for deletion.</span>
-                } @else if (confirmingDelete()) {
-                  <div class="delete-confirm">
-                    <span>Are you sure?</span>
-                    <button type="button" class="outline-btn outline-btn-danger" (click)="deleteAccount()">Yes, delete</button>
-                    <button type="button" class="text-btn" (click)="cancelDeleteAccount()">Cancel</button>
+                <div class="settings-row">
+                  <div class="settings-row-text">
+                    <p class="settings-row-label" id="notif-reminders">Trip reminders</p>
+                    <p class="settings-row-desc">A reminder 24 hours before departure.</p>
                   </div>
-                } @else {
-                  <button type="button" class="outline-btn outline-btn-danger" (click)="requestDeleteAccount()">Delete account</button>
-                }
+                  <button
+                    type="button"
+                    role="switch"
+                    class="toggle"
+                    [class.on]="notifications().tripReminders"
+                    [attr.aria-checked]="notifications().tripReminders"
+                    aria-labelledby="notif-reminders"
+                    (click)="toggleNotification('tripReminders')"
+                  >
+                    <span class="toggle-thumb" aria-hidden="true"></span>
+                  </button>
+                </div>
+
+                <div class="settings-row">
+                  <div class="settings-row-text">
+                    <p class="settings-row-label" id="notif-promotions">Promotions</p>
+                    <p class="settings-row-desc">Occasional discounts and offers.</p>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    class="toggle"
+                    [class.on]="notifications().promotions"
+                    [attr.aria-checked]="notifications().promotions"
+                    aria-labelledby="notif-promotions"
+                    (click)="toggleNotification('promotions')"
+                  >
+                    <span class="toggle-thumb" aria-hidden="true"></span>
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <section class="settings-group">
+              <p class="group-label">Danger Zone</p>
+              <div class="settings-box danger-zone">
+                <div class="settings-row">
+                  <div class="settings-row-text">
+                    <p class="settings-row-label settings-row-label-danger">Delete account</p>
+                    <p class="settings-row-desc">This permanently removes your account and booking history.</p>
+                  </div>
+
+                  @if (accountDeleted()) {
+                    <span class="settings-row-desc">Your account has been scheduled for deletion.</span>
+                  } @else if (confirmingDelete()) {
+                    <div class="delete-confirm">
+                      <span>Are you sure?</span>
+                      <button type="button" class="outline-btn outline-btn-danger" (click)="deleteAccount()">Yes, delete</button>
+                      <button type="button" class="text-btn" (click)="cancelDeleteAccount()">Cancel</button>
+                    </div>
+                  } @else {
+                    <button type="button" class="outline-btn outline-btn-danger" (click)="requestDeleteAccount()">Delete account</button>
+                  }
+                </div>
               </div>
             </section>
           </div>

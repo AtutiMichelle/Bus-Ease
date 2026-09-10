@@ -7,7 +7,6 @@ import { BookingService } from '../../services/booking.service';
 import { SavedBooking } from '../../models/booking.model';
 import { AccountPreferencesService } from './account-preferences.service';
 import { AccountBooking, BookingStatus, NotificationSettings } from './account.model';
-import { todayDateString } from '../../utils/date';
 
 type AccountTab = 'bookings' | 'profile' | 'settings';
 type BookingFilter = 'all' | 'upcoming' | 'completed' | 'cancelled';
@@ -36,23 +35,35 @@ function initials(name: string): string {
     .join('');
 }
 
-function memberSinceLabel(dateString: string): string {
-  return new Date(dateString).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+function formatBookingDate(dateString: string): string {
+  const date = new Date(`${dateString}T00:00:00`);
+  const weekday = date.toLocaleDateString('en-US', { weekday: 'short' });
+  const month = date.toLocaleDateString('en-US', { month: 'short' });
+  return `${weekday}, ${date.getDate()} ${month} ${date.getFullYear()}`;
 }
 
-function daysUntil(dateString: string): number {
-  const today = new Date(`${todayDateString()}T00:00:00`);
-  const target = new Date(`${dateString}T00:00:00`);
-  return Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+/** Bus.departureTime is a display-formatted 12-hour string ("01:30 PM" or
+ * "6:30 AM"), not a raw timestamp — parse it back out so same-day bookings
+ * can tell whether their actual departure has already passed, not just
+ * whether the calendar day has. */
+function departureTimestamp(dateString: string, time: string): number {
+  const date = new Date(`${dateString}T00:00:00`);
+  const match = time.match(/(\d{1,2}):(\d{2})\D*([AaPp][Mm])/);
+  if (match) {
+    let hours = parseInt(match[1], 10) % 12;
+    if (match[3].toUpperCase() === 'PM') {
+      hours += 12;
+    }
+    date.setHours(hours, parseInt(match[2], 10), 0, 0);
+  }
+  return date.getTime();
 }
 
 /** The bookings table has no cancellation flag yet, so status can only be
- * inferred from whether the trip's day has already passed — every past
- * booking reads as "completed" until real cancellation tracking exists.
- * Bus.departureTime is a display-formatted string ("01:30 PM"), not a raw
- * time, so this compares at the day level rather than parsing it. */
-function bookingStatus(dateString: string): BookingStatus {
-  return dateString >= todayDateString() ? 'confirmed' : 'completed';
+ * inferred from whether the trip has already departed — every past booking
+ * reads as "completed" until real cancellation tracking exists. */
+function bookingStatus(dateString: string, time: string): BookingStatus {
+  return departureTimestamp(dateString, time) >= Date.now() ? 'confirmed' : 'completed';
 }
 
 function toAccountBooking(saved: SavedBooking): AccountBooking {
@@ -64,7 +75,7 @@ function toAccountBooking(saved: SavedBooking): AccountBooking {
     time: saved.bus.departureTime,
     seats: saved.seats,
     fare: saved.total,
-    status: bookingStatus(saved.bus.date),
+    status: bookingStatus(saved.bus.date, saved.bus.departureTime),
   };
 }
 
@@ -81,6 +92,7 @@ export class AccountPageComponent {
 
   readonly filters = FILTERS;
   readonly statusLabel = STATUS_LABEL;
+  readonly formatBookingDate = formatBookingDate;
 
   activeTab = signal<AccountTab>('bookings');
   activeFilter = signal<BookingFilter>('all');
@@ -88,10 +100,6 @@ export class AccountPageComponent {
   displayName = computed(() => this.authService.displayName());
   avatarInitials = computed(() => initials(this.displayName()));
   email = computed(() => this.authService.user()?.email ?? '');
-  memberSince = computed(() => {
-    const createdAt = this.authService.user()?.created_at;
-    return createdAt ? memberSinceLabel(createdAt) : '';
-  });
 
   private savedBookings = signal<SavedBooking[]>([]);
   bookingsLoading = signal(true);
@@ -169,21 +177,6 @@ export class AccountPageComponent {
 
   setFilter(filter: BookingFilter): void {
     this.activeFilter.set(filter);
-  }
-
-  isUpcoming(booking: AccountBooking): boolean {
-    return booking.status === 'confirmed' && daysUntil(booking.date) >= 0;
-  }
-
-  countdownLabel(booking: AccountBooking): string {
-    const days = daysUntil(booking.date);
-    if (days <= 0) {
-      return 'today';
-    }
-    if (days === 1) {
-      return 'in 1 day';
-    }
-    return `in ${days} days`;
   }
 
   async saveProfile(): Promise<void> {

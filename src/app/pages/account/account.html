@@ -34,6 +34,18 @@
         <button
           type="button"
           role="tab"
+          id="tab-wallet"
+          class="tab-btn"
+          [class.active]="activeTab() === 'wallet'"
+          [attr.aria-selected]="activeTab() === 'wallet'"
+          aria-controls="panel-wallet"
+          (click)="setTab('wallet')"
+        >
+          Wallet
+        </button>
+        <button
+          type="button"
+          role="tab"
           id="tab-profile"
           class="tab-btn"
           [class.active]="activeTab() === 'profile'"
@@ -112,6 +124,96 @@
               }
             </div>
           }
+        </div>
+      }
+
+      @if (activeTab() === 'wallet') {
+        <div class="tab-panel" id="panel-wallet" role="tabpanel" aria-labelledby="tab-wallet">
+          <div class="profile-sections">
+            <div>
+              <div class="account-banner wallet-balance-card">
+                <div>
+                  <p class="banner-email">Available balance</p>
+                  <p class="banner-name">KSh {{ walletBalance() | number }}</p>
+                </div>
+                <button type="button" class="wallet-topup-btn" (click)="requestTopUp()">Top up wallet</button>
+              </div>
+              @if (topUpRequested()) {
+                <p class="settings-row-desc">Top-up flow coming soon.</p>
+              }
+            </div>
+
+            <section class="profile-section">
+              <h2>Payment Methods</h2>
+              <div class="settings-box">
+                <div class="settings-row">
+                  <div class="settings-row-text">
+                    <p class="settings-row-label" style="display: flex; align-items: center; gap: 8px">
+                      M-Pesa <span class="badge-neutral badge-default">Default</span>
+                    </p>
+                    @if (editingMpesaNumber()) {
+                      <div class="field">
+                        <input
+                          type="tel"
+                          name="mpesaNumberDraft"
+                          placeholder="+254 7..."
+                          [ngModel]="mpesaNumberDraft()"
+                          (ngModelChange)="mpesaNumberDraft.set($event)"
+                        />
+                      </div>
+                    } @else {
+                      <p class="settings-row-desc">{{ mpesaNumber() || 'No number linked yet' }}</p>
+                    }
+                  </div>
+                  @if (editingMpesaNumber()) {
+                    <div class="password-form-actions">
+                      <button type="button" class="save-btn" [disabled]="savingMpesaNumber()" (click)="saveMpesaNumber()">
+                        {{ savingMpesaNumber() ? 'Saving…' : 'Save' }}
+                      </button>
+                      <button type="button" class="text-btn" (click)="cancelEditMpesaNumber()">Cancel</button>
+                    </div>
+                  } @else {
+                    <button type="button" class="text-btn" (click)="startEditMpesaNumber()">Change number</button>
+                  }
+                </div>
+              </div>
+            </section>
+
+            <section class="profile-section">
+              <h2>Transaction History</h2>
+              @if (walletLoading()) {
+                <div class="empty-state">
+                  <p class="empty-title">Loading your wallet activity…</p>
+                </div>
+              } @else if (walletError()) {
+                <div class="empty-state">
+                  <p class="empty-title">{{ walletError() }}</p>
+                </div>
+              } @else if (transactions().length === 0) {
+                <div class="empty-state">
+                  <p class="empty-title">No transactions yet</p>
+                  <p class="empty-subtext">Top up your wallet to get started.</p>
+                </div>
+              } @else {
+                <div class="booking-list">
+                  @for (transaction of transactions(); track transaction.id) {
+                    <article class="booking-card">
+                      <div class="booking-main">
+                        <p class="settings-row-label">{{ transaction.description }}</p>
+                        <p class="booking-meta">
+                          {{ transaction.type === 'topup' ? 'Via M-Pesa' : 'Wallet balance' }} ·
+                          {{ formatTransactionDate(transaction.createdAt) }}
+                        </p>
+                      </div>
+                      <span class="booking-fare" [class.wallet-amount-topup]="transaction.type === 'topup'">
+                        {{ transaction.type === 'topup' ? '+' : '−' }} KSh {{ transaction.amount | number }}
+                      </span>
+                    </article>
+                  }
+                </div>
+              }
+            </section>
+          </div>
         </div>
       }
 

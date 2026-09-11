@@ -4,11 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { BookingService } from '../../services/booking.service';
+import { WalletService } from '../../services/wallet.service';
 import { SavedBooking } from '../../models/booking.model';
+import { WalletTransaction } from '../../models/wallet.model';
 import { AccountPreferencesService } from './account-preferences.service';
 import { AccountBooking, BookingStatus, NotificationSettings } from './account.model';
 
-type AccountTab = 'bookings' | 'profile' | 'settings';
+type AccountTab = 'bookings' | 'wallet' | 'profile' | 'settings';
 type BookingFilter = 'all' | 'upcoming' | 'completed' | 'cancelled';
 
 const FILTERS: { id: BookingFilter; label: string }[] = [
@@ -66,6 +68,13 @@ function bookingStatus(dateString: string, time: string): BookingStatus {
   return departureTimestamp(dateString, time) >= Date.now() ? 'confirmed' : 'completed';
 }
 
+function formatTransactionDate(dateString: string): string {
+  const date = new Date(dateString);
+  const weekday = date.toLocaleDateString('en-US', { weekday: 'short' });
+  const month = date.toLocaleDateString('en-US', { month: 'short' });
+  return `${weekday}, ${date.getDate()} ${month} ${date.getFullYear()}`;
+}
+
 function toAccountBooking(saved: SavedBooking): AccountBooking {
   return {
     reference: saved.reference,
@@ -88,11 +97,13 @@ function toAccountBooking(saved: SavedBooking): AccountBooking {
 export class AccountPageComponent {
   private authService = inject(AuthService);
   private bookingService = inject(BookingService);
+  private walletService = inject(WalletService);
   private preferencesService = inject(AccountPreferencesService);
 
   readonly filters = FILTERS;
   readonly statusLabel = STATUS_LABEL;
   readonly formatBookingDate = formatBookingDate;
+  readonly formatTransactionDate = formatTransactionDate;
 
   activeTab = signal<AccountTab>('bookings');
   activeFilter = signal<BookingFilter>('all');
@@ -120,6 +131,21 @@ export class AccountPageComponent {
     }
     return bookings.filter((booking) => booking.status === filter);
   });
+
+  private walletTransactions = signal<WalletTransaction[]>([]);
+  private walletBalanceValue = signal(0);
+  walletLoading = signal(true);
+  walletError = signal('');
+
+  transactions = computed(() => this.walletTransactions());
+  walletBalance = computed(() => this.walletBalanceValue());
+
+  mpesaNumber = computed(() => (this.authService.user()?.user_metadata?.['phone'] as string) ?? '');
+  editingMpesaNumber = signal(false);
+  mpesaNumberDraft = signal('');
+  savingMpesaNumber = signal(false);
+
+  topUpRequested = signal(false);
 
   emergencyContact = this.preferencesService.getEmergencyContact();
   notifications = this.preferencesService.getNotifications();
@@ -164,6 +190,7 @@ export class AccountPageComponent {
       }
     });
     this.loadBookings();
+    this.loadWallet();
   }
 
   private async loadBookings(): Promise<void> {
@@ -175,6 +202,23 @@ export class AccountPageComponent {
       this.bookingsError.set('Could not load your bookings. Please try again.');
     } finally {
       this.bookingsLoading.set(false);
+    }
+  }
+
+  private async loadWallet(): Promise<void> {
+    this.walletLoading.set(true);
+    this.walletError.set('');
+    try {
+      const [balance, transactions] = await Promise.all([
+        this.walletService.getBalance(),
+        this.walletService.getTransactions(),
+      ]);
+      this.walletBalanceValue.set(balance);
+      this.walletTransactions.set(transactions);
+    } catch {
+      this.walletError.set('Could not load your wallet activity. Please try again.');
+    } finally {
+      this.walletLoading.set(false);
     }
   }
 
@@ -203,6 +247,31 @@ export class AccountPageComponent {
     this.preferencesService.updateEmergencyContact(this.contactName().trim(), this.contactPhone().trim());
     this.savingContact.set(false);
     this.contactSaved.set(true);
+  }
+
+  /** Stub: wires the button up so the wallet UI is complete, but the real
+   * M-Pesa STK push flow is a separate task. */
+  requestTopUp(): void {
+    this.topUpRequested.set(true);
+  }
+
+  startEditMpesaNumber(): void {
+    this.mpesaNumberDraft.set(this.mpesaNumber());
+    this.editingMpesaNumber.set(true);
+  }
+
+  cancelEditMpesaNumber(): void {
+    this.editingMpesaNumber.set(false);
+  }
+
+  async saveMpesaNumber(): Promise<void> {
+    this.savingMpesaNumber.set(true);
+    try {
+      await this.authService.updateProfile({ name: this.fullName(), phone: this.mpesaNumberDraft().trim() });
+      this.editingMpesaNumber.set(false);
+    } finally {
+      this.savingMpesaNumber.set(false);
+    }
   }
 
   toggleNotification(key: keyof NotificationSettings): void {

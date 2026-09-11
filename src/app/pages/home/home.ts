@@ -149,20 +149,34 @@ export class Home implements OnInit, OnDestroy {
     }, 400);
   }
 
-  private async loadTopRoutes(): Promise<void> {
+  private loadTopRoutes(): void {
     // This is a marketing preview of routes we run, not a live "book today"
     // list — every featured route shows whether or not it has a bus running
-    // right now. Any bus for the route (any date) is just a source for
-    // typical duration/class facts; a route with none still shows, minus
-    // those facts.
-    const routes = await Promise.all(
-      this.routePairs.map(async (pair): Promise<TopRoute> => {
-        const buses = await this.busService.search(pair.from, pair.to, '');
-        const bus = buses[0];
-        return { ...pair, duration: bus?.duration, busType: bus?.busType };
-      }),
-    );
-    this.topRoutes.set(routes);
+    // right now, and shows immediately since the cards themselves need no
+    // network data. Duration/class are a network-fetched bonus per route,
+    // patched in as each lookup resolves instead of blocking the cards.
+    this.topRoutes.set(this.routePairs.map((pair) => ({ ...pair })));
+
+    for (const pair of this.routePairs) {
+      this.busService
+        .search(pair.from, pair.to, '')
+        .then((buses) => {
+          const bus = buses[0];
+          if (!bus) {
+            return;
+          }
+          this.topRoutes.update((routes) =>
+            routes.map((route) =>
+              route.from === pair.from && route.to === pair.to
+                ? { ...route, duration: bus.duration, busType: bus.busType }
+                : route,
+            ),
+          );
+        })
+        .catch(() => {
+          // No bus data for this route right now; the card already shows.
+        });
+    }
   }
 
   selectRoute(route: TopRoute): void {

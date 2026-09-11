@@ -315,6 +315,39 @@
   transform: translateY(-2px);
 }
 
+/* ---- Wallet ---- */
+
+.wallet-balance-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3, 16px);
+  padding: var(--space-5, 32px);
+  border-radius: var(--radius-md, 8px);
+}
+
+.wallet-topup-btn {
+  padding: 12px 26px;
+  background-color: white;
+  color: var(--color-primary, #12294d);
+  border: none;
+  border-radius: 6px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 1.05rem;
+  cursor: pointer;
+}
+
+.badge-default {
+  background-color: rgba(47, 168, 138, 0.14);
+  color: var(--color-success, #2fa88a);
+}
+
+.wallet-amount-topup {
+  color: var(--color-success, #2fa88a);
+}
+
 /* ---- Profile ---- */
 
 .profile-sections {

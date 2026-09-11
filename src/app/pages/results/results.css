@@ -653,6 +653,31 @@
     flex-direction: column;
   }
 
+  /* The 250px side columns are a desktop-only trick to keep the center
+     column visually centered against the grid above; at phone widths they
+     just force the row wider than the screen, so it silently scrolls
+     instead of wrapping. Let it wrap here instead. */
+  .bus-info-row {
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+
+  .bus-info-left,
+  .bus-info-right,
+  .time-block-start,
+  .time-block-end {
+    flex: 1 1 auto;
+  }
+
+  /* The -158px margin stretches the dashed line into the slack space of the
+     desktop-only 250px time-block columns above; those columns now shrink
+     to their content on phones, so that fixed offset overshoots them and
+     the line bleeds over the Mombasa/Malindi labels. Keep it within its
+     own block instead. */
+  .duration-line {
+    margin: 0;
+  }
+
   /* .bus-price-cta defaults to align-items: stretch as a plain flex column
      here, which was stretching the Highway pill to full width — keep it a
      compact, left-aligned badge like on desktop. */

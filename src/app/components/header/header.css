@@ -130,8 +130,60 @@ nav a:hover::after {
   border-color: white;
 }
 
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.4rem;
+  padding: 8px;
+  cursor: pointer;
+}
+
 @media (max-width: 600px) {
+  .menu-toggle {
+    display: block;
+  }
+
+  /* Below 600px the full nav + account controls no longer fit the header
+     row (that's what was cramming/misaligning it) — collapse them into a
+     dropdown behind the hamburger button instead of just hiding nav
+     entirely, which left mobile with no way to reach those links at all. */
+  .nav-group {
+    position: fixed;
+    top: 64px;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    max-height: 0;
+    overflow: hidden;
+    background: linear-gradient(120deg, var(--color-primary, #12294d), var(--color-primary-mid, #1c4a7a));
+    box-shadow: 0 12px 24px rgba(18, 41, 77, 0.25);
+    transition: max-height 0.25s ease;
+  }
+
+  .nav-group-open {
+    max-height: 320px;
+  }
+
   nav {
-    display: none;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4, 24px);
+    padding: var(--space-4, 24px) var(--space-4, 24px) 0;
+  }
+
+  .user-menu {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3, 16px);
+    padding: var(--space-4, 24px);
+  }
+
+  .auth-cta {
+    align-self: flex-start;
+    margin: var(--space-4, 24px);
   }
 }

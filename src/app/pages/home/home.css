@@ -265,6 +265,15 @@
   .eticket-badge {
     left: var(--space-3, 16px);
   }
+
+  /* The badge is absolutely positioned (out of flow) against this padding
+     box; 16px of top padding isn't enough to clear its own height, so the
+     "Trusted by riders" line right below it starts underneath the badge.
+     At desktop widths the centered trust line sits far enough right of
+     the left-aligned badge to miss it, but not once it goes full-width. */
+  .hero-illustrated-content {
+    padding-top: 40px;
+  }
 }
 
 /* Top Routes */

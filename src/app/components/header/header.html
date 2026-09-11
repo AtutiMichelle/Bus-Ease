@@ -1,24 +1,34 @@
 <header class="site-header">
   <a routerLink="/" class="logo"><i class="fa-solid fa-bus logo-icon" aria-hidden="true"></i>BusEase</a>
 
-  <div class="nav-group">
+  <button
+    type="button"
+    class="menu-toggle"
+    (click)="toggleMenu()"
+    [attr.aria-expanded]="menuOpen()"
+    aria-label="Menu"
+  >
+    <i class="fa-solid" [class.fa-bars]="!menuOpen()" [class.fa-xmark]="menuOpen()" aria-hidden="true"></i>
+  </button>
+
+  <div class="nav-group" [class.nav-group-open]="menuOpen()">
     <nav>
-      <a routerLink="/">Home</a>
-       <a routerLink="/" fragment="about">About</a>
-      <a routerLink="/account">My Bookings</a>
-      <a routerLink="/contact">Contact</a>
+      <a routerLink="/" (click)="closeMenu()">Home</a>
+      <a routerLink="/" fragment="about" (click)="closeMenu()">About</a>
+      <a routerLink="/account" (click)="closeMenu()">My Bookings</a>
+      <a routerLink="/contact" (click)="closeMenu()">Contact</a>
     </nav>
 
     @if (authService.user(); as user) {
       <div class="user-menu">
-        <a routerLink="/account" class="user-name">
+        <a routerLink="/account" class="user-name" (click)="closeMenu()">
           <i class="fa-solid fa-circle-user" aria-hidden="true"></i>
           {{ authService.displayName() }}
         </a>
         <button type="button" class="logout-cta" (click)="logout()">Logout</button>
       </div>
     } @else {
-      <button type="button" class="auth-cta" (click)="authModal.open('login')">
+      <button type="button" class="auth-cta" (click)="authModal.open('login'); closeMenu()">
         <i class="fa-solid fa-circle-user" aria-hidden="true"></i>
         Login
       </button>

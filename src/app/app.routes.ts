@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, bookingAccessGuard } from './guards/auth.guard';
+import { adminGuard, authGuard, bookingAccessGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
     {
@@ -57,5 +57,22 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/account/account').then((m) => m.AccountPageComponent),
         canActivate: [authGuard],
         title: 'My Account - BusEase',
+    },
+    {
+        path: 'admin',
+        loadComponent: () => import('./admin/shell/admin-shell').then((m) => m.AdminShell),
+        canActivate: [adminGuard],
+        children: [
+            {
+                path: '',
+                loadComponent: () => import('./admin/dashboard/dashboard-page/dashboard-page').then((m) => m.DashboardPage),
+                title: 'Admin Dashboard - BusEase',
+            },
+            {
+                path: 'bookings',
+                loadComponent: () => import('./admin/bookings/bookings-page/bookings-page').then((m) => m.BookingsPage),
+                title: 'Bookings - BusEase Admin',
+            },
+        ],
     },
 ];

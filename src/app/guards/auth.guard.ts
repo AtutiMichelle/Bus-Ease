@@ -15,6 +15,25 @@ export const authGuard: CanActivateFn = async (_route, state) => {
   return false;
 };
 
+/** Gates the admin dashboard. There is no roles/profiles table yet (see
+ * supabase/sql, everything keys off auth.users directly), so this can only
+ * check that someone is logged in, the same as authGuard.
+ *
+ * TODO: once a role column/table exists, also check role === 'admin' here
+ * and redirect non-admins away (e.g. router.navigate(['/'])) instead of
+ * letting any authenticated user reach the dashboard. */
+export const adminGuard: CanActivateFn = async (_route, state) => {
+  const authService = inject(AuthService);
+  const authModal = inject(AuthModalService);
+
+  const session = await authService.getSession();
+  if (session) {
+    return true;
+  }
+  authModal.open('login', state.url);
+  return false;
+};
+
 /** Same as authGuard, but also lets a guest through with exactly one seat
  * (a single seat can be booked without an account; anything more needs a
  * login, enforced here as a backstop in case a guest reaches this URL

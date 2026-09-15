@@ -1,0 +1,111 @@
+/* Greeting */
+.greeting-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4, 24px);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-4, 24px);
+}
+
+.greeting-title {
+  margin: 0 0 4px;
+  font-family: var(--font-family, 'Times New Roman', Times, serif);
+  font-size: var(--text-xl, 1.75rem);
+  font-weight: 700;
+  color: var(--color-primary, #12294d);
+}
+
+.greeting-meta {
+  margin: 0;
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--color-text-muted, #6b6b6b);
+}
+
+.primary-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  padding: 11px 20px;
+  border: none;
+  border-radius: 999px;
+  background-color: var(--color-accent, #eb1f1a);
+  color: #fff;
+  font-family: inherit;
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(235, 31, 26, 0.3);
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.primary-cta:hover {
+  background-color: var(--color-accent-dark, #d68c0f);
+  transform: translateY(-1px);
+}
+
+.primary-cta:focus-visible {
+  outline: 2px solid var(--color-primary-light, #1e88e5);
+  outline-offset: 2px;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4, 24px);
+  margin-bottom: var(--space-4, 24px);
+}
+
+.secondary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4, 24px);
+  margin-bottom: var(--space-4, 24px);
+  align-items: stretch;
+}
+
+.tables-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4, 24px);
+  align-items: start;
+}
+
+/* Grid items default to min-width: auto, so a wide table (long nowrap
+   route names) inside a 1fr track pushes the whole page wider than the
+   viewport instead of scrolling within its own card. */
+.stat-grid > *,
+.secondary-grid > *,
+.tables-grid > * {
+  min-width: 0;
+}
+
+@media (max-width: 1100px) {
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .secondary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 800px) {
+  .tables-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .greeting-row {
+    align-items: stretch;
+  }
+
+  .primary-cta {
+    justify-content: center;
+  }
+
+  .stat-grid {
+    grid-template-columns: 1fr;
+  }
+}

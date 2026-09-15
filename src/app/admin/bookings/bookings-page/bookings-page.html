@@ -1,0 +1,39 @@
+<section class="page-header">
+  <h1>Bookings</h1>
+  <p class="page-subtitle">All bookings across every route</p>
+</section>
+
+<section class="toolbar">
+  <div class="filter-pills" role="group" aria-label="Filter by status">
+    @for (filter of statusFilters; track filter.id) {
+      <button
+        type="button"
+        class="filter-pill"
+        [class.active]="statusFilter() === filter.id"
+        [attr.aria-pressed]="statusFilter() === filter.id"
+        (click)="setStatusFilter(filter.id)"
+      >
+        {{ filter.label }}
+      </button>
+    }
+  </div>
+
+  <label class="toolbar-search">
+    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+    <span class="sr-only">Search bookings by customer, route or reference</span>
+    <input
+      type="search"
+      placeholder="Search by customer, route or reference"
+      [ngModel]="searchQuery()"
+      (ngModelChange)="searchQuery.set($event)"
+    />
+  </label>
+</section>
+
+@if (loading()) {
+  <p class="section-loading">Loading bookings&hellip;</p>
+} @else if (error()) {
+  <p class="section-error">{{ error() }}</p>
+} @else {
+  <app-bookings-table [bookings]="filteredBookings()" title="All bookings" [showViewAll]="false" [emptyMessage]="emptyMessage()" />
+}

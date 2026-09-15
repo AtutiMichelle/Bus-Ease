@@ -1,0 +1,100 @@
+.summary-list {
+  background-color: var(--color-surface, #fff);
+  border-radius: var(--radius-md, 8px);
+  box-shadow: var(--shadow-card, 0 2px 8px rgba(26, 58, 107, 0.08));
+  padding: var(--space-4, 24px);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.summary-title {
+  margin: 0;
+  font-family: var(--font-family, 'Times New Roman', Times, serif);
+  font-size: var(--text-lg, 1.25rem);
+  color: var(--color-primary, #12294d);
+}
+
+.summary-subtitle {
+  margin: 2px 0 var(--space-3, 16px);
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--color-text-muted, #6b6b6b);
+}
+
+.summary-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 8px);
+  flex: 1;
+}
+
+.summary-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 16px);
+  padding: 10px var(--space-3, 16px);
+  border-radius: var(--radius-sm, 4px);
+}
+
+.summary-row-icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm, 4px);
+  font-size: 0.85rem;
+}
+
+.tone-red {
+  background-color: rgba(235, 31, 26, 0.08);
+}
+
+.tone-red .summary-row-icon {
+  background-color: rgba(235, 31, 26, 0.16);
+  color: var(--color-accent, #eb1f1a);
+}
+
+.tone-moss {
+  background-color: rgba(22, 163, 74, 0.08);
+}
+
+.tone-moss .summary-row-icon {
+  background-color: rgba(22, 163, 74, 0.16);
+  color: var(--color-green, #16a34a);
+}
+
+.tone-gold {
+  background-color: rgba(214, 140, 15, 0.1);
+}
+
+.tone-gold .summary-row-icon {
+  background-color: rgba(214, 140, 15, 0.2);
+  color: var(--color-accent-dark, #d68c0f);
+}
+
+.tone-navy {
+  background-color: var(--color-soft-bg, #e8f1fc);
+}
+
+.tone-navy .summary-row-icon {
+  background-color: rgba(30, 136, 229, 0.18);
+  color: var(--color-primary-light, #1e88e5);
+}
+
+.summary-row-label {
+  flex: 1;
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--color-text, #3a3a3a);
+}
+
+.summary-row-value {
+  font-weight: 700;
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--color-text, #3a3a3a);
+}

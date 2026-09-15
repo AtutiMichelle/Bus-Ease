@@ -1,0 +1,14 @@
+<div class="summary-list">
+  <h2 class="summary-title">This week</h2>
+  <p class="summary-subtitle">Sales activity so far</p>
+
+  <ul class="summary-rows">
+    @for (row of rows(); track row.label) {
+      <li class="summary-row" [class]="'tone-' + row.tone">
+        <span class="summary-row-icon" aria-hidden="true"><i [class]="'fa-solid ' + row.icon"></i></span>
+        <span class="summary-row-label">{{ row.label }}</span>
+        <span class="summary-row-value">{{ row.value }}</span>
+      </li>
+    }
+  </ul>
+</div>

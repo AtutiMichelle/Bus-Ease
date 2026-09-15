@@ -1,0 +1,51 @@
+<div class="payment-split-donut">
+  <div class="card-header">
+    <div>
+      <h2>How customers pay</h2>
+      <p class="card-subtitle">Share of this week's revenue</p>
+    </div>
+    <span class="period-badge">This week</span>
+  </div>
+
+  @if (!hasData()) {
+    <p class="empty-state">No payments have been collected this week yet. Once bookings are paid for, the split by method will show up here.</p>
+  } @else {
+    <div class="donut-body">
+      <svg class="donut-chart" viewBox="0 0 100 100" role="img" [attr.aria-label]="chartDescription()">
+        <g transform="rotate(-90 50 50)">
+          <circle class="donut-track" cx="50" cy="50" [attr.r]="radius" fill="none" stroke-width="14" />
+          @for (segment of segments(); track segment.label) {
+            <circle
+              class="donut-segment"
+              cx="50"
+              cy="50"
+              [attr.r]="radius"
+              fill="none"
+              stroke-width="14"
+              [attr.stroke]="segment.color"
+              [attr.stroke-dasharray]="segment.dashArray"
+              [attr.stroke-dashoffset]="segment.dashOffset"
+            />
+          }
+        </g>
+        <text x="50" y="47" text-anchor="middle" class="donut-total">{{ 'KSh ' + (totalCollected() | number) }}</text>
+        <text x="50" y="61" text-anchor="middle" class="donut-total-label">collected</text>
+      </svg>
+
+      <div class="donut-legend">
+        @for (item of legend(); track item.label) {
+          <div class="legend-row">
+            <span class="legend-dot" [style.background-color]="item.color" aria-hidden="true"></span>
+            <span class="legend-label">{{ item.label }}</span>
+            <span class="legend-value">{{ item.percent }}%</span>
+          </div>
+        }
+
+        <p class="failed-payments">
+          Failed payments
+          <span class="failed-payments-count">{{ failedPayments() }}</span>
+        </p>
+      </div>
+    </div>
+  }
+</div>

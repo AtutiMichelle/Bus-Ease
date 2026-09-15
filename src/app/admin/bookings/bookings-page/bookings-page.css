@@ -1,0 +1,116 @@
+.page-header {
+  margin-bottom: var(--space-4, 24px);
+}
+
+.page-header h1 {
+  margin: 0 0 4px;
+  font-family: var(--font-family, 'Times New Roman', Times, serif);
+  font-size: var(--text-xl, 1.75rem);
+  font-weight: 700;
+  color: var(--color-primary, #12294d);
+}
+
+.page-subtitle {
+  margin: 0;
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--color-text-muted, #6b6b6b);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3, 16px);
+  margin-bottom: var(--space-4, 24px);
+}
+
+.filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2, 8px);
+}
+
+.filter-pill {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border, #e4dfd6);
+  background-color: var(--color-surface, #fff);
+  color: var(--color-text, #3a3a3a);
+  font-family: inherit;
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.filter-pill:hover {
+  border-color: var(--color-primary-light, #1e88e5);
+}
+
+.filter-pill.active {
+  background-color: var(--color-primary, #12294d);
+  border-color: var(--color-primary, #12294d);
+  color: #fff;
+}
+
+.filter-pill:focus-visible,
+.toolbar-search input:focus-visible {
+  outline: 2px solid var(--color-primary-light, #1e88e5);
+  outline-offset: 2px;
+}
+
+.toolbar-search {
+  flex: 1;
+  min-width: 220px;
+  max-width: 360px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  padding: 9px var(--space-3, 16px);
+  border-radius: 999px;
+  background-color: var(--color-surface, #fff);
+  border: 1px solid var(--color-border, #e4dfd6);
+  color: var(--color-text-muted, #6b6b6b);
+}
+
+.toolbar-search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--color-text, #3a3a3a);
+  outline: none;
+}
+
+.toolbar-search input::placeholder {
+  color: var(--color-text-muted, #6b6b6b);
+}
+
+.section-loading,
+.section-error {
+  margin: 0;
+  padding: var(--space-6, 48px) var(--space-4, 24px);
+  text-align: center;
+  color: var(--color-text-muted, #6b6b6b);
+  font-size: var(--text-sm, 0.875rem);
+  background-color: var(--color-surface, #fff);
+  border-radius: var(--radius-md, 8px);
+}
+
+.section-error {
+  color: var(--color-danger, #d64545);
+}
+
+@media (max-width: 600px) {
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .toolbar-search {
+    max-width: none;
+  }
+}

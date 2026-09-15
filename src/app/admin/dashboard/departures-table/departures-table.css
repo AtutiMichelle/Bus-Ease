@@ -1,0 +1,148 @@
+.departures-table-card {
+  background-color: var(--color-surface, #fff);
+  border-radius: var(--radius-md, 8px);
+  box-shadow: var(--shadow-card, 0 2px 8px rgba(26, 58, 107, 0.08));
+  padding: var(--space-4, 24px);
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3, 16px);
+}
+
+.card-header h2 {
+  margin: 0;
+  font-family: var(--font-family, 'Times New Roman', Times, serif);
+  font-size: var(--text-lg, 1.25rem);
+  color: var(--color-primary, #12294d);
+}
+
+.count-badge {
+  padding: 5px 12px;
+  border-radius: 999px;
+  background-color: var(--color-bg, #faf8f5);
+  border: 1px solid var(--color-border, #e4dfd6);
+  font-size: var(--text-xs, 0.75rem);
+  font-weight: 600;
+  color: var(--color-text-muted, #6b6b6b);
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  padding: var(--space-2, 8px) var(--space-3, 16px);
+  text-align: left;
+  font-size: var(--text-xs, 0.75rem);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted, #6b6b6b);
+  border-bottom: 1px solid var(--color-border, #e4dfd6);
+  white-space: nowrap;
+}
+
+td {
+  padding: var(--space-3, 16px);
+  border-bottom: 1px solid var(--color-border, #e4dfd6);
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--color-text, #3a3a3a);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:hover {
+  background-color: var(--color-bg, #faf8f5);
+}
+
+.time-cell {
+  font-weight: 700;
+  font-family: var(--font-family, 'Times New Roman', Times, serif);
+}
+
+.seats-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  min-width: 140px;
+}
+
+.seat-fill-track {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background-color: var(--color-bg, #faf8f5);
+  overflow: hidden;
+}
+
+.seat-fill-bar {
+  height: 100%;
+  border-radius: 999px;
+  background-color: var(--color-primary, #12294d);
+  transition: width 0.3s ease;
+}
+
+.seat-fill-bar.seat-fill-full {
+  background-color: var(--color-danger, #d64545);
+}
+
+.seats-count {
+  flex-shrink: 0;
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--color-text-muted, #6b6b6b);
+}
+
+.status-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: var(--text-xs, 0.75rem);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.status-departed {
+  background-color: rgba(22, 163, 74, 0.12);
+  color: var(--color-green, #16a34a);
+}
+
+.status-boarding {
+  background-color: rgba(214, 140, 15, 0.14);
+  color: var(--color-accent-dark, #d68c0f);
+}
+
+.status-scheduled {
+  background-color: var(--color-soft-bg, #e8f1fc);
+  color: var(--color-primary-light, #1e88e5);
+}
+
+.status-delayed {
+  background-color: rgba(214, 69, 69, 0.12);
+  color: var(--color-danger, #d64545);
+}
+
+.empty-state {
+  margin: 0;
+  padding: var(--space-6, 48px) var(--space-4, 24px);
+  text-align: center;
+  color: var(--color-text-muted, #6b6b6b);
+  font-size: var(--text-sm, 0.875rem);
+  background-color: var(--color-bg, #faf8f5);
+  border: 1px dashed var(--color-border, #e4dfd6);
+  border-radius: var(--radius-md, 8px);
+}

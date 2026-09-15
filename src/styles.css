@@ -19,3 +19,19 @@ body {
   margin: 0 auto;
   padding: 0 var(--space-4, 24px);
 }
+
+/* Visually-hidden but still screen-reader-visible label, e.g. for an
+   icon-only search input. Global because it's needed across unrelated
+   components (Angular's view encapsulation means a component-scoped copy
+   only helps that one component). */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

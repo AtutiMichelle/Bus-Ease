@@ -1,0 +1,46 @@
+<div class="top-routes-card">
+  <div class="card-header">
+    <div>
+      <h2>Top routes</h2>
+      <p class="card-subtitle">Tickets sold, last 7 days</p>
+    </div>
+    <button type="button" class="card-link">All routes</button>
+  </div>
+
+  @if (routes().length === 0) {
+    <p class="empty-state">No tickets have sold on any route this week yet. Once bookings come in, the busiest routes will show up here.</p>
+  } @else {
+    <div class="route-rows">
+      @for (route of routes(); track route.code) {
+        <div class="route-row">
+          <span class="route-badge" [class]="'tone-' + route.tone" aria-hidden="true">{{ route.code }}</span>
+
+          <div class="route-main">
+            <p class="route-name">{{ route.name }}</p>
+            <p class="route-meta">{{ route.ticketCount }} tickets &middot; KSh {{ route.revenue | number }}</p>
+            <div class="route-bar-track">
+              <div
+                class="route-bar-fill"
+                [class]="'tone-' + route.tone"
+                [style.width.%]="(route.ticketCount / maxTickets()) * 100"
+              ></div>
+            </div>
+          </div>
+
+          <span class="route-delta" [class]="'delta-' + route.delta.direction">
+            @if (route.delta.direction === 'up') {
+              <span aria-hidden="true">&uarr;</span>
+            } @else if (route.delta.direction === 'down') {
+              <span aria-hidden="true">&darr;</span>
+            }
+            {{ route.delta.text }}
+          </span>
+        </div>
+      }
+    </div>
+
+    @if (noSalesFooterText()) {
+      <p class="no-sales-footer">{{ noSalesFooterText() }}</p>
+    }
+  }
+</div>

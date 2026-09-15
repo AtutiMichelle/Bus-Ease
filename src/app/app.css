@@ -9,3 +9,7 @@ main {
   flex: 1;
   padding-top: 64px;
 }
+
+main.no-header-offset {
+  padding-top: 0;
+}

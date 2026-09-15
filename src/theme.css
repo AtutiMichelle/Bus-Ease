@@ -20,6 +20,10 @@
 
   /* Type */
   --font-family: 'Times New Roman', Times, serif;
+  /* Admin section only: body/data/labels there use a system sans-serif for
+     a denser, more legible admin UI, while headings still opt back into
+     --font-family. See src/app/admin/shell/admin-shell.css. */
+  --font-family-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-base: 1rem;

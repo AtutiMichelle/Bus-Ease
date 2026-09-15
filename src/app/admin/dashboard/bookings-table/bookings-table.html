@@ -1,0 +1,45 @@
+<div class="bookings-table-card">
+  <div class="card-header">
+    <h2>{{ title() }}</h2>
+    @if (showViewAll()) {
+      <a routerLink="/admin/bookings" class="card-link">View all</a>
+    }
+  </div>
+
+  @if (bookings().length === 0) {
+    <p class="empty-state">{{ emptyMessage() }}</p>
+  } @else {
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th>Route</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (booking of bookings(); track booking.reference) {
+            <tr>
+              <td>
+                <div class="customer-cell">
+                  <span class="avatar-badge" aria-hidden="true">{{ booking.customerInitials }}</span>
+                  <div>
+                    <p class="customer-name">{{ booking.customerName }}</p>
+                    <p class="customer-meta">{{ formatBookedAt(booking.bookedAt) }}</p>
+                  </div>
+                </div>
+              </td>
+              <td>{{ booking.route }}</td>
+              <td>KSh {{ booking.amount | number }}</td>
+              <td>
+                <span class="status-tag" [class]="'status-' + booking.status.toLowerCase()">{{ booking.status }}</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

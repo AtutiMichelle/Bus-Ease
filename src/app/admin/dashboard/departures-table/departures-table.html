@@ -1,0 +1,50 @@
+<div class="departures-table-card">
+  <div class="card-header">
+    <h2>Departures today</h2>
+    @if (departures().length > 0) {
+      <span class="count-badge">{{ departures().length }} trips</span>
+    }
+  </div>
+
+  @if (departures().length === 0) {
+    <p class="empty-state">No trips are scheduled to depart today.</p>
+  } @else {
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Route</th>
+            <th>Seats</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (departure of departures(); track departure.time + departure.route) {
+            <tr>
+              <td class="time-cell">{{ departure.time }}</td>
+              <td>{{ departure.route }}</td>
+              <td class="seats-cell">
+                <div
+                  class="seat-fill-track"
+                  role="img"
+                  [attr.aria-label]="departure.seatsSold + ' of ' + departure.totalSeats + ' seats sold'"
+                >
+                  <div
+                    class="seat-fill-bar"
+                    [class.seat-fill-full]="isNearCapacity(departure)"
+                    [style.width.%]="fillPercent(departure)"
+                  ></div>
+                </div>
+                <span class="seats-count">{{ departure.seatsSold }}/{{ departure.totalSeats }}</span>
+              </td>
+              <td>
+                <span class="status-tag" [class]="'status-' + departure.status.toLowerCase()">{{ departure.status }}</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

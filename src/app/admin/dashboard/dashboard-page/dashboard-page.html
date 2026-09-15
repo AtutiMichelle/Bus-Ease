@@ -1,0 +1,38 @@
+<section class="greeting-row">
+  <div>
+    <h1 class="greeting-title">{{ greeting() }}, {{ adminFirstName() }}</h1>
+    <p class="greeting-meta">
+      {{ greetingDate() }}
+      @if (ticketsSoldThisWeek() !== null) {
+        &middot; {{ ticketsSoldThisWeek() }} tickets sold this week
+      }
+    </p>
+  </div>
+  <button type="button" class="primary-cta">
+    <i class="fa-solid fa-plus" aria-hidden="true"></i>
+    Publish a trip
+  </button>
+</section>
+
+<section class="stat-grid" aria-label="Key metrics">
+  @for (card of kpiCards(); track card.label) {
+    <app-kpi-card
+      [label]="card.label"
+      [value]="card.value"
+      [delta]="card.delta"
+      [tone]="card.tone"
+      [sparkline]="card.sparkline"
+    />
+  }
+</section>
+
+<section class="secondary-grid">
+  <app-summary-list [summary]="weekSummary()" />
+  <app-top-routes-card [data]="topRoutes()" />
+  <app-payment-split-donut [data]="paymentSplit()" />
+</section>
+
+<section class="tables-grid">
+  <app-bookings-table [bookings]="recentBookings()" />
+  <app-departures-table [departures]="departuresToday()" />
+</section>

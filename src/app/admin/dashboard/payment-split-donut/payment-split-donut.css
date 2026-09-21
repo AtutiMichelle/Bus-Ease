@@ -1,206 +1,143 @@
-/* The card's own width decides whether the chart sits beside its legend or
-   above it. */
+/* Card, header and body are the shared admin-* styles in styles.css. */
 :host {
-  display: block;
-  container-type: inline-size;
-}
-
-.payment-split-donut {
-  background-color: var(--color-surface, #fff);
-  border-radius: var(--radius-md, 8px);
-  box-shadow: var(--shadow-card, 0 2px 8px rgba(26, 58, 107, 0.08));
-  padding: var(--space-4, 24px);
   display: flex;
-  flex-direction: column;
-  height: 100%;
-  box-sizing: border-box;
 }
 
-.card-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-2, 8px);
-  margin-bottom: var(--space-3, 16px);
-}
-
-.card-header h2 {
-  margin: 0;
-  font-family: var(--font-family, 'Times New Roman', Times, serif);
-  font-size: var(--text-lg, 1.25rem);
-  color: var(--color-primary, #12294d);
-}
-
-.card-subtitle {
-  margin: 2px 0 0;
-  font-size: var(--text-sm, 0.875rem);
-  color: var(--color-text-muted, #6b6b6b);
-}
-
-/* Chart and legend are centred as one group, so any spare height in the card
-   is shared above and below them instead of pooling above the chart. */
-.donut-body {
+.donut-card {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
+}
+
+.donut-body {
+  flex: 1;
+  display: flex;
   align-items: center;
-  justify-content: center;
-  gap: var(--space-4, 24px);
+  gap: var(--space-3);
 }
 
 .donut-chart {
-  width: min(100%, 168px);
-  aspect-ratio: 1;
   flex-shrink: 0;
+  width: 128px;
+  height: 128px;
 }
 
 .donut-track {
-  stroke: var(--color-bg, #faf8f5);
-}
-
-.donut-segment {
-  transition: stroke-dasharray 0.3s ease;
+  stroke: var(--admin-track);
 }
 
 .donut-currency {
-  font-family: var(--font-family-ui);
-  font-size: 6.5px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  fill: var(--color-text-muted, #6b6b6b);
+  font-size: 7px;
+  font-weight: 500;
+  fill: var(--admin-muted);
 }
 
 .donut-total {
-  font-family: var(--font-family, 'Times New Roman', Times, serif);
-  font-size: 17px;
-  font-weight: 700;
-  fill: var(--color-primary, #12294d);
+  font-family: var(--admin-font-display);
+  font-size: 15px;
+  font-weight: 600;
+  fill: var(--admin-ink);
 }
 
 .donut-total-label {
-  font-family: var(--font-family-ui);
-  font-size: 6px;
-  fill: var(--color-text-muted, #6b6b6b);
+  font-size: 6.5px;
+  fill: var(--admin-muted);
 }
 
-.donut-legend {
-  align-self: stretch;
+/* min-width: 0 lets the labels shrink and end in an ellipsis instead of
+   pushing the legend out of the card. */
+.legend {
+  flex: 1;
   min-width: 0;
   margin: 0;
   padding: 0;
   list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2, 8px);
 }
 
 .legend-row {
   display: grid;
-  grid-template-columns: 10px 1fr auto 4ch;
+  grid-template-columns: 10px minmax(0, 1fr) auto;
+  grid-template-areas:
+    'dot label percent'
+    '. amount amount';
+  column-gap: 8px;
   align-items: center;
-  column-gap: var(--space-2, 8px);
-  font-size: var(--text-sm, 0.875rem);
+  height: 40px;
+  box-sizing: border-box;
 }
 
 .legend-dot {
+  grid-area: dot;
   width: 10px;
   height: 10px;
   border-radius: 50%;
 }
 
 .legend-label {
-  min-width: 0;
-  color: var(--color-text, #3a3a3a);
+  grid-area: label;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--admin-ink);
+}
+
+.legend-percent {
+  grid-area: percent;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--admin-ink);
 }
 
 .legend-amount {
-  font-size: var(--text-xs, 0.75rem);
-  color: var(--color-text-muted, #6b6b6b);
+  grid-area: amount;
+  font-size: 0.8125rem;
   font-variant-numeric: tabular-nums;
+  color: var(--admin-muted);
 }
 
-.legend-value {
-  text-align: right;
-  font-weight: 700;
-  color: var(--color-text, #3a3a3a);
-  font-variant-numeric: tabular-nums;
-}
-
-/* Same footer treatment as the Top routes card, so the two line up. */
-.failed-payments {
+/* Empty state: a faint ring where the chart will go, then one line saying
+   why it is empty */
+.empty {
+  flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2, 8px);
-  margin: var(--space-3, 16px) 0 0;
-  padding-top: var(--space-3, 16px);
-  border-top: 1px solid var(--color-border, #e4dfd6);
-  font-size: var(--text-sm, 0.875rem);
-  color: var(--color-text-muted, #6b6b6b);
+  justify-content: center;
+  text-align: center;
 }
 
-.failed-payments-count {
-  font-weight: 700;
-  color: var(--color-danger, #d64545);
+.donut-ghost {
+  width: 88px;
+  height: 88px;
+  margin-bottom: var(--space-3);
 }
 
-.failed-payments-untracked {
-  font-size: var(--text-xs, 0.75rem);
+.empty-title {
+  margin: 0 0 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--admin-ink);
 }
 
+.empty-hint {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--admin-muted);
+}
+
+/* Loading placeholder pieces */
 .sk-ring {
-  width: 168px;
-  height: 168px;
+  flex-shrink: 0;
+  width: 128px;
+  height: 128px;
   border-radius: 50%;
-}
-
-.sk-footer {
-  width: 40%;
-  height: 12px;
 }
 
 .sk-legend {
   height: 14px;
-  width: 100%;
-}
-
-.empty-state {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0;
-  padding: var(--space-4, 24px);
-  text-align: center;
-  color: var(--color-text-muted, #6b6b6b);
-  font-size: var(--text-sm, 0.875rem);
-  background-color: var(--color-bg, #faf8f5);
-  border: 1px dashed var(--color-border, #e4dfd6);
-  border-radius: var(--radius-md, 8px);
-}
-
-@container (min-width: 460px) {
-  .donut-body {
-    flex-direction: row;
-    gap: var(--space-5, 32px);
-  }
-
-  .donut-chart {
-    width: 152px;
-  }
-
-  .donut-body {
-    justify-content: center;
-  }
-
-  .donut-legend {
-    align-self: center;
-    flex: 0 1 340px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .donut-segment {
-    transition: none;
-  }
+  margin-bottom: 26px;
 }

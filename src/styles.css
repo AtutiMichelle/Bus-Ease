@@ -142,6 +142,24 @@ body {
   flex-shrink: 0;
 }
 
+.admin-card-heading {
+  min-width: 0;
+}
+
+.admin-card-subtitle {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--admin-muted);
+}
+
+/* Body of a bottom-row card. The minimum height keeps a card from resizing
+   when it moves between loading, empty and filled. */
+.admin-card-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 168px;
+}
+
 .admin-card-link {
   display: inline-flex;
   align-items: center;

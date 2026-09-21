@@ -1,29 +1,46 @@
-<div class="summary-list">
-  <h2 class="summary-title">This week</h2>
-  <p class="summary-subtitle">Last 7 days</p>
+<section class="summary-card admin-card" aria-labelledby="week-title">
+  <div class="admin-card-header">
+    <div class="admin-card-heading">
+      <h2 id="week-title" class="admin-card-title">This week</h2>
+      <p class="admin-card-subtitle">Last 7 days</p>
+    </div>
+  </div>
 
   @let current = state();
-  @if (current.status === 'error') {
-    <app-widget-error message="Couldn't load this week's numbers." (retry)="retry.emit()" />
-  } @else if (current.status === 'loading') {
-    <ul class="summary-rows" aria-hidden="true">
-      @for (slot of placeholders; track slot) {
-        <li class="summary-row">
-          <span class="skeleton sk-icon"></span>
-          <span class="skeleton sk-label"></span>
-          <span class="skeleton sk-value"></span>
-        </li>
+  <div class="admin-card-body">
+    @if (current.status === 'error') {
+      <app-widget-error message="Couldn't load this week's numbers." (retry)="retry.emit()" />
+    } @else if (current.status === 'loading') {
+      <div aria-hidden="true">
+        @for (slot of placeholders; track slot) {
+          <div class="summary-row">
+            <span class="skeleton sk-label"></span>
+            <span class="skeleton sk-value"></span>
+          </div>
+        }
+      </div>
+    } @else {
+      <dl class="summary-rows">
+        @for (row of rows(); track row.label) {
+          <div class="summary-row">
+            <dt>{{ row.label }}</dt>
+            <dd>{{ row.value }}</dd>
+          </div>
+        }
+      </dl>
+    }
+  </div>
+
+  @if (current.status === 'loading') {
+    <div class="admin-card-footer summary-footer" aria-hidden="true"><span class="skeleton sk-footer"></span></div>
+  } @else if (untrackedText()) {
+    <div class="admin-card-footer summary-footer">
+      <span>{{ untrackedText() }}</span>
+      @if (setupRoute) {
+        <a class="admin-card-link" [routerLink]="setupRoute">Set up</a>
+      } @else {
+        <span class="admin-card-link admin-card-link-static">Set up</span>
       }
-    </ul>
-  } @else {
-    <ul class="summary-rows">
-      @for (row of rows(); track row.label) {
-        <li class="summary-row" [class]="'tone-' + row.tone">
-          <span class="summary-row-icon" aria-hidden="true"><i [class]="'fa-solid ' + row.icon"></i></span>
-          <span class="summary-row-label">{{ row.label }}</span>
-          <span class="summary-row-value" [class.not-tracked]="row.notTracked">{{ row.value }}</span>
-        </li>
-      }
-    </ul>
+    </div>
   }
-</div>
+</section>

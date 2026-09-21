@@ -264,7 +264,7 @@ export class AdminDashboardService {
     ];
   }
 
-  async getTopRoutes(limit = 4): Promise<TopRoutesData> {
+  async getTopRoutes(limit = 3): Promise<TopRoutesData> {
     const row = await this.rpc<TopRoutesRow>('admin_top_routes', { p_limit: limit });
     const routes: TopRoute[] = row.routes.map((route, index) => ({
       code: route.destination.replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase(),

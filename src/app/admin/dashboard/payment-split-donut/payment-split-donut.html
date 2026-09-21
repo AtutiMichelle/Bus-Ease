@@ -4,7 +4,6 @@
       <h2>How customers pay</h2>
       <p class="card-subtitle">Share of revenue, last 7 days</p>
     </div>
-    <span class="period-badge">This week</span>
   </div>
 
   @let current = state();
@@ -19,13 +18,14 @@
         }
       </div>
     </div>
+    <p class="failed-payments" aria-hidden="true"><span class="skeleton sk-footer"></span></p>
   } @else if (!hasData()) {
     <p class="empty-state">No payments have been collected in the last 7 days. Once bookings are paid for, the split by method will show up here.</p>
   } @else {
     <div class="donut-body">
       <svg class="donut-chart" viewBox="0 0 100 100" role="img" [attr.aria-label]="chartDescription()">
         <g transform="rotate(-90 50 50)">
-          <circle class="donut-track" cx="50" cy="50" [attr.r]="radius" fill="none" stroke-width="14" />
+          <circle class="donut-track" cx="50" cy="50" [attr.r]="radius" fill="none" [attr.stroke-width]="strokeWidth" />
           @for (segment of segments(); track segment.label) {
             <circle
               class="donut-segment"
@@ -33,35 +33,37 @@
               cy="50"
               [attr.r]="radius"
               fill="none"
-              stroke-width="14"
+              [attr.stroke-width]="strokeWidth"
               [attr.stroke]="segment.color"
               [attr.stroke-dasharray]="segment.dashArray"
               [attr.stroke-dashoffset]="segment.dashOffset"
             />
           }
         </g>
-        <text x="50" y="47" text-anchor="middle" class="donut-total">{{ 'KSh ' + (totalCollected() | number) }}</text>
-        <text x="50" y="61" text-anchor="middle" class="donut-total-label">collected</text>
+        <text x="50" y="43" text-anchor="middle" class="donut-currency">KSh</text>
+        <text x="50" y="58.5" text-anchor="middle" class="donut-total">{{ totalCompact() }}</text>
+        <text x="50" y="68" text-anchor="middle" class="donut-total-label">collected</text>
       </svg>
 
-      <div class="donut-legend">
+      <ul class="donut-legend">
         @for (item of legend(); track item.label) {
-          <div class="legend-row">
+          <li class="legend-row">
             <span class="legend-dot" [style.background-color]="item.color" aria-hidden="true"></span>
             <span class="legend-label">{{ item.label }}</span>
+            <span class="legend-amount">{{ item.amount }}</span>
             <span class="legend-value">{{ item.percent }}%</span>
-          </div>
+          </li>
         }
-
-        <p class="failed-payments">
-          Failed payments
-          @if (failedPayments() === null) {
-            <span class="failed-payments-untracked">Not tracked yet</span>
-          } @else {
-            <span class="failed-payments-count">{{ failedPayments() }}</span>
-          }
-        </p>
-      </div>
+      </ul>
     </div>
+
+    <p class="failed-payments">
+      <span>Failed payments</span>
+      @if (failedPayments() === null) {
+        <span class="failed-payments-untracked">Not tracked yet</span>
+      } @else {
+        <span class="failed-payments-count">{{ failedPayments() }}</span>
+      }
+    </p>
   }
 </div>

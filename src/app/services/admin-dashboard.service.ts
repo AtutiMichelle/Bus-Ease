@@ -13,7 +13,7 @@ import {
   TopRoutesData,
   WeekSummary,
 } from '../models/admin-dashboard.model';
-import { formatKshCompact } from '../utils/money';
+import { formatKsh, formatKshCompact } from '../utils/money';
 
 /** Raw shapes returned by the admin_* database functions (see
  * supabase/sql/2026-09-21-admin-dashboard.sql). Numbers can arrive as
@@ -168,6 +168,10 @@ function bookingStatus(status: string): BookingStatusTag {
   }
 }
 
+function ticketLabel(count: number): string {
+  return `${count.toLocaleString('en-US')} ${count === 1 ? 'ticket' : 'tickets'}`;
+}
+
 function toNumbers(values: (number | string)[] | null | undefined): number[] {
   return (values ?? []).map(Number);
 }
@@ -209,6 +213,9 @@ export class AdminDashboardService {
     const revenue = { current: Number(row.revenue.current), previous: Number(row.revenue.previous) };
     const customers = { current: Number(row.new_customers.current), previous: Number(row.new_customers.previous) };
     const awaiting = row.awaiting;
+    const ticketsDaily = toNumbers(row.tickets.daily);
+    const revenueDaily = toNumbers(row.revenue.daily);
+    const customersDaily = toNumbers(row.new_customers.daily);
 
     let awaitingDelta: KpiDelta;
     if (awaiting.count === 0) {
@@ -225,16 +232,18 @@ export class AdminDashboardService {
         value: tickets.current.toLocaleString('en-US'),
         delta: weekOverWeek(tickets.current, tickets.previous),
         tone: 'red',
-        sparkline: toNumbers(row.tickets.daily),
+        sparkline: ticketsDaily,
         sparklineDays: days,
+        sparklineLabels: ticketsDaily.map(ticketLabel),
       },
       {
         label: 'Revenue',
         value: formatKshCompact(revenue.current),
         delta: weekOverWeek(revenue.current, revenue.previous),
         tone: 'moss',
-        sparkline: toNumbers(row.revenue.daily),
+        sparkline: revenueDaily,
         sparklineDays: days,
+        sparklineLabels: revenueDaily.map(formatKsh),
       },
       {
         label: 'Awaiting payment',
@@ -243,6 +252,7 @@ export class AdminDashboardService {
         tone: 'gold',
         sparkline: [],
         sparklineDays: [],
+        sparklineLabels: [],
         sparklineNote: 'Live count, no history kept',
       },
       {
@@ -250,8 +260,9 @@ export class AdminDashboardService {
         value: customers.current.toLocaleString('en-US'),
         delta: weekOverWeek(customers.current, customers.previous),
         tone: 'navy',
-        sparkline: toNumbers(row.new_customers.daily),
+        sparkline: customersDaily,
         sparklineDays: days,
+        sparklineLabels: customersDaily.map((count) => `${count.toLocaleString('en-US')} new`),
       },
     ];
   }

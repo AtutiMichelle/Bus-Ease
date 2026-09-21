@@ -32,11 +32,15 @@
   flex: 1;
 }
 
+/* Rows stretch equally to fill whatever height the row of cards settles on,
+   so this card ends flush with its neighbours. */
 .summary-row {
+  flex: 1;
   display: flex;
   align-items: center;
   gap: var(--space-3, 16px);
-  padding: 10px var(--space-3, 16px);
+  min-height: 44px;
+  padding: 0 var(--space-3, 16px);
   border-radius: var(--radius-sm, 4px);
 }
 
@@ -94,6 +98,7 @@
 }
 
 .summary-row-value {
+  font-variant-numeric: tabular-nums;
   font-weight: 700;
   font-size: var(--text-sm, 0.875rem);
   color: var(--color-text, #3a3a3a);
@@ -120,4 +125,8 @@
 .sk-value {
   width: 28px;
   height: 12px;
+}
+
+.summary-row:has(.skeleton) {
+  background-color: var(--color-bg, #faf8f5);
 }

@@ -1,3 +1,9 @@
+/* The card's own width decides how much of the table fits. */
+:host {
+  display: block;
+  container-type: inline-size;
+}
+
 .departures-table-card {
   background-color: var(--color-surface, #fff);
   border-radius: var(--radius-md, 8px);
@@ -33,6 +39,7 @@
 
 .table-scroll {
   overflow-x: auto;
+  margin: 0 calc(-1 * var(--space-2, 8px));
 }
 
 table {
@@ -41,7 +48,7 @@ table {
 }
 
 th {
-  padding: var(--space-2, 8px) var(--space-3, 16px);
+  padding: var(--space-2, 8px) var(--space-2, 8px);
   text-align: left;
   font-size: var(--text-xs, 0.75rem);
   font-weight: 600;
@@ -53,7 +60,8 @@ th {
 }
 
 td {
-  padding: var(--space-3, 16px);
+  padding: 12px var(--space-2, 8px);
+  font-variant-numeric: tabular-nums;
   border-bottom: 1px solid var(--color-border, #e4dfd6);
   font-size: var(--text-sm, 0.875rem);
   color: var(--color-text, #3a3a3a);
@@ -63,6 +71,10 @@ td {
 
 tbody tr:last-child td {
   border-bottom: none;
+}
+
+tbody tr {
+  transition: background-color 0.15s;
 }
 
 tbody tr:hover {
@@ -192,4 +204,20 @@ tbody tr:hover {
   width: 64px;
   height: 22px;
   border-radius: 999px;
+}
+
+@container (max-width: 520px) {
+  .seat-fill-track {
+    display: none;
+  }
+
+  .seats-cell {
+    min-width: 0;
+  }
+
+  td,
+  th {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
 }

@@ -40,7 +40,18 @@
   font-weight: 600;
   color: var(--color-accent, #eb1f1a);
   text-decoration: underline;
+  text-underline-offset: 3px;
   cursor: pointer;
+  border-radius: var(--radius-sm, 4px);
+}
+
+.card-link:hover {
+  color: color-mix(in srgb, var(--color-accent, #eb1f1a) 82%, #000);
+}
+
+.card-link:focus-visible {
+  outline: 2px solid var(--color-primary-light, #1e88e5);
+  outline-offset: 3px;
 }
 
 .route-rows {
@@ -85,12 +96,16 @@
 
 .route-name {
   margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-weight: 700;
   font-size: var(--text-sm, 0.875rem);
   color: var(--color-text, #3a3a3a);
 }
 
 .route-meta {
+  font-variant-numeric: tabular-nums;
   margin: 2px 0 6px;
   font-size: var(--text-xs, 0.75rem);
   color: var(--color-text-muted, #6b6b6b);
@@ -107,6 +122,7 @@
 .route-bar-fill {
   height: 100%;
   border-radius: 999px;
+  transition: width 0.3s ease;
 }
 
 .route-bar-fill.tone-red {
@@ -197,4 +213,10 @@
   width: 48px;
   height: 22px;
   border-radius: 999px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-bar-fill {
+    transition: none;
+  }
 }

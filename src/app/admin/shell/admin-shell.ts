@@ -16,7 +16,7 @@ interface NavItem {
 }
 
 const NAV_MAIN: NavItem[] = [
-  { label: 'Dashboard', icon: 'fa-grid-2', route: '/admin', exact: true },
+  { label: 'Dashboard', icon: 'fa-table-cells-large', route: '/admin', exact: true },
   { label: 'Bookings', icon: 'fa-ticket', route: '/admin/bookings' },
   { label: 'Routes & Schedules', icon: 'fa-route', route: null },
   { label: 'Buses & Fleet', icon: 'fa-bus', route: null },

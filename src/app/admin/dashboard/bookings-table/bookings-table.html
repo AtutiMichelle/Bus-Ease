@@ -27,7 +27,7 @@
         <thead>
           <tr>
             <th>Customer</th>
-            <th>Route</th>
+            <th class="route-col">Route</th>
             <th>Amount</th>
             <th>Status</th>
           </tr>
@@ -41,10 +41,11 @@
                   <div>
                     <p class="customer-name">{{ booking.customerName }}</p>
                     <p class="customer-meta">{{ formatBookedAt(booking.bookedAt) }}</p>
+                    <p class="customer-meta route-inline">{{ booking.route }}</p>
                   </div>
                 </div>
               </td>
-              <td>{{ booking.route }}</td>
+              <td class="route-col">{{ booking.route }}</td>
               <td>KSh {{ booking.amount | number }}</td>
               <td>
                 <span class="status-tag" [class]="'status-' + booking.status.toLowerCase()">{{ booking.status }}</span>

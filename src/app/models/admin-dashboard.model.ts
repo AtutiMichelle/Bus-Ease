@@ -40,6 +40,9 @@ export interface KpiCardData {
   sparkline: number[];
   /** ISO date (yyyy-mm-dd) for each sparkline point, same length. */
   sparklineDays: string[];
+  /** Readable value for each sparkline point ("25 tickets"), same length,
+   * shown when a point is hovered. */
+  sparklineLabels: string[];
   /** Shown in place of the sparkline when there is no series. */
   sparklineNote?: string;
 }

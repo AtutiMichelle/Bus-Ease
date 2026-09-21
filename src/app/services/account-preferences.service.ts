@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { EmergencyContact, NotificationSettings } from './account.model';
+import { EmergencyContact, NotificationSettings } from '../models/account.model';
 
 /**
  * Emergency contact and notification preferences have no backing table in

@@ -1,5 +1,6 @@
 import { Component, computed, effect, inject, signal, WritableSignal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
@@ -7,11 +8,13 @@ import { BookingService } from '../../services/booking.service';
 import { WalletService } from '../../services/wallet.service';
 import { SavedBooking } from '../../models/booking.model';
 import { WalletTransaction } from '../../models/wallet.model';
-import { AccountPreferencesService } from './account-preferences.service';
-import { AccountBooking, BookingStatus, NotificationSettings } from './account.model';
+import { AccountPreferencesService } from '../../services/account-preferences.service';
+import { AccountBooking, BookingStatus, NotificationSettings } from '../../models/account.model';
 
 type AccountTab = 'bookings' | 'wallet' | 'profile' | 'settings';
 type BookingFilter = 'all' | 'upcoming' | 'completed' | 'cancelled';
+
+const ACCOUNT_TABS: AccountTab[] = ['bookings', 'wallet', 'profile', 'settings'];
 
 const FILTERS: { id: BookingFilter; label: string }[] = [
   { id: 'all', label: 'All' },
@@ -99,6 +102,8 @@ export class AccountPageComponent {
   private bookingService = inject(BookingService);
   private walletService = inject(WalletService);
   private preferencesService = inject(AccountPreferencesService);
+  private route = inject(ActivatedRoute);
+  private queryParamMap = toSignal(this.route.queryParamMap, { initialValue: this.route.snapshot.queryParamMap });
 
   readonly filters = FILTERS;
   readonly statusLabel = STATUS_LABEL;
@@ -188,6 +193,10 @@ export class AccountPageComponent {
         this.phone.set((user.user_metadata?.['phone'] as string) ?? '');
         this.profileSeeded.set(true);
       }
+    });
+    effect(() => {
+      const requestedTab = this.queryParamMap().get('tab') as AccountTab | null;
+      this.activeTab.set(requestedTab && ACCOUNT_TABS.includes(requestedTab) ? requestedTab : 'bookings');
     });
     this.loadBookings();
     this.loadWallet();

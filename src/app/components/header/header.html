@@ -21,11 +21,29 @@
 
     @if (authService.user(); as user) {
       <div class="user-menu">
-        <a routerLink="/account" class="user-name" (click)="closeMenu()">
+        <button
+          type="button"
+          class="user-name"
+          (click)="toggleUserMenu()"
+          aria-haspopup="menu"
+          [attr.aria-expanded]="userMenuOpen()"
+        >
           <i class="fa-solid fa-circle-user" aria-hidden="true"></i>
           {{ authService.displayName() }}
-        </a>
-        <button type="button" class="logout-cta" (click)="logout()">Logout</button>
+          <i class="fa-solid fa-chevron-down user-name-caret" aria-hidden="true"></i>
+        </button>
+        @if (userMenuOpen()) {
+          <div class="user-dropdown" role="menu">
+            <a routerLink="/account" [queryParams]="{ tab: 'profile' }" role="menuitem" (click)="closeMenu()">
+              <i class="fa-solid fa-user" aria-hidden="true"></i>
+              Profile
+            </a>
+            <button type="button" role="menuitem" (click)="logout()">
+              <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+              Logout
+            </button>
+          </div>
+        }
       </div>
     } @else {
       <button type="button" class="auth-cta" (click)="authModal.open('login'); closeMenu()">

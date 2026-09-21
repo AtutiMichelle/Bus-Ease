@@ -22,38 +22,63 @@ function setup(responses: Record<string, unknown>, failing: string[] = []) {
 }
 
 const KPI_ROW = {
-  days: ['2026-09-15', '2026-09-16', '2026-09-17', '2026-09-18', '2026-09-19', '2026-09-20', '2026-09-21'],
-  tickets: { current: 137, previous: 122, daily: [14, 19, 17, 22, 18, 25, 22] },
-  revenue: { current: 389000, previous: 360500, daily: [48000, 61000, 55000, 72500, 52000, 58500, 42000] },
-  new_customers: { current: 0, previous: 0, daily: [0, 0, 0, 0, 0, 0, 0] },
+  tickets: { current: 137, previous: 122 },
+  revenue: { current: 389000, previous: 360500 },
+  new_customers: { current: 0, previous: 0 },
   awaiting: { count: 3, oldest_minutes: 11 },
 };
 
 describe('AdminDashboardService', () => {
-  it('builds stat cards with week-over-week change and daily series', async () => {
-    const { service } = setup({ admin_kpi_cards: KPI_ROW });
+  it('builds stat cards with the change against the previous period', async () => {
+    const { service, calls } = setup({ admin_kpi_summary: KPI_ROW });
     const [tickets, revenue, awaiting, customers] = await service.getKpiCards();
 
-    expect(tickets.value).toBe('137');
-    expect(tickets.delta).toEqual({ direction: 'up', text: '12% vs last week' });
-    expect(tickets.sparkline).toEqual([14, 19, 17, 22, 18, 25, 22]);
-    expect(tickets.sparklineLabels[0]).toBe('14 tickets');
+    expect(calls[0]).toEqual({ fn: 'admin_kpi_summary', args: { p_period: '7d' } });
 
-    expect(revenue.value).toBe('KSh 389k');
-    expect(revenue.sparklineLabels[1]).toBe('KSh 61,000');
+    expect(tickets).toMatchObject({ label: 'Tickets sold', value: '137', icon: 'ticket' });
+    expect(tickets.delta).toEqual({ direction: 'up', text: '12%', note: 'vs last week' });
+
+    expect(revenue).toMatchObject({ unit: 'KSh', value: '389k' });
+    expect(revenue.delta).toEqual({ direction: 'up', text: '8%', note: 'vs last week' });
 
     expect(awaiting.value).toBe('3');
-    expect(awaiting.delta).toEqual({ direction: 'warning', text: 'Oldest 11 min ago' });
-    expect(awaiting.sparkline).toEqual([]);
+    expect(awaiting.delta).toEqual({ direction: 'warning', text: 'Live', note: 'Oldest 11 min ago' });
 
-    expect(customers.delta).toEqual({ direction: 'neutral', text: 'No change vs last week' });
+    expect(customers.delta).toEqual({ direction: 'neutral', text: '0%', note: 'vs last week' });
   });
 
-  it('says so when there was nothing last week to compare with', async () => {
-    const row = { ...KPI_ROW, tickets: { current: 5, previous: 0, daily: [0, 0, 0, 0, 0, 2, 3] } };
-    const { service } = setup({ admin_kpi_cards: row });
-    const [tickets] = await service.getKpiCards();
-    expect(tickets.delta).toEqual({ direction: 'up', text: 'From zero last week' });
+  it('asks the database for the chosen period and words the comparison to match', async () => {
+    const { service, calls } = setup({ admin_kpi_summary: KPI_ROW });
+
+    const [today] = await service.getKpiCards('today');
+    const [thirty] = await service.getKpiCards('30d');
+
+    expect(calls.map((call) => call.args)).toEqual([{ p_period: 'today' }, { p_period: '30d' }]);
+    expect(today.delta.note).toBe('vs yesterday');
+    expect(thirty.delta.note).toBe('vs previous 30 days');
+  });
+
+  it('shows zero values normally, as a drop when there was activity before', async () => {
+    const row = { ...KPI_ROW, tickets: { current: 0, previous: 4 }, revenue: { current: 0, previous: 3520 } };
+    const { service } = setup({ admin_kpi_summary: row });
+    const [tickets, revenue] = await service.getKpiCards();
+
+    expect(tickets.value).toBe('0');
+    expect(tickets.delta).toEqual({ direction: 'down', text: '100%', note: 'vs last week' });
+    expect(revenue).toMatchObject({ unit: 'KSh', value: '0' });
+  });
+
+  it('says so when there was nothing in the previous period to compare with', async () => {
+    const row = { ...KPI_ROW, new_customers: { current: 1, previous: 0 } };
+    const { service } = setup({ admin_kpi_summary: row });
+    const [, , , customers] = await service.getKpiCards();
+    expect(customers.delta).toEqual({ direction: 'up', text: 'New', note: 'From zero last week' });
+  });
+
+  it('describes the live awaiting-payment count without comparing it to anything', async () => {
+    const idle = setup({ admin_kpi_summary: { ...KPI_ROW, awaiting: { count: 0, oldest_minutes: null } } });
+    const [, , idleCard] = await idle.service.getKpiCards();
+    expect(idleCard.delta).toEqual({ direction: 'neutral', text: 'Live', note: 'Nobody is paying right now' });
   });
 
   it('marks refunds and ratings as untracked instead of inventing numbers', async () => {

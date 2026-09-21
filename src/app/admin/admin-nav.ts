@@ -36,12 +36,16 @@ export const ICONS = {
   ],
   card: ['M4 6h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z', 'M3 10h18', 'M7 15h3'],
   chart: ['M5 20V11', 'M12 20V4', 'M19 20v-6'],
+  clock: ['M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z', 'M12 8v4l2.5 1.5'],
+  plus: ['M12 5v14', 'M5 12h14'],
   settings: ['M4 8h13', 'M14 5l3 3-3 3', 'M20 16H7', 'M10 13l-3 3 3 3'],
   search: ['M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14z', 'M20 20l-4-4'],
   bell: ['M6 9a6 6 0 0 1 12 0c0 6 2 7.5 2 7.5H4S6 15 6 9z', 'M10 20a2 2 0 0 0 4 0'],
   message: ['M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-9l-5 4v-4H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z'],
   menu: ['M4 6h16', 'M4 12h16', 'M4 18h16'],
 } as const satisfies Record<string, readonly string[]>;
+
+export type IconName = keyof typeof ICONS;
 
 export interface NavItem {
   label: string;

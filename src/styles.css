@@ -63,3 +63,51 @@ body {
     animation: none;
   }
 }
+
+/* Card and status chip shared by the admin dashboard widgets. Global for the
+   same reason as .skeleton: they are used across several unrelated
+   components. Colors come from the admin tokens in theme.css. */
+.admin-card {
+  box-sizing: border-box;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--admin-radius-card);
+  background-color: var(--color-surface);
+}
+
+.admin-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.admin-chip-neg {
+  background-color: var(--admin-neg-bg);
+  color: var(--admin-neg-text);
+}
+
+.admin-chip-pos {
+  background-color: var(--admin-pos-bg);
+  color: var(--admin-pos-text);
+}
+
+.admin-chip-warn {
+  background-color: var(--admin-warn-bg);
+  color: var(--admin-warn-text);
+}
+
+.admin-chip-info {
+  background-color: var(--color-soft-bg);
+  color: var(--admin-info-text);
+}
+
+.admin-chip-neutral {
+  background-color: var(--admin-neutral-bg);
+  color: var(--admin-secondary);
+}

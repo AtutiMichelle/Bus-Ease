@@ -98,3 +98,26 @@
   font-size: var(--text-sm, 0.875rem);
   color: var(--color-text, #3a3a3a);
 }
+
+.summary-row-value.not-tracked {
+  font-weight: 500;
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--color-text-muted, #6b6b6b);
+}
+
+.sk-icon {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+}
+
+.sk-label {
+  flex: 1;
+  height: 12px;
+  max-width: 60%;
+}
+
+.sk-value {
+  width: 28px;
+  height: 12px;
+}

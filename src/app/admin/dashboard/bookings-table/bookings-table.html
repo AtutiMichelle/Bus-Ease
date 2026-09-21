@@ -6,7 +6,20 @@
     }
   </div>
 
-  @if (bookings().length === 0) {
+  @if (error()) {
+    <app-widget-error message="Couldn't load recent bookings." (retry)="retry.emit()" />
+  } @else if (loading()) {
+    <div class="skeleton-rows" aria-hidden="true">
+      @for (slot of placeholders; track slot) {
+        <div class="skeleton-row">
+          <span class="skeleton sk-avatar"></span>
+          <span class="skeleton sk-name"></span>
+          <span class="skeleton sk-cell"></span>
+          <span class="skeleton sk-tag"></span>
+        </div>
+      }
+    </div>
+  } @else if (bookings().length === 0) {
     <p class="empty-state">{{ emptyMessage() }}</p>
   } @else {
     <div class="table-scroll">

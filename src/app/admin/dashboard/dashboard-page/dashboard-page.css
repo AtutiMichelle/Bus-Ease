@@ -56,6 +56,10 @@
   margin-bottom: var(--space-4, 24px);
 }
 
+.stat-grid-error {
+  grid-column: 1 / -1;
+}
+
 .secondary-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

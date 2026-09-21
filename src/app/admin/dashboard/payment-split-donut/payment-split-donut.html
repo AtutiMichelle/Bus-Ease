@@ -2,13 +2,25 @@
   <div class="card-header">
     <div>
       <h2>How customers pay</h2>
-      <p class="card-subtitle">Share of this week's revenue</p>
+      <p class="card-subtitle">Share of revenue, last 7 days</p>
     </div>
     <span class="period-badge">This week</span>
   </div>
 
-  @if (!hasData()) {
-    <p class="empty-state">No payments have been collected this week yet. Once bookings are paid for, the split by method will show up here.</p>
+  @let current = state();
+  @if (current.status === 'error') {
+    <app-widget-error message="Couldn't load payment methods." (retry)="retry.emit()" />
+  } @else if (current.status === 'loading') {
+    <div class="donut-body" aria-hidden="true">
+      <span class="skeleton sk-ring"></span>
+      <div class="donut-legend">
+        @for (slot of placeholders; track slot) {
+          <span class="skeleton sk-legend"></span>
+        }
+      </div>
+    </div>
+  } @else if (!hasData()) {
+    <p class="empty-state">No payments have been collected in the last 7 days. Once bookings are paid for, the split by method will show up here.</p>
   } @else {
     <div class="donut-body">
       <svg class="donut-chart" viewBox="0 0 100 100" role="img" [attr.aria-label]="chartDescription()">
@@ -43,7 +55,11 @@
 
         <p class="failed-payments">
           Failed payments
-          <span class="failed-payments-count">{{ failedPayments() }}</span>
+          @if (failedPayments() === null) {
+            <span class="failed-payments-untracked">Not tracked yet</span>
+          } @else {
+            <span class="failed-payments-count">{{ failedPayments() }}</span>
+          }
         </p>
       </div>
     </div>

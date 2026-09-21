@@ -4,14 +4,20 @@
  * navy -> --color-primary-light. */
 export type DashboardTone = 'red' | 'moss' | 'gold' | 'navy';
 
+/** Load state of one dashboard widget. Every widget loads on its own, so a
+ * failed query only puts its own card into 'error'. */
+export type WidgetState<T> = { status: 'loading' } | { status: 'error' } | { status: 'ready'; data: T };
+
 /** "This week" summary numbers. The dashboard greeting shows one of these
- * (ticketsSold); summary-list renders the full set. */
+ * (ticketsSold); summary-list renders the full set. A null value means the
+ * database has nothing to measure it with yet (no refunds or ratings tables),
+ * and the row shows "Not tracked yet" instead of a made-up number. */
 export interface WeekSummary {
   ticketsSold: number;
   tripsCompleted: number;
-  refundsIssued: number;
+  refundsIssued: number | null;
   seatsOpenToday: number;
-  averageRating: number;
+  averageRating: number | null;
 }
 
 /** 'warning' is for a delta that isn't really a trend (e.g. "oldest 2 hours
@@ -29,8 +35,13 @@ export interface KpiCardData {
   value: string;
   delta: KpiDelta;
   tone: DashboardTone;
-  /** Recent trend points for the inline sparkline, oldest first. */
+  /** Daily values for the sparkline, oldest first. Empty when the metric has
+   * no history (the awaiting-payment count is a live number only). */
   sparkline: number[];
+  /** ISO date (yyyy-mm-dd) for each sparkline point, same length. */
+  sparklineDays: string[];
+  /** Shown in place of the sparkline when there is no series. */
+  sparklineNote?: string;
 }
 
 export interface TopRoute {
@@ -63,7 +74,9 @@ export interface PaymentSplitSlice {
 export interface PaymentSplitData {
   totalCollected: number;
   slices: PaymentSplitSlice[];
-  failedPayments: number;
+  /** Null until payment attempts are recorded (there is no payments table
+   * yet), shown as "Not tracked yet". */
+  failedPayments: number | null;
 }
 
 export type BookingStatusTag = 'Paid' | 'Unpaid' | 'Refunded';

@@ -141,3 +141,20 @@
     align-items: stretch;
   }
 }
+
+.failed-payments-untracked {
+  margin-left: 4px;
+  font-size: var(--text-xs, 0.75rem);
+}
+
+.sk-ring {
+  width: 140px;
+  height: 140px;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.sk-legend {
+  height: 14px;
+  width: 100%;
+}

@@ -137,3 +137,50 @@ tbody tr:hover {
   border: 1px dashed var(--color-border, #e4dfd6);
   border-radius: var(--radius-md, 8px);
 }
+
+.skeleton-rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 16px);
+  padding: var(--space-3, 16px) 0;
+  border-bottom: 1px solid var(--color-border, #e4dfd6);
+}
+
+.skeleton-row:last-child {
+  border-bottom: none;
+}
+
+.sk-avatar {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.sk-time {
+  flex-shrink: 0;
+  width: 44px;
+  height: 14px;
+}
+
+.sk-name {
+  flex: 2;
+  height: 14px;
+}
+
+.sk-cell {
+  flex: 1.5;
+  height: 14px;
+}
+
+.sk-tag {
+  flex-shrink: 0;
+  width: 64px;
+  height: 22px;
+  border-radius: 999px;
+}

@@ -1,7 +1,8 @@
 import { inject } from '@angular/core';
-import { CanActivateFn } from '@angular/router';
+import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { AuthModalService } from '../services/auth-modal.service';
+import { AdminAccessService } from '../services/admin-access.service';
 
 export const authGuard: CanActivateFn = async (_route, state) => {
   const authService = inject(AuthService);
@@ -15,23 +16,34 @@ export const authGuard: CanActivateFn = async (_route, state) => {
   return false;
 };
 
-/** Gates the admin dashboard. There is no roles/profiles table yet (see
- * supabase/sql, everything keys off auth.users directly), so this can only
- * check that someone is logged in, the same as authGuard.
+/** Gates the admin area. Signed-out visitors get the login modal; signed-in
+ * users who are not in admin_users are sent home. If the admin check itself
+ * fails (network error, or the database functions are not installed yet) the
+ * guard fails closed and also sends the user home.
  *
- * TODO: once a role column/table exists, also check role === 'admin' here
- * and redirect non-admins away (e.g. router.navigate(['/'])) instead of
- * letting any authenticated user reach the dashboard. */
+ * This is a convenience, not the security boundary: every admin_* database
+ * function re-checks admin access on the server, so a non-admin who got past
+ * this guard would still receive no data. */
 export const adminGuard: CanActivateFn = async (_route, state) => {
   const authService = inject(AuthService);
   const authModal = inject(AuthModalService);
+  const adminAccess = inject(AdminAccessService);
+  const router = inject(Router);
 
   const session = await authService.getSession();
-  if (session) {
-    return true;
+  if (!session) {
+    authModal.open('login', state.url);
+    return false;
   }
-  authModal.open('login', state.url);
-  return false;
+
+  try {
+    if (await adminAccess.loadRole()) {
+      return true;
+    }
+  } catch (error) {
+    console.error('Admin access check failed', error);
+  }
+  return router.parseUrl('/');
 };
 
 /** Same as authGuard, but also lets a guest through with exactly one seat

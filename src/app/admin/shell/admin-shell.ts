@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { AdminAccessService } from '../../services/admin-access.service';
 
 interface NavItem {
   label: string;
@@ -46,15 +47,15 @@ function initials(name: string): string {
 })
 export class AdminShell {
   private authService = inject(AuthService);
+  private adminAccess = inject(AdminAccessService);
 
   readonly navMain = NAV_MAIN;
   readonly navSystem = NAV_SYSTEM;
 
   adminName = computed(() => this.authService.displayName());
   adminInitials = computed(() => initials(this.adminName()));
-  // No role column exists yet (see guards/auth.guard.ts's adminGuard TODO),
-  // so this is a fixed label rather than real per-user data.
-  readonly adminRole = 'Administrator';
+  // Loaded from admin_users by adminGuard before this page renders.
+  adminRole = this.adminAccess.roleText;
 
   // Below 900px the sidebar becomes an off-canvas drawer toggled from the
   // top bar, since a fixed sidebar has nowhere to go on a narrow screen.

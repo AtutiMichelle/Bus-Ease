@@ -1,6 +1,7 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
-import { PaymentSplitData } from '../../../models/admin-dashboard.model';
+import { PaymentSplitData, WidgetState } from '../../../models/admin-dashboard.model';
+import { WidgetError } from '../widget-error/widget-error';
 
 interface DonutSegment {
   label: string;
@@ -21,18 +22,28 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 const NAVY_SHADES = ['var(--color-primary, #12294d)', 'var(--color-primary-light, #1e88e5)', 'var(--color-primary-mid, #1c4a7a)'];
 
 @Component({
-  imports: [DecimalPipe],
+  imports: [DecimalPipe, WidgetError],
   selector: 'app-payment-split-donut',
   styleUrl: './payment-split-donut.css',
   templateUrl: './payment-split-donut.html',
 })
 export class PaymentSplitDonut {
-  data = input<PaymentSplitData | null>(null);
+  state = input<WidgetState<PaymentSplitData>>({ status: 'loading' });
+  retry = output<void>();
   readonly radius = RADIUS;
+
+  /** Placeholder legend rows shown while loading. */
+  readonly placeholders = [0, 1, 2];
+
+  private data = computed(() => {
+    const state = this.state();
+    return state.status === 'ready' ? state.data : null;
+  });
 
   slices = computed(() => this.data()?.slices ?? []);
   totalCollected = computed(() => this.data()?.totalCollected ?? 0);
-  failedPayments = computed(() => this.data()?.failedPayments ?? 0);
+  /** Null means failed payments are not recorded anywhere yet. */
+  failedPayments = computed(() => this.data()?.failedPayments ?? null);
   hasData = computed(() => this.slices().length > 0 && this.totalCollected() > 0);
 
   private sliceColors = computed(() => {

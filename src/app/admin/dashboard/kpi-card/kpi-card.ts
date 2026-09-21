@@ -1,5 +1,5 @@
 import { Component, computed, input } from '@angular/core';
-import { DashboardTone, KpiDelta } from '../../../models/admin-dashboard.model';
+import { KpiCardData } from '../../../models/admin-dashboard.model';
 
 @Component({
   selector: 'app-kpi-card',
@@ -7,14 +7,12 @@ import { DashboardTone, KpiDelta } from '../../../models/admin-dashboard.model';
   templateUrl: './kpi-card.html',
 })
 export class KpiCard {
-  label = input.required<string>();
-  value = input.required<string>();
-  delta = input.required<KpiDelta>();
-  tone = input.required<DashboardTone>();
-  sparkline = input<number[]>([]);
+  card = input<KpiCardData | null>(null);
+  /** Shows a placeholder card while the metrics load. */
+  loading = input(false);
 
   sparklinePoints = computed(() => {
-    const points = this.sparkline();
+    const points = this.card()?.sparkline ?? [];
     if (points.length < 2) {
       return '';
     }
@@ -32,8 +30,12 @@ export class KpiCard {
   });
 
   sparklineDescription = computed(() => {
-    const direction = this.delta().direction;
+    const card = this.card();
+    if (!card) {
+      return '';
+    }
+    const direction = card.delta.direction;
     const trendWord = direction === 'up' ? 'trending up' : direction === 'down' ? 'trending down' : 'roughly flat';
-    return `${this.label()} over the last 7 days, ${trendWord}`;
+    return `${card.label} over the last 7 days, ${trendWord}`;
   });
 }

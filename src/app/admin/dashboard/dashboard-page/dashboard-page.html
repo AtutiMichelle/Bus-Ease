@@ -14,25 +14,40 @@
   </button>
 </section>
 
-<section class="stat-grid" aria-label="Key metrics">
-  @for (card of kpiCards(); track card.label) {
-    <app-kpi-card
-      [label]="card.label"
-      [value]="card.value"
-      [delta]="card.delta"
-      [tone]="card.tone"
-      [sparkline]="card.sparkline"
-    />
+@let kpi = kpiCards();
+<section class="stat-grid" aria-label="Key metrics" [attr.aria-busy]="kpi.status === 'loading'">
+  @if (kpi.status === 'ready') {
+    @for (card of kpi.data; track card.label) {
+      <app-kpi-card [card]="card" />
+    }
+  } @else if (kpi.status === 'loading') {
+    @for (slot of kpiPlaceholders; track slot) {
+      <app-kpi-card [loading]="true" />
+    }
+  } @else {
+    <app-widget-error class="stat-grid-error" message="Couldn't load the key metrics." (retry)="loadKpiCards()" />
   }
 </section>
 
 <section class="secondary-grid">
-  <app-summary-list [summary]="weekSummary()" />
-  <app-top-routes-card [data]="topRoutes()" />
-  <app-payment-split-donut [data]="paymentSplit()" />
+  <app-summary-list [state]="weekSummary()" (retry)="loadWeekSummary()" />
+  <app-top-routes-card [state]="topRoutes()" (retry)="loadTopRoutes()" />
+  <app-payment-split-donut [state]="paymentSplit()" (retry)="loadPaymentSplit()" />
 </section>
 
 <section class="tables-grid">
-  <app-bookings-table [bookings]="recentBookings()" />
-  <app-departures-table [departures]="departuresToday()" />
+  @let bookings = recentBookings();
+  <app-bookings-table
+    [bookings]="bookings.status === 'ready' ? bookings.data : []"
+    [loading]="bookings.status === 'loading'"
+    [error]="bookings.status === 'error'"
+    (retry)="loadRecentBookings()"
+  />
+  @let departures = departuresToday();
+  <app-departures-table
+    [departures]="departures.status === 'ready' ? departures.data : []"
+    [loading]="departures.status === 'loading'"
+    [error]="departures.status === 'error'"
+    (retry)="loadDeparturesToday()"
+  />
 </section>

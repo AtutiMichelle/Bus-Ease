@@ -7,11 +7,31 @@
     <button type="button" class="card-link">All routes</button>
   </div>
 
-  @if (routes().length === 0) {
-    <p class="empty-state">No tickets have sold on any route this week yet. Once bookings come in, the busiest routes will show up here.</p>
+  @let current = state();
+  @if (current.status === 'error') {
+    <app-widget-error message="Couldn't load top routes." (retry)="retry.emit()" />
+  } @else if (current.status === 'loading') {
+    <div class="route-rows" aria-hidden="true">
+      @for (slot of placeholders; track slot) {
+        <div class="route-row">
+          <span class="skeleton sk-badge"></span>
+          <div class="route-main">
+            <span class="skeleton sk-line-lg"></span>
+            <span class="skeleton sk-line-sm"></span>
+            <span class="skeleton sk-bar"></span>
+          </div>
+          <span class="skeleton sk-pill"></span>
+        </div>
+      }
+    </div>
+  } @else if (routes().length === 0) {
+    <p class="empty-state">No tickets have sold on any route in the last 7 days. Once bookings come in, the busiest routes will show up here.</p>
+    @if (noSalesFooterText()) {
+      <p class="no-sales-footer">{{ noSalesFooterText() }}</p>
+    }
   } @else {
     <div class="route-rows">
-      @for (route of routes(); track route.code) {
+      @for (route of routes(); track route.name) {
         <div class="route-row">
           <span class="route-badge" [class]="'tone-' + route.tone" aria-hidden="true">{{ route.code }}</span>
 

@@ -93,3 +93,28 @@
 .delta-warning {
   color: var(--color-danger, #d64545);
 }
+
+.kpi-skeleton {
+  background-color: var(--color-surface, #fff);
+}
+
+.kpi-skeleton:hover {
+  transform: none;
+  box-shadow: var(--shadow-card, 0 2px 8px rgba(26, 58, 107, 0.08));
+}
+
+.sk-label {
+  width: 45%;
+  height: 12px;
+}
+
+.sk-value {
+  width: 60%;
+  height: 34px;
+  margin: var(--space-3, 16px) 0;
+}
+
+.sk-delta {
+  width: 50%;
+  height: 12px;
+}

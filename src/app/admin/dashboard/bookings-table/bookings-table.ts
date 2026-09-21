@@ -1,7 +1,8 @@
-import { Component, input } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { RecentBooking } from '../../../models/admin-dashboard.model';
+import { WidgetError } from '../widget-error/widget-error';
 
 function formatBookedAt(iso: string): string {
   const date = new Date(iso);
@@ -11,13 +12,19 @@ function formatBookedAt(iso: string): string {
 }
 
 @Component({
-  imports: [DecimalPipe, RouterLink],
+  imports: [DecimalPipe, RouterLink, WidgetError],
   selector: 'app-bookings-table',
   styleUrl: './bookings-table.css',
   templateUrl: './bookings-table.html',
 })
 export class BookingsTable {
   bookings = input<RecentBooking[]>([]);
+  /** Show placeholder rows instead of the table (the Bookings page handles
+   * its own loading and error text, so both default to off). */
+  loading = input(false);
+  error = input(false);
+  retry = output<void>();
+  readonly placeholders = [0, 1, 2, 3, 4, 5];
   title = input('Recent bookings');
   /** The dashboard's preview card links to the full Bookings page; the
    * Bookings page itself reuses this component too, where that link

@@ -1,0 +1,14 @@
+<section class="no-access">
+  <span class="no-access-icon" aria-hidden="true"><i class="fa-solid fa-lock"></i></span>
+  <h1>You don't have access to this page</h1>
+
+  @if (openableItem(); as item) {
+    <p>Your role ({{ roleLabel() }}) doesn't include this area. You can still use {{ item.label }} and the other items in the menu.</p>
+    <a class="no-access-action" [routerLink]="item.route">Go to {{ item.label }}</a>
+  } @else {
+    <p>
+      Your account is set up as staff, but your role{{ roleLabel() ? ' (' + roleLabel() + ')' : '' }} has no sections yet. Ask an administrator to
+      update your access.
+    </p>
+  }
+</section>

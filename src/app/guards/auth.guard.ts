@@ -2,7 +2,8 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { AuthModalService } from '../services/auth-modal.service';
-import { AdminAccessService } from '../services/admin-access.service';
+import { StaffService } from '../services/staff.service';
+import { AdminSection, canAccess } from '../admin/staff-access';
 
 export const authGuard: CanActivateFn = async (_route, state) => {
   const authService = inject(AuthService);
@@ -16,35 +17,58 @@ export const authGuard: CanActivateFn = async (_route, state) => {
   return false;
 };
 
-/** Gates the admin area. Signed-out visitors get the login modal; signed-in
- * users who are not in admin_users are sent home. If the admin check itself
- * fails (network error, or the database functions are not installed yet) the
- * guard fails closed and also sends the user home.
+/** Gates the whole admin area: only staff get in. Signed-out visitors are
+ * sent home with the login modal open; signed-in customers, and anyone whose
+ * staff check fails (network error, or the database functions are not
+ * installed yet), are sent home too. The guard fails closed.
  *
- * This is a convenience, not the security boundary: every admin_* database
- * function re-checks admin access on the server, so a non-admin who got past
- * this guard would still receive no data. */
-export const adminGuard: CanActivateFn = async (_route, state) => {
+ * This is a convenience, not the security boundary. Row level security and
+ * the admin-only database functions re-check the role on the server, so
+ * someone who got past this guard would still receive no data. */
+export const staffGuard: CanActivateFn = async (_route, state) => {
   const authService = inject(AuthService);
   const authModal = inject(AuthModalService);
-  const adminAccess = inject(AdminAccessService);
+  const staff = inject(StaffService);
   const router = inject(Router);
 
   const session = await authService.getSession();
   if (!session) {
     authModal.open('login', state.url);
-    return false;
+    return router.parseUrl('/');
   }
 
   try {
-    if (await adminAccess.loadRole()) {
+    if (await staff.ensureRole()) {
       return true;
     }
   } catch (error) {
-    console.error('Admin access check failed', error);
+    console.error('Staff access check failed', error);
   }
   return router.parseUrl('/');
 };
+
+/** Gates one admin page by the signed-in staff member's role (see
+ * STAFF_ROLES in admin/staff-access.ts). Staff without access to the page
+ * land on the "no access" page instead of an error. Like staffGuard, this
+ * only decides what the app shows; the database enforces the real limits. */
+export function sectionGuard(section: AdminSection): CanActivateFn {
+  return async () => {
+    const staff = inject(StaffService);
+    const router = inject(Router);
+
+    let role: string | null = null;
+    try {
+      role = await staff.ensureRole();
+    } catch (error) {
+      console.error('Staff access check failed', error);
+    }
+
+    if (canAccess(role, section)) {
+      return true;
+    }
+    return router.parseUrl(role ? '/admin/no-access' : '/');
+  };
+}
 
 /** Same as authGuard, but also lets a guest through with exactly one seat
  * (a single seat can be booked without an account; anything more needs a

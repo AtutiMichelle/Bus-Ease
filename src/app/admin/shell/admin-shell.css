@@ -70,6 +70,12 @@
   margin-top: 0;
 }
 
+.nav-empty {
+  margin: var(--space-3, 16px) var(--space-4, 24px);
+  font-size: var(--text-sm, 0.875rem);
+  color: rgba(255, 255, 255, 0.6);
+}
+
 .nav-link {
   position: relative;
   display: flex;

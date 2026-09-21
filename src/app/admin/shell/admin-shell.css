@@ -303,7 +303,10 @@ a.nav-link:focus:not(:focus-visible) {
 .admin-content {
   flex: 1;
   width: 100%;
-  max-width: 1400px;
+  /* Caps the page width and centres it, so wide screens get even margins on
+     both sides instead of a blank strip on the right. */
+  max-width: 1500px;
+  margin: 0 auto;
   box-sizing: border-box;
   padding: var(--space-4, 24px);
 }

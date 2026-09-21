@@ -8,7 +8,9 @@
       <p class="auth-eyebrow">You're in</p>
       <h1>Welcome{{ displayName() ? ', ' + displayName() : '' }}!</h1>
       <p class="auth-subtitle">You can book up to 6 seats per booking. Let's find your bus.</p>
-      <button type="button" class="auth-cta" (click)="continueAfterWelcome()">Continue</button>
+      <button type="button" class="auth-cta" (click)="continueAfterWelcome()">
+        {{ staffHome() && !authModal.returnUrl() ? 'Open ' + staffHome()!.label.toLowerCase() : 'Continue' }}
+      </button>
     } @else if (mode() === 'login') {
       <p class="auth-eyebrow">Welcome back</p>
       <h1>Log In</h1>

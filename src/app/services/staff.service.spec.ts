@@ -90,4 +90,22 @@ describe('StaffService', () => {
     expect(await service.ensureRole()).toBe('admin');
     expect(state.rpcCalls).toBe(2);
   });
+
+  it('points each role at its own starting page', async () => {
+    const admin = setup('u1', { u1: 'admin' });
+    await admin.service.ensureRole();
+    expect(admin.service.homeLink()).toEqual({ route: '/admin', label: 'Dashboard' });
+  });
+
+  it('starts customer care on Bookings, and gives customers no staff link', async () => {
+    TestBed.resetTestingModule();
+    const care = setup('u1', { u1: 'customer_care' });
+    await care.service.ensureRole();
+    expect(care.service.homeLink()).toEqual({ route: '/admin/bookings', label: 'Staff area' });
+
+    TestBed.resetTestingModule();
+    const customer = setup('u2', {});
+    await customer.service.ensureRole();
+    expect(customer.service.homeLink()).toBeNull();
+  });
 });

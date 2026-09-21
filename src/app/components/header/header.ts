@@ -1,7 +1,8 @@
-import { Component, ElementRef, HostListener, inject, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, effect, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { AuthModalService } from '../../services/auth-modal.service';
+import { StaffService } from '../../services/staff.service';
 
 @Component({
   imports: [RouterLink],
@@ -12,11 +13,22 @@ import { AuthModalService } from '../../services/auth-modal.service';
 export class Header {
   authService = inject(AuthService);
   authModal = inject(AuthModalService);
+  staff = inject(StaffService);
   private router = inject(Router);
   private elementRef = inject(ElementRef<HTMLElement>);
 
   menuOpen = signal(false);
   userMenuOpen = signal(false);
+
+  constructor() {
+    // Find out once per login whether this person is staff, so the menu can
+    // offer the dashboard. Customers just get "not staff" back.
+    effect(() => {
+      if (this.authService.user()) {
+        this.staff.ensureRole().catch((error) => console.warn('Could not check staff role', error));
+      }
+    });
+  }
 
   toggleMenu(): void {
     this.menuOpen.update((open) => !open);

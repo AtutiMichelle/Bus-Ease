@@ -1,6 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Supabase } from './supabase';
 import { AuthService } from './auth.service';
+import { firstOpenableItem } from '../admin/admin-nav';
 import { roleLabel, sectionsForRole } from '../admin/staff-access';
 
 /** The signed-in user's staff role. Loaded once per login from the
@@ -21,6 +22,17 @@ export class StaffService {
   role = signal<string | null>(null);
   roleLabel = computed(() => roleLabel(this.role()));
   sections = computed(() => sectionsForRole(this.role()));
+
+  /** Where this staff member should land: the first admin page their role
+   * can open (the dashboard for admins, Bookings for customer care). Null
+   * for customers and for roles with nothing to open. */
+  homeLink = computed(() => {
+    const item = firstOpenableItem(this.sections());
+    if (!item?.route) {
+      return null;
+    }
+    return { route: item.route, label: item.route === '/admin' ? 'Dashboard' : 'Staff area' };
+  });
 
   private loadedFor: string | null = null;
   private inFlight: { userId: string; promise: Promise<string | null> } | null = null;

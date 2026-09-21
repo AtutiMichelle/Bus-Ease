@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { AuthModalService } from '../../services/auth-modal.service';
+import { StaffService } from '../../services/staff.service';
 
 @Component({
   selector: 'app-auth-modal',
@@ -13,6 +14,7 @@ import { AuthModalService } from '../../services/auth-modal.service';
 export class AuthModal {
   authModal = inject(AuthModalService);
   private authService = inject(AuthService);
+  private staff = inject(StaffService);
   private router = inject(Router);
 
   mode = this.authModal.mode;
@@ -32,6 +34,9 @@ export class AuthModal {
 
   showWelcome = signal(false);
   displayName = this.authService.displayName;
+
+  /** Set for staff, so the welcome step can send them to their area. */
+  staffHome = this.staff.homeLink;
 
   get loginCanSubmit(): boolean {
     return this.loginEmail().trim().length > 0 && this.loginPassword().trim().length > 0 && !this.loginSubmitting();
@@ -78,10 +83,13 @@ export class AuthModal {
 
   continueAfterWelcome(): void {
     this.showWelcome.set(false);
-    const returnUrl = this.authModal.returnUrl();
+    // A saved destination (a guarded page, or the page a booking was started
+    // on) always wins. With none, staff go to their own area and customers
+    // stay where they are.
+    const destination = this.authModal.returnUrl() ?? this.staffHome()?.route ?? null;
     this.authModal.close();
-    if (returnUrl) {
-      this.router.navigateByUrl(returnUrl);
+    if (destination) {
+      this.router.navigateByUrl(destination);
     }
   }
 
@@ -93,6 +101,9 @@ export class AuthModal {
     this.loginSubmitting.set(true);
     try {
       await this.authService.signIn(this.loginEmail().trim(), this.loginPassword());
+      // Learn the staff role before the welcome step, so it can offer the
+      // right destination. A failed check just means a normal customer login.
+      await this.staff.ensureRole().catch((error) => console.warn('Could not check staff role', error));
       this.showWelcome.set(true);
     } catch (error) {
       this.loginError.set(error instanceof Error ? error.message : 'Could not log in. Please try again.');

@@ -2,7 +2,8 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { StaffService } from '../../services/staff.service';
-import { NAV_MAIN, NAV_SYSTEM } from '../admin-nav';
+import { ICONS, NAV_MAIN, NAV_SYSTEM } from '../admin-nav';
+import { AdminIcon } from '../icon/admin-icon';
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -16,7 +17,7 @@ function initials(name: string): string {
 }
 
 @Component({
-  imports: [RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [AdminIcon, RouterLink, RouterLinkActive, RouterOutlet],
   selector: 'app-admin-shell',
   styleUrl: './admin-shell.css',
   templateUrl: './admin-shell.html',
@@ -28,6 +29,8 @@ export class AdminShell {
   // Menu items follow the signed-in staff role (STAFF_ROLES in
   // staff-access.ts). Hiding an item is only a convenience: the database's
   // row level security and admin-only functions are what protect the data.
+  readonly icons = ICONS;
+
   navMain = computed(() => NAV_MAIN.filter((item) => this.staff.sections().includes(item.section)));
   navSystem = computed(() => NAV_SYSTEM.filter((item) => this.staff.sections().includes(item.section)));
   hasNav = computed(() => this.navMain().length + this.navSystem().length > 0);

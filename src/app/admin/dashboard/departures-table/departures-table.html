@@ -7,7 +7,7 @@
     @if (tripsRoute) {
       <a class="admin-card-link" [routerLink]="tripsRoute">View all trips</a>
     } @else {
-      <span class="admin-card-link admin-card-link-static">View all trips</span>
+      <span class="admin-card-link">View all trips</span>
     }
   </div>
 
@@ -26,28 +26,24 @@
       }
     } @else {
       @if (rows().length > 0) {
-        <table class="admin-list-table">
+        <!-- Laid out as a grid, so the table roles are set explicitly to keep
+             it a table for screen readers. -->
+        <table class="admin-list-table" role="table">
           <caption class="sr-only">Departures today</caption>
-          <colgroup>
-            <col class="col-time" />
-            <col />
-            <col class="col-seats" />
-            <col class="col-status" />
-          </colgroup>
-          <thead>
-            <tr>
-              <th scope="col">Time</th>
-              <th scope="col">Route</th>
-              <th scope="col">Seats booked</th>
-              <th scope="col">Status</th>
+          <thead role="rowgroup">
+            <tr role="row">
+              <th role="columnheader" scope="col">Time</th>
+              <th role="columnheader" scope="col">Route</th>
+              <th role="columnheader" scope="col">Seats booked</th>
+              <th role="columnheader" scope="col">Status</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody role="rowgroup">
             @for (departure of rows(); track departure.time + departure.route + $index) {
-              <tr>
-                <td class="time-cell">{{ departure.time }}</td>
-                <td class="route-cell" [attr.title]="departure.route">{{ departure.route }}</td>
-                <td>
+              <tr role="row">
+                <td role="cell" class="time-cell">{{ departure.time }}</td>
+                <td role="cell" class="route-cell" [attr.title]="departure.route">{{ departure.route }}</td>
+                <td role="cell">
                   <div class="seats">
                     <div
                       class="seat-track"
@@ -63,7 +59,7 @@
                     <span class="seats-count">{{ departure.seatsSold }}/{{ departure.totalSeats }}</span>
                   </div>
                 </td>
-                <td>
+                <td role="cell">
                   <span class="admin-chip" [class]="statusChip[departure.status]">{{ departure.status }}</span>
                 </td>
               </tr>

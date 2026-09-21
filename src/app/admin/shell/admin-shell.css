@@ -286,7 +286,7 @@ a.nav-link:focus:not(:focus-visible) {
   max-width: 1500px;
   margin: 0 auto;
   box-sizing: border-box;
-  padding: var(--space-5);
+  padding: 20px var(--space-5) var(--space-5);
 }
 
 @media (max-width: 900px) {

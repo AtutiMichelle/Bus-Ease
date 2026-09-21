@@ -8,7 +8,8 @@
     <p class="kpi-value">
       @if (data.unit) {
         <span class="kpi-unit">{{ data.unit }}</span>
-      }{{ data.value }}
+      }
+      <span class="kpi-number">{{ data.value }}</span>
     </p>
 
     <p class="kpi-delta">

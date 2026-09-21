@@ -2,14 +2,16 @@
   display: block;
 }
 
-/* Card box (background, border, radius, padding) comes from the global
-   .admin-card. The row heights below are fixed so the loading placeholder
-   and the loaded card are the same height and nothing jumps. */
+/* Card box (background, border, radius) comes from the global .admin-card;
+   the padding here is tighter than other cards on purpose. The row heights
+   below are fixed so the loading placeholder and the loaded card are the same
+   height, and all four cards line up. */
 .kpi-card {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   height: 100%;
+  padding: 16px 20px;
 }
 
 .kpi-head {
@@ -17,7 +19,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  min-height: 36px;
+  min-height: 32px;
 }
 
 .kpi-label {
@@ -32,8 +34,8 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 10px;
 }
 
@@ -62,12 +64,19 @@
   color: var(--admin-info-text);
 }
 
+/* A fixed 40px row with the small "KSh" and the big number sitting on one
+   baseline. Both have line-height 1 so neither can make the row taller
+   (two font sizes on one tall fixed line-height stretch the line and push the
+   card's footer down). */
 .kpi-value {
+  display: flex;
+  align-items: baseline;
+  height: 40px;
   margin: 0;
   font-family: var(--admin-font-display);
-  font-size: 2.75rem;
+  font-size: 2.375rem;
   font-weight: 600;
-  line-height: 3rem;
+  line-height: 1;
   color: var(--admin-ink);
   font-variant-numeric: tabular-nums;
 }
@@ -76,6 +85,7 @@
   margin-right: 6px;
   font-size: 1.125rem;
   font-weight: 500;
+  line-height: 1;
   color: var(--admin-muted);
 }
 
@@ -100,14 +110,14 @@
 }
 
 .sk-icon {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 10px;
 }
 
 .sk-value {
   width: 50%;
-  height: 48px;
+  height: 40px;
 }
 
 .sk-delta {

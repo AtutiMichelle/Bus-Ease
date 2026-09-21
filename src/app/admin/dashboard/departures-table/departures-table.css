@@ -1,5 +1,7 @@
-/* Card, header, footer and table basics are the shared admin-* styles in
-   styles.css. Only this card's own columns and seat bar live here. */
+/* Card, header, footer and the table's text styles are the shared admin-*
+   styles in styles.css. This card lays its rows out as a grid, so it can size
+   its columns: a fixed time column, route and seats sharing the middle 1.2 to
+   1, and a fixed status column. */
 :host {
   display: flex;
   container-type: inline-size;
@@ -12,16 +14,39 @@
   min-width: 0;
 }
 
-.col-time {
-  width: 64px;
+.admin-list-table,
+.admin-list-table thead,
+.admin-list-table tbody {
+  display: block;
 }
 
-.col-seats {
-  width: 176px;
+.admin-list-table tr {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1.2fr) minmax(0, 1fr) 112px;
+  column-gap: 12px;
+  align-items: center;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--admin-divider);
 }
 
-.col-status {
-  width: 104px;
+.admin-list-table thead tr {
+  height: 32px;
+}
+
+.admin-list-table tbody tr {
+  height: 60px;
+}
+
+.admin-list-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+/* The row carries the height and the divider, so the cells drop theirs. */
+.admin-list-table th,
+.admin-list-table td {
+  height: auto;
+  padding: 0;
+  border-bottom: none;
 }
 
 .time-cell {
@@ -96,16 +121,8 @@
 /* In a narrow card the seat bar goes and only the count stays, so the route
    keeps enough room. The card's own width decides, not the screen's. */
 @container (max-width: 540px) {
-  .col-time {
-    width: 56px;
-  }
-
-  .col-seats {
-    width: 64px;
-  }
-
-  .col-status {
-    width: 96px;
+  .admin-list-table tr {
+    grid-template-columns: 56px minmax(0, 1fr) 64px 96px;
   }
 
   .seat-track,

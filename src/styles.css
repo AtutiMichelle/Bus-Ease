@@ -113,8 +113,8 @@ body {
 }
 
 /* Header, link, footer and list pieces shared by the admin dashboard cards.
-   A list card shows at most 5 rows of a fixed 64px under a 32px column
-   header, so its list area is always 352px and never scrolls or shifts. The
+   A list card shows at most 5 rows of a fixed 60px under a 32px column
+   header, so its list area is always 332px and never scrolls or shifts. The
    footer sits at the bottom of the card whatever the list holds. */
 .admin-card-header {
   display: flex;
@@ -203,7 +203,7 @@ a.admin-card-link:focus-visible {
 .admin-list-area {
   display: flex;
   flex-direction: column;
-  height: 352px;
+  height: 332px;
   overflow: hidden;
 }
 
@@ -244,7 +244,7 @@ a.admin-card-link:focus-visible {
 }
 
 .admin-list-table td {
-  height: 64px;
+  height: 60px;
   box-sizing: border-box;
   padding: 0 12px 0 0;
   border-bottom: 1px solid var(--admin-divider);
@@ -276,6 +276,6 @@ a.admin-card-link:focus-visible {
   gap: 12px;
   flex-shrink: 0;
   box-sizing: border-box;
-  height: 64px;
+  height: 60px;
   border-bottom: 1px solid var(--admin-divider);
 }

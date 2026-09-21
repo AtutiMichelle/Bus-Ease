@@ -72,7 +72,9 @@
   display: flex;
   align-items: baseline;
   height: 40px;
-  margin: 0;
+  /* Pulls the number up under its label (the label row is 32px tall to fit
+     the icon chip, which leaves a wide gap otherwise). */
+  margin: -10px 0 0;
   font-family: var(--admin-font-display);
   font-size: 2.375rem;
   font-weight: 600;
@@ -118,6 +120,7 @@
 .sk-value {
   width: 50%;
   height: 40px;
+  margin-top: -10px;
 }
 
 .sk-delta {

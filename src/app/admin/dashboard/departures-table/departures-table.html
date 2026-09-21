@@ -1,12 +1,25 @@
 <div class="departures-table-card">
   <div class="card-header">
     <h2>Departures today</h2>
-    @if (departures().length > 0) {
+    @if (!error() && !loading() && departures().length > 0) {
       <span class="count-badge">{{ departures().length }} trips</span>
     }
   </div>
 
-  @if (departures().length === 0) {
+  @if (error()) {
+    <app-widget-error message="Couldn't load today's departures." (retry)="retry.emit()" />
+  } @else if (loading()) {
+    <div class="skeleton-rows" aria-hidden="true">
+      @for (slot of placeholders; track slot) {
+        <div class="skeleton-row">
+          <span class="skeleton sk-time"></span>
+          <span class="skeleton sk-name"></span>
+          <span class="skeleton sk-cell"></span>
+          <span class="skeleton sk-tag"></span>
+        </div>
+      }
+    </div>
+  } @else if (departures().length === 0) {
     <p class="empty-state">No trips are scheduled to depart today.</p>
   } @else {
     <div class="table-scroll">
@@ -20,7 +33,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (departure of departures(); track departure.time + departure.route) {
+          @for (departure of departures(); track departure.time + departure.route + $index) {
             <tr>
               <td class="time-cell">{{ departure.time }}</td>
               <td>{{ departure.route }}</td>

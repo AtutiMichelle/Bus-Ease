@@ -70,7 +70,14 @@
   margin-top: 0;
 }
 
+.nav-empty {
+  margin: var(--space-3, 16px) var(--space-4, 24px);
+  font-size: var(--text-sm, 0.875rem);
+  color: rgba(255, 255, 255, 0.6);
+}
+
 .nav-link {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -82,10 +89,21 @@
   font-weight: 500;
   text-decoration: none;
   cursor: default;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+/* Pages that don't exist yet: readable, but clearly not clickable. */
+span.nav-link {
+  color: rgba(255, 255, 255, 0.55);
 }
 
 a.nav-link {
   cursor: pointer;
+}
+
+a.nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #fff;
 }
 
 .nav-link i {
@@ -97,12 +115,26 @@ a.nav-link {
   border-radius: 6px;
   font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.65);
+  transition: background-color 0.15s, color 0.15s;
 }
 
+/* Current page: soft filled row, red accent bar on the sidebar edge and a
+   red icon tile. No outline, so it can't be mistaken for keyboard focus. */
 .nav-link.active {
-  background-color: #fff;
-  color: var(--color-primary, #12294d);
+  background-color: rgba(255, 255, 255, 0.14);
+  color: #fff;
   font-weight: 700;
+}
+
+.nav-link.active::before {
+  content: '';
+  position: absolute;
+  left: calc(-1 * var(--space-2, 8px));
+  top: 8px;
+  bottom: 8px;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
+  background-color: var(--color-accent, #eb1f1a);
 }
 
 .nav-link.active i {
@@ -202,10 +234,20 @@ a.nav-link {
   background-color: var(--color-border, #e4dfd6);
 }
 
-.icon-btn:focus-visible,
-.nav-link:focus-visible {
+.icon-btn:focus-visible {
   outline: 2px solid var(--color-primary-light, #1e88e5);
   outline-offset: 2px;
+}
+
+/* Keyboard focus only. A white ring reads clearly on the navy sidebar and
+   is a different shape from the filled active row. */
+a.nav-link:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 1px;
+}
+
+a.nav-link:focus:not(:focus-visible) {
+  outline: none;
 }
 
 .icon-btn-badge {
@@ -315,5 +357,13 @@ a.nav-link {
 
   .topbar-search {
     max-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-sidebar,
+  .nav-link,
+  .nav-link i {
+    transition: none;
   }
 }

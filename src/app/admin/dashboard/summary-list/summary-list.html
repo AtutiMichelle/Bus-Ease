@@ -1,14 +1,29 @@
 <div class="summary-list">
   <h2 class="summary-title">This week</h2>
-  <p class="summary-subtitle">Sales activity so far</p>
+  <p class="summary-subtitle">Last 7 days</p>
 
-  <ul class="summary-rows">
-    @for (row of rows(); track row.label) {
-      <li class="summary-row" [class]="'tone-' + row.tone">
-        <span class="summary-row-icon" aria-hidden="true"><i [class]="'fa-solid ' + row.icon"></i></span>
-        <span class="summary-row-label">{{ row.label }}</span>
-        <span class="summary-row-value">{{ row.value }}</span>
-      </li>
-    }
-  </ul>
+  @let current = state();
+  @if (current.status === 'error') {
+    <app-widget-error message="Couldn't load this week's numbers." (retry)="retry.emit()" />
+  } @else if (current.status === 'loading') {
+    <ul class="summary-rows" aria-hidden="true">
+      @for (slot of placeholders; track slot) {
+        <li class="summary-row">
+          <span class="skeleton sk-icon"></span>
+          <span class="skeleton sk-label"></span>
+          <span class="skeleton sk-value"></span>
+        </li>
+      }
+    </ul>
+  } @else {
+    <ul class="summary-rows">
+      @for (row of rows(); track row.label) {
+        <li class="summary-row" [class]="'tone-' + row.tone">
+          <span class="summary-row-icon" aria-hidden="true"><i [class]="'fa-solid ' + row.icon"></i></span>
+          <span class="summary-row-label">{{ row.label }}</span>
+          <span class="summary-row-value" [class.not-tracked]="row.notTracked">{{ row.value }}</span>
+        </li>
+      }
+    </ul>
+  }
 </div>

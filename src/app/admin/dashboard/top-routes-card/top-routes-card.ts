@@ -1,15 +1,25 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
-import { TopRoutesData } from '../../../models/admin-dashboard.model';
+import { TopRoutesData, WidgetState } from '../../../models/admin-dashboard.model';
+import { WidgetError } from '../widget-error/widget-error';
 
 @Component({
-  imports: [DecimalPipe],
+  imports: [DecimalPipe, WidgetError],
   selector: 'app-top-routes-card',
   styleUrl: './top-routes-card.css',
   templateUrl: './top-routes-card.html',
 })
 export class TopRoutesCard {
-  data = input<TopRoutesData | null>(null);
+  state = input<WidgetState<TopRoutesData>>({ status: 'loading' });
+  retry = output<void>();
+
+  /** Placeholder rows shown while loading. */
+  readonly placeholders = [0, 1, 2];
+
+  private data = computed(() => {
+    const state = this.state();
+    return state.status === 'ready' ? state.data : null;
+  });
 
   routes = computed(() => this.data()?.routes ?? []);
   noSalesRoutes = computed(() => this.data()?.noSalesRoutes ?? []);
@@ -21,7 +31,6 @@ export class TopRoutesCard {
       return '';
     }
     const list = new Intl.ListFormat('en', { style: 'long', type: 'conjunction' }).format(names);
-    const routeWord = names.length === 1 ? 'route' : 'routes';
-    return `${list} ${routeWord} had no sales this week.`;
+    return `No sales this week on ${list}.`;
   });
 }

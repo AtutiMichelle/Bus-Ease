@@ -22,16 +22,16 @@ function initials(name: string): string {
     .join('');
 }
 
-/** Admin-wide booking data, real Supabase queries (unlike
- * AdminDashboardService, which is still all mock).
+/** Admin-wide booking data, real Supabase queries.
  *
  * TODO: this selects from `bookings` with no `user_id` filter, which is
- * exactly what an admin view needs, but RLS on that table is currently
- * scoped to `auth.uid() = user_id` (see BookingService.getMyBookings) with
- * no roles/profiles table yet to grant broader access (same gap as
- * guards/auth.guard.ts's adminGuard TODO). Until an admin-scoped RLS policy
- * exists, this will only return the signed-in admin's own bookings, same as
- * a regular customer. */
+ * exactly what a staff view needs, but RLS on that table is currently
+ * scoped to `auth.uid() = user_id` (see BookingService.getMyBookings). Staff
+ * roles now exist (staff_users, see supabase/sql/2026-09-21-staff-users.sql)
+ * but no policy or function lets staff read other people's bookings yet, so
+ * until one is added this only returns the signed-in staff member's own
+ * bookings, same as a regular customer. What each role may read is a
+ * decision for that policy, not for the sidebar. */
 @Injectable({ providedIn: 'root' })
 export class AdminBookingsService {
   private client = inject(Supabase).getClient();

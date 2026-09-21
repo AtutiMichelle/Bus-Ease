@@ -1,3 +1,10 @@
+/* The card's own width decides whether the chart sits beside its legend or
+   above it. */
+:host {
+  display: block;
+  container-type: inline-size;
+}
+
 .payment-split-donut {
   background-color: var(--color-surface, #fff);
   border-radius: var(--radius-md, 8px);
@@ -30,27 +37,20 @@
   color: var(--color-text-muted, #6b6b6b);
 }
 
-.period-badge {
-  flex-shrink: 0;
-  padding: 5px 12px;
-  border-radius: 999px;
-  background-color: var(--color-bg, #faf8f5);
-  border: 1px solid var(--color-border, #e4dfd6);
-  font-size: var(--text-xs, 0.75rem);
-  font-weight: 600;
-  color: var(--color-text-muted, #6b6b6b);
-}
-
+/* Chart and legend are centred as one group, so any spare height in the card
+   is shared above and below them instead of pooling above the chart. */
 .donut-body {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: var(--space-4, 24px);
 }
 
 .donut-chart {
-  width: 140px;
-  height: 140px;
+  width: min(100%, 168px);
+  aspect-ratio: 1;
   flex-shrink: 0;
 }
 
@@ -62,54 +62,78 @@
   transition: stroke-dasharray 0.3s ease;
 }
 
+.donut-currency {
+  font-family: var(--font-family-ui);
+  font-size: 6.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  fill: var(--color-text-muted, #6b6b6b);
+}
+
 .donut-total {
   font-family: var(--font-family, 'Times New Roman', Times, serif);
-  font-size: 12px;
+  font-size: 17px;
   font-weight: 700;
   fill: var(--color-primary, #12294d);
 }
 
 .donut-total-label {
   font-family: var(--font-family-ui);
-  font-size: 7px;
+  font-size: 6px;
   fill: var(--color-text-muted, #6b6b6b);
 }
 
 .donut-legend {
-  flex: 1;
+  align-self: stretch;
   min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
   display: flex;
   flex-direction: column;
   gap: var(--space-2, 8px);
 }
 
 .legend-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 10px 1fr auto 4ch;
   align-items: center;
-  gap: var(--space-2, 8px);
+  column-gap: var(--space-2, 8px);
   font-size: var(--text-sm, 0.875rem);
 }
 
 .legend-dot {
-  flex-shrink: 0;
   width: 10px;
   height: 10px;
   border-radius: 50%;
 }
 
 .legend-label {
-  flex: 1;
+  min-width: 0;
   color: var(--color-text, #3a3a3a);
+}
+
+.legend-amount {
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--color-text-muted, #6b6b6b);
+  font-variant-numeric: tabular-nums;
 }
 
 .legend-value {
+  text-align: right;
   font-weight: 700;
   color: var(--color-text, #3a3a3a);
+  font-variant-numeric: tabular-nums;
 }
 
+/* Same footer treatment as the Top routes card, so the two line up. */
 .failed-payments {
-  margin: var(--space-2, 8px) 0 0;
-  padding-top: var(--space-2, 8px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2, 8px);
+  margin: var(--space-3, 16px) 0 0;
+  padding-top: var(--space-3, 16px);
   border-top: 1px solid var(--color-border, #e4dfd6);
   font-size: var(--text-sm, 0.875rem);
   color: var(--color-text-muted, #6b6b6b);
@@ -118,6 +142,26 @@
 .failed-payments-count {
   font-weight: 700;
   color: var(--color-danger, #d64545);
+}
+
+.failed-payments-untracked {
+  font-size: var(--text-xs, 0.75rem);
+}
+
+.sk-ring {
+  width: 168px;
+  height: 168px;
+  border-radius: 50%;
+}
+
+.sk-footer {
+  width: 40%;
+  height: 12px;
+}
+
+.sk-legend {
+  height: 14px;
+  width: 100%;
 }
 
 .empty-state {
@@ -135,9 +179,28 @@
   border-radius: var(--radius-md, 8px);
 }
 
-@media (max-width: 420px) {
+@container (min-width: 460px) {
   .donut-body {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    gap: var(--space-5, 32px);
+  }
+
+  .donut-chart {
+    width: 152px;
+  }
+
+  .donut-body {
+    justify-content: center;
+  }
+
+  .donut-legend {
+    align-self: center;
+    flex: 0 1 340px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .donut-segment {
+    transition: none;
   }
 }

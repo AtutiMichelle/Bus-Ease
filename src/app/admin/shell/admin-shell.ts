@@ -1,31 +1,8 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-
-interface NavItem {
-  label: string;
-  icon: string;
-  /** Only routes that actually exist go here; the rest render as static
-   * labels (not links) until those pages exist, rather than pointing
-   * somewhere that 404s. */
-  route: string | null;
-  /** Passed to routerLinkActiveOptions so '/admin' (Dashboard) doesn't also
-   * read as active on '/admin/bookings' etc. */
-  exact?: boolean;
-}
-
-const NAV_MAIN: NavItem[] = [
-  { label: 'Dashboard', icon: 'fa-grid-2', route: '/admin', exact: true },
-  { label: 'Bookings', icon: 'fa-ticket', route: '/admin/bookings' },
-  { label: 'Routes & Schedules', icon: 'fa-route', route: null },
-  { label: 'Buses & Fleet', icon: 'fa-bus', route: null },
-  { label: 'Customers', icon: 'fa-user', route: null },
-  { label: 'Customer Care', icon: 'fa-headset', route: null },
-  { label: 'Payments & Wallet', icon: 'fa-wallet', route: null },
-  { label: 'Reports', icon: 'fa-chart-column', route: null },
-];
-
-const NAV_SYSTEM: NavItem[] = [{ label: 'Settings', icon: 'fa-gear', route: null }];
+import { StaffService } from '../../services/staff.service';
+import { NAV_MAIN, NAV_SYSTEM } from '../admin-nav';
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -46,15 +23,19 @@ function initials(name: string): string {
 })
 export class AdminShell {
   private authService = inject(AuthService);
+  private staff = inject(StaffService);
 
-  readonly navMain = NAV_MAIN;
-  readonly navSystem = NAV_SYSTEM;
+  // Menu items follow the signed-in staff role (STAFF_ROLES in
+  // staff-access.ts). Hiding an item is only a convenience: the database's
+  // row level security and admin-only functions are what protect the data.
+  navMain = computed(() => NAV_MAIN.filter((item) => this.staff.sections().includes(item.section)));
+  navSystem = computed(() => NAV_SYSTEM.filter((item) => this.staff.sections().includes(item.section)));
+  hasNav = computed(() => this.navMain().length + this.navSystem().length > 0);
 
   adminName = computed(() => this.authService.displayName());
   adminInitials = computed(() => initials(this.adminName()));
-  // No role column exists yet (see guards/auth.guard.ts's adminGuard TODO),
-  // so this is a fixed label rather than real per-user data.
-  readonly adminRole = 'Administrator';
+  // Loaded from staff_users by staffGuard before this page renders.
+  adminRole = this.staff.roleLabel;
 
   // Below 900px the sidebar becomes an off-canvas drawer toggled from the
   // top bar, since a fixed sidebar has nowhere to go on a narrow screen.

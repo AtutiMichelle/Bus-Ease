@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { adminGuard, authGuard, bookingAccessGuard } from './guards/auth.guard';
+import { authGuard, bookingAccessGuard, sectionGuard, staffGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
     {
@@ -9,7 +9,7 @@ export const routes: Routes = [
     },
     {
         // Sign in/up is now a modal (see AuthModalService) that overlays whatever
-        // page is current, rather than a page of its own — these redirects just
+        // page is current, rather than a page of its own, these redirects just
         // keep old /login and /signup links from dead-ending.
         path: 'login',
         redirectTo: '/',
@@ -48,7 +48,7 @@ export const routes: Routes = [
     },
     {
         // My Bookings is now a tab on the account page rather than its own
-        // page — this redirect just keeps old /my-bookings links from dead-ending.
+        // page, this redirect just keeps old /my-bookings links from dead-ending.
         path: 'my-bookings',
         redirectTo: '/account',
     },
@@ -61,17 +61,24 @@ export const routes: Routes = [
     {
         path: 'admin',
         loadComponent: () => import('./admin/shell/admin-shell').then((m) => m.AdminShell),
-        canActivate: [adminGuard],
+        canActivate: [staffGuard],
         children: [
             {
                 path: '',
                 loadComponent: () => import('./admin/dashboard/dashboard-page/dashboard-page').then((m) => m.DashboardPage),
+                canActivate: [sectionGuard('dashboard')],
                 title: 'Admin Dashboard - BusEase',
             },
             {
                 path: 'bookings',
                 loadComponent: () => import('./admin/bookings/bookings-page/bookings-page').then((m) => m.BookingsPage),
+                canActivate: [sectionGuard('bookings')],
                 title: 'Bookings - BusEase Admin',
+            },
+            {
+                path: 'no-access',
+                loadComponent: () => import('./admin/no-access/no-access-page').then((m) => m.NoAccessPage),
+                title: 'No access - BusEase Admin',
             },
         ],
     },

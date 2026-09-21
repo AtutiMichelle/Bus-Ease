@@ -9,21 +9,33 @@
       BusEase
     </p>
 
-    <nav class="sidebar-nav">
-      <p class="nav-section-label">Main</p>
-      @for (item of navMain; track item.label) {
-        @if (item.route) {
-          <a
-            [routerLink]="item.route"
-            routerLinkActive="active"
-            [routerLinkActiveOptions]="{ exact: !!item.exact }"
-            class="nav-link"
-            (click)="closeSidebar()"
-          >
-            <i [class]="'fa-solid ' + item.icon" aria-hidden="true"></i>
-            {{ item.label }}
-          </a>
-        } @else {
+    <nav class="sidebar-nav" aria-label="Admin sections">
+      @if (navMain().length > 0) {
+        <p class="nav-section-label">Main</p>
+        @for (item of navMain(); track item.label) {
+          @if (item.route) {
+            <a
+              [routerLink]="item.route"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: !!item.exact }"
+              class="nav-link"
+              (click)="closeSidebar()"
+            >
+              <i [class]="'fa-solid ' + item.icon" aria-hidden="true"></i>
+              {{ item.label }}
+            </a>
+          } @else {
+            <span class="nav-link">
+              <i [class]="'fa-solid ' + item.icon" aria-hidden="true"></i>
+              {{ item.label }}
+            </span>
+          }
+        }
+      }
+
+      @if (navSystem().length > 0) {
+        <p class="nav-section-label">System</p>
+        @for (item of navSystem(); track item.label) {
           <span class="nav-link">
             <i [class]="'fa-solid ' + item.icon" aria-hidden="true"></i>
             {{ item.label }}
@@ -31,12 +43,8 @@
         }
       }
 
-      <p class="nav-section-label">System</p>
-      @for (item of navSystem; track item.label) {
-        <span class="nav-link">
-          <i [class]="'fa-solid ' + item.icon" aria-hidden="true"></i>
-          {{ item.label }}
-        </span>
+      @if (!hasNav()) {
+        <p class="nav-empty">No sections are available for your role.</p>
       }
     </nav>
 
@@ -68,7 +76,7 @@
           <span class="avatar-badge" aria-hidden="true">{{ adminInitials() }}</span>
           <div class="topbar-identity-text">
             <p class="topbar-name">{{ adminName() }}</p>
-            <p class="topbar-role">{{ adminRole }}</p>
+            <p class="topbar-role">{{ adminRole() }}</p>
           </div>
         </div>
       </div>

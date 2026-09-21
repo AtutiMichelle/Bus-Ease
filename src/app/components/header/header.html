@@ -34,10 +34,17 @@
         </button>
         @if (userMenuOpen()) {
           <div class="user-dropdown" role="menu">
-            <a routerLink="/account" [queryParams]="{ tab: 'profile' }" role="menuitem" (click)="closeMenu()">
-              <i class="fa-solid fa-user" aria-hidden="true"></i>
-              Profile
-            </a>
+            @if (staff.homeLink(); as home) {
+              <a [routerLink]="home.route" role="menuitem" (click)="closeMenu()">
+                <i class="fa-solid fa-table-cells-large" aria-hidden="true"></i>
+                {{ home.label }}
+              </a>
+            } @else {
+              <a routerLink="/account" [queryParams]="{ tab: 'profile' }" role="menuitem" (click)="closeMenu()">
+                <i class="fa-solid fa-user" aria-hidden="true"></i>
+                Profile
+              </a>
+            }
             <button type="button" role="menuitem" (click)="logout()">
               <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
               Logout

@@ -151,16 +151,22 @@ describe('AdminDashboardService', () => {
     expect(bookings[1]).toMatchObject({ customerName: 'Guest', customerInitials: 'G', status: 'Unpaid' });
   });
 
-  it('maps departures with seats booked out of total', async () => {
-    const { service } = setup({
-      admin_departures_today: [
-        { bus_id: '1', time: '06:30', origin: 'Nairobi', destination: 'Mombasa', total_seats: 41, seats_booked: 38, status: 'departed' },
-        { bus_id: '2', time: '09:30', origin: 'Nairobi', destination: 'Kisumu', total_seats: 41, seats_booked: 28, status: 'boarding' },
-      ],
+  it('maps departures with seats booked out of total, and passes the true total through', async () => {
+    const { service, calls } = setup({
+      admin_departures_summary: {
+        total: 12,
+        rows: [
+          { bus_id: '2', time: '09:30', origin: 'Nairobi', destination: 'Kisumu', total_seats: 41, seats_booked: 28, status: 'boarding' },
+          { bus_id: '1', time: '06:30', origin: 'Nairobi', destination: 'Mombasa', total_seats: 41, seats_booked: 38, status: 'departed' },
+        ],
+      },
     });
-    const departures = await service.getDeparturesToday();
-    expect(departures[0]).toEqual({ time: '06:30', route: 'Nairobi → Mombasa', seatsSold: 38, totalSeats: 41, status: 'Departed' });
-    expect(departures[1].status).toBe('Boarding');
+    const { total, departures } = await service.getDeparturesToday();
+
+    expect(calls[0]).toEqual({ fn: 'admin_departures_summary', args: { p_limit: 5 } });
+    expect(total).toBe(12);
+    expect(departures[0]).toEqual({ time: '09:30', route: 'Nairobi → Kisumu', seatsSold: 28, totalSeats: 41, status: 'Boarding' });
+    expect(departures[1]).toEqual({ time: '06:30', route: 'Nairobi → Mombasa', seatsSold: 38, totalSeats: 41, status: 'Departed' });
   });
 
   it('throws when the database call fails, so the widget can show its error state', async () => {

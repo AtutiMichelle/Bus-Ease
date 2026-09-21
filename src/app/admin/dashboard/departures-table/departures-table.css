@@ -1,223 +1,115 @@
-/* The card's own width decides how much of the table fits. */
+/* Card, header, footer and table basics are the shared admin-* styles in
+   styles.css. Only this card's own columns and seat bar live here. */
 :host {
-  display: block;
+  display: flex;
   container-type: inline-size;
 }
 
-.departures-table-card {
-  background-color: var(--color-surface, #fff);
-  border-radius: var(--radius-md, 8px);
-  box-shadow: var(--shadow-card, 0 2px 8px rgba(26, 58, 107, 0.08));
-  padding: var(--space-4, 24px);
-  height: 100%;
-  box-sizing: border-box;
-}
-
-.card-header {
+.departures-card {
+  flex: 1;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--space-3, 16px);
+  flex-direction: column;
+  min-width: 0;
 }
 
-.card-header h2 {
-  margin: 0;
-  font-family: var(--font-family, 'Times New Roman', Times, serif);
-  font-size: var(--text-lg, 1.25rem);
-  color: var(--color-primary, #12294d);
+.col-time {
+  width: 64px;
 }
 
-.count-badge {
-  padding: 5px 12px;
-  border-radius: 999px;
-  background-color: var(--color-bg, #faf8f5);
-  border: 1px solid var(--color-border, #e4dfd6);
-  font-size: var(--text-xs, 0.75rem);
-  font-weight: 600;
-  color: var(--color-text-muted, #6b6b6b);
+.col-seats {
+  width: 176px;
 }
 
-.table-scroll {
-  overflow-x: auto;
-  margin: 0 calc(-1 * var(--space-2, 8px));
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th {
-  padding: var(--space-2, 8px) var(--space-2, 8px);
-  text-align: left;
-  font-size: var(--text-xs, 0.75rem);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-text-muted, #6b6b6b);
-  border-bottom: 1px solid var(--color-border, #e4dfd6);
-  white-space: nowrap;
-}
-
-td {
-  padding: 12px var(--space-2, 8px);
-  font-variant-numeric: tabular-nums;
-  border-bottom: 1px solid var(--color-border, #e4dfd6);
-  font-size: var(--text-sm, 0.875rem);
-  color: var(--color-text, #3a3a3a);
-  vertical-align: middle;
-  white-space: nowrap;
-}
-
-tbody tr:last-child td {
-  border-bottom: none;
-}
-
-tbody tr {
-  transition: background-color 0.15s;
-}
-
-tbody tr:hover {
-  background-color: var(--color-bg, #faf8f5);
+.col-status {
+  width: 104px;
 }
 
 .time-cell {
-  font-weight: 700;
-  font-family: var(--font-family, 'Times New Roman', Times, serif);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
-.seats-cell {
+.route-cell {
+  font-weight: 500;
+}
+
+.seats {
   display: flex;
   align-items: center;
-  gap: var(--space-2, 8px);
-  min-width: 140px;
+  gap: 10px;
 }
 
-.seat-fill-track {
+.seat-track {
   flex: 1;
+  min-width: 0;
   height: 8px;
-  border-radius: 999px;
-  background-color: var(--color-bg, #faf8f5);
+  border-radius: 4px;
+  background-color: var(--admin-track);
   overflow: hidden;
 }
 
-.seat-fill-bar {
+.seat-fill {
   height: 100%;
-  border-radius: 999px;
-  background-color: var(--color-primary, #12294d);
-  transition: width 0.3s ease;
+  border-radius: 4px;
+  background-color: var(--admin-ink);
 }
 
-.seat-fill-bar.seat-fill-full {
-  background-color: var(--color-danger, #d64545);
+.seat-fill-full {
+  background-color: var(--admin-accent);
 }
 
 .seats-count {
   flex-shrink: 0;
-  font-size: var(--text-xs, 0.75rem);
-  color: var(--color-text-muted, #6b6b6b);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--admin-secondary);
 }
 
-.status-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 12px;
-  border-radius: 999px;
-  font-size: var(--text-xs, 0.75rem);
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.status-departed {
-  background-color: rgba(22, 163, 74, 0.12);
-  color: var(--color-green, #16a34a);
-}
-
-.status-boarding {
-  background-color: rgba(214, 140, 15, 0.14);
-  color: var(--color-accent-dark, #d68c0f);
-}
-
-.status-scheduled {
-  background-color: var(--color-soft-bg, #e8f1fc);
-  color: var(--color-primary-light, #1e88e5);
-}
-
-.status-delayed {
-  background-color: rgba(214, 69, 69, 0.12);
-  color: var(--color-danger, #d64545);
-}
-
-.empty-state {
-  margin: 0;
-  padding: var(--space-6, 48px) var(--space-4, 24px);
-  text-align: center;
-  color: var(--color-text-muted, #6b6b6b);
-  font-size: var(--text-sm, 0.875rem);
-  background-color: var(--color-bg, #faf8f5);
-  border: 1px dashed var(--color-border, #e4dfd6);
-  border-radius: var(--radius-md, 8px);
-}
-
-.skeleton-rows {
-  display: flex;
-  flex-direction: column;
-}
-
-.skeleton-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3, 16px);
-  padding: var(--space-3, 16px) 0;
-  border-bottom: 1px solid var(--color-border, #e4dfd6);
-}
-
-.skeleton-row:last-child {
-  border-bottom: none;
-}
-
-.sk-avatar {
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-}
-
+/* Loading placeholder pieces */
 .sk-time {
-  flex-shrink: 0;
-  width: 44px;
+  width: 40px;
   height: 14px;
 }
 
-.sk-name {
-  flex: 2;
+.sk-route {
+  flex: 1;
   height: 14px;
 }
 
-.sk-cell {
-  flex: 1.5;
-  height: 14px;
+.sk-seats {
+  width: 120px;
+  height: 8px;
 }
 
-.sk-tag {
-  flex-shrink: 0;
-  width: 64px;
+.sk-status {
+  width: 72px;
   height: 22px;
   border-radius: 999px;
 }
 
-@container (max-width: 520px) {
-  .seat-fill-track {
+.sk-footer {
+  width: 160px;
+  height: 14px;
+}
+
+/* In a narrow card the seat bar goes and only the count stays, so the route
+   keeps enough room. The card's own width decides, not the screen's. */
+@container (max-width: 540px) {
+  .col-time {
+    width: 56px;
+  }
+
+  .col-seats {
+    width: 64px;
+  }
+
+  .col-status {
+    width: 96px;
+  }
+
+  .seat-track,
+  .sk-seats {
     display: none;
-  }
-
-  .seats-cell {
-    min-width: 0;
-  }
-
-  td,
-  th {
-    padding-left: 6px;
-    padding-right: 6px;
   }
 }

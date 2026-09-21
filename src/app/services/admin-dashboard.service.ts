@@ -2,7 +2,9 @@ import { Injectable, inject } from '@angular/core';
 import { Supabase } from './supabase';
 import {
   BookingStatusTag,
+  DASHBOARD_LIST_LIMIT,
   Departure,
+  DeparturesData,
   DepartureStatus,
   KpiCardData,
   KpiDelta,
@@ -17,7 +19,8 @@ import {
 import { compactAmount } from '../utils/money';
 
 /** Raw shapes returned by the admin_* database functions (see
- * supabase/sql/2026-09-21-admin-dashboard.sql and 2026-09-21-admin-kpi-period.sql). Numbers can arrive as
+ * supabase/sql/2026-09-21-admin-dashboard.sql and the other 2026-09-21-admin-*.sql
+ * files). Numbers can arrive as
  * strings when Postgres numeric values are large, so they are always run
  * through Number() when mapped. */
 interface MetricRow {
@@ -64,6 +67,11 @@ interface RecentBookingRow {
   origin: string;
   destination: string;
   customer_name: string | null;
+}
+
+interface DeparturesRow {
+  total: number;
+  rows: DepartureRow[];
 }
 
 interface DepartureRow {
@@ -290,7 +298,7 @@ export class AdminDashboardService {
     };
   }
 
-  async getRecentBookings(limit = 6): Promise<RecentBooking[]> {
+  async getRecentBookings(limit = DASHBOARD_LIST_LIMIT): Promise<RecentBooking[]> {
     const rows = await this.rpc<RecentBookingRow[]>('admin_recent_bookings', { p_limit: limit });
     return rows.map((row) => {
       const customerName = row.customer_name?.trim() || 'Guest';
@@ -306,14 +314,17 @@ export class AdminDashboardService {
     });
   }
 
-  async getDeparturesToday(): Promise<Departure[]> {
-    const rows = await this.rpc<DepartureRow[]>('admin_departures_today');
-    return rows.map((row) => ({
-      time: row.time,
-      route: routeName(row.origin, row.destination),
-      seatsSold: Number(row.seats_booked),
-      totalSeats: Number(row.total_seats),
-      status: DEPARTURE_STATUS[row.status] ?? 'Scheduled',
-    }));
+  async getDeparturesToday(limit = DASHBOARD_LIST_LIMIT): Promise<DeparturesData> {
+    const row = await this.rpc<DeparturesRow>('admin_departures_summary', { p_limit: limit });
+    return {
+      total: Number(row.total),
+      departures: row.rows.map((departure) => ({
+        time: departure.time,
+        route: routeName(departure.origin, departure.destination),
+        seatsSold: Number(departure.seats_booked),
+        totalSeats: Number(departure.total_seats),
+        status: DEPARTURE_STATUS[departure.status] ?? 'Scheduled',
+      })),
+    };
   }
 }

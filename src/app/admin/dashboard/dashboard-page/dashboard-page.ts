@@ -2,7 +2,7 @@ import { Component, WritableSignal, computed, inject, signal } from '@angular/co
 import { AuthService } from '../../../services/auth.service';
 import { AdminDashboardService } from '../../../services/admin-dashboard.service';
 import {
-  Departure,
+  DeparturesData,
   KpiCardData,
   KpiPeriod,
   PaymentSplitData,
@@ -17,7 +17,7 @@ import { KpiCard } from '../kpi-card/kpi-card';
 import { SummaryList } from '../summary-list/summary-list';
 import { TopRoutesCard } from '../top-routes-card/top-routes-card';
 import { PaymentSplitDonut } from '../payment-split-donut/payment-split-donut';
-import { BookingsTable } from '../bookings-table/bookings-table';
+import { RecentBookingsCard } from '../recent-bookings-card/recent-bookings-card';
 import { DeparturesTable } from '../departures-table/departures-table';
 import { WidgetError } from '../widget-error/widget-error';
 
@@ -38,7 +38,7 @@ function formatGreetingDate(date: Date): string {
 }
 
 @Component({
-  imports: [AdminIcon, KpiCard, SummaryList, TopRoutesCard, PaymentSplitDonut, BookingsTable, DeparturesTable, WidgetError],
+  imports: [AdminIcon, KpiCard, SummaryList, TopRoutesCard, PaymentSplitDonut, RecentBookingsCard, DeparturesTable, WidgetError],
   selector: 'app-dashboard-page',
   styleUrl: './dashboard-page.css',
   templateUrl: './dashboard-page.html',
@@ -73,7 +73,7 @@ export class DashboardPage {
   topRoutes = signal<WidgetState<TopRoutesData>>({ status: 'loading' });
   paymentSplit = signal<WidgetState<PaymentSplitData>>({ status: 'loading' });
   recentBookings = signal<WidgetState<RecentBooking[]>>({ status: 'loading' });
-  departuresToday = signal<WidgetState<Departure[]>>({ status: 'loading' });
+  departuresToday = signal<WidgetState<DeparturesData>>({ status: 'loading' });
 
   /** Placeholder slots shown while the stat cards load. */
   readonly kpiPlaceholders = [0, 1, 2, 3];

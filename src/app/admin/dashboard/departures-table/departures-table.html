@@ -1,63 +1,87 @@
-<div class="departures-table-card">
-  <div class="card-header">
-    <h2>Departures today</h2>
-    @if (!error() && !loading() && departures().length > 0) {
-      <span class="count-badge">{{ departures().length }} trips</span>
+<section class="departures-card admin-card" aria-labelledby="departures-title">
+  <div class="admin-card-header">
+    <h2 id="departures-title" class="admin-card-title">Departures today</h2>
+    @if (!error() && !loading() && trueTotal() > 0) {
+      <span class="admin-chip admin-chip-neutral">{{ chipText() }}</span>
+    }
+    @if (tripsRoute) {
+      <a class="admin-card-link" [routerLink]="tripsRoute">View all trips</a>
+    } @else {
+      <span class="admin-card-link admin-card-link-static">View all trips</span>
     }
   </div>
 
-  @if (error()) {
-    <app-widget-error message="Couldn't load today's departures." (retry)="retry.emit()" />
-  } @else if (loading()) {
-    <div class="skeleton-rows" aria-hidden="true">
+  <div class="admin-list-area">
+    @if (error()) {
+      <app-widget-error message="Couldn't load today's departures." (retry)="retry.emit()" />
+    } @else if (loading()) {
+      <div class="admin-list-skeleton-head" aria-hidden="true"></div>
       @for (slot of placeholders; track slot) {
-        <div class="skeleton-row">
+        <div class="admin-list-skeleton-row" aria-hidden="true">
           <span class="skeleton sk-time"></span>
-          <span class="skeleton sk-name"></span>
-          <span class="skeleton sk-cell"></span>
-          <span class="skeleton sk-tag"></span>
+          <span class="skeleton sk-route"></span>
+          <span class="skeleton sk-seats"></span>
+          <span class="skeleton sk-status"></span>
         </div>
       }
-    </div>
-  } @else if (departures().length === 0) {
-    <p class="empty-state">No trips are scheduled to depart today.</p>
-  } @else {
-    <div class="table-scroll">
-      <table>
-        <thead>
-          <tr>
-            <th>Time</th>
-            <th>Route</th>
-            <th>Seats</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (departure of departures(); track departure.time + departure.route + $index) {
+    } @else {
+      @if (rows().length > 0) {
+        <table class="admin-list-table">
+          <caption class="sr-only">Departures today</caption>
+          <colgroup>
+            <col class="col-time" />
+            <col />
+            <col class="col-seats" />
+            <col class="col-status" />
+          </colgroup>
+          <thead>
             <tr>
-              <td class="time-cell">{{ departure.time }}</td>
-              <td>{{ departure.route }}</td>
-              <td class="seats-cell">
-                <div
-                  class="seat-fill-track"
-                  role="img"
-                  [attr.aria-label]="departure.seatsSold + ' of ' + departure.totalSeats + ' seats sold'"
-                >
-                  <div
-                    class="seat-fill-bar"
-                    [class.seat-fill-full]="isNearCapacity(departure)"
-                    [style.width.%]="fillPercent(departure)"
-                  ></div>
-                </div>
-                <span class="seats-count">{{ departure.seatsSold }}/{{ departure.totalSeats }}</span>
-              </td>
-              <td>
-                <span class="status-tag" [class]="'status-' + departure.status.toLowerCase()">{{ departure.status }}</span>
-              </td>
+              <th scope="col">Time</th>
+              <th scope="col">Route</th>
+              <th scope="col">Seats booked</th>
+              <th scope="col">Status</th>
             </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  }
-</div>
+          </thead>
+          <tbody>
+            @for (departure of rows(); track departure.time + departure.route + $index) {
+              <tr>
+                <td class="time-cell">{{ departure.time }}</td>
+                <td class="route-cell" [attr.title]="departure.route">{{ departure.route }}</td>
+                <td>
+                  <div class="seats">
+                    <div
+                      class="seat-track"
+                      role="img"
+                      [attr.aria-label]="departure.seatsSold + ' of ' + departure.totalSeats + ' seats booked'"
+                    >
+                      <div
+                        class="seat-fill"
+                        [class.seat-fill-full]="isNearCapacity(departure)"
+                        [style.width.%]="fillPercent(departure)"
+                      ></div>
+                    </div>
+                    <span class="seats-count">{{ departure.seatsSold }}/{{ departure.totalSeats }}</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="admin-chip" [class]="statusChip[departure.status]">{{ departure.status }}</span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+      @if (hasSpareSpace()) {
+        <p class="admin-soft-empty">{{ emptyMessage() }}</p>
+      }
+    }
+  </div>
+
+  <p class="admin-card-footer">
+    @if (loading()) {
+      <span class="skeleton sk-footer" aria-hidden="true"></span>
+    } @else if (!error()) {
+      {{ footerText() }}
+    }
+  </p>
+</section>

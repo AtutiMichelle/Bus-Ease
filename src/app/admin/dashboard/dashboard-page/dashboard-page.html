@@ -42,18 +42,19 @@
 </section>
 
 <section class="tables-grid">
+  @let departures = departuresToday();
+  <app-departures-table
+    [departures]="departures.status === 'ready' ? departures.data.departures : []"
+    [total]="departures.status === 'ready' ? departures.data.total : 0"
+    [loading]="departures.status === 'loading'"
+    [error]="departures.status === 'error'"
+    (retry)="loadDeparturesToday()"
+  />
   @let bookings = recentBookings();
-  <app-bookings-table
+  <app-recent-bookings-card
     [bookings]="bookings.status === 'ready' ? bookings.data : []"
     [loading]="bookings.status === 'loading'"
     [error]="bookings.status === 'error'"
     (retry)="loadRecentBookings()"
-  />
-  @let departures = departuresToday();
-  <app-departures-table
-    [departures]="departures.status === 'ready' ? departures.data : []"
-    [loading]="departures.status === 'loading'"
-    [error]="departures.status === 'error'"
-    (retry)="loadDeparturesToday()"
   />
 </section>

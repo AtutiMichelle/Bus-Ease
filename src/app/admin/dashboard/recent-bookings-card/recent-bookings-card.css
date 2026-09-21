@@ -1,0 +1,116 @@
+/* Card, header, footer and table basics are the shared admin-* styles in
+   styles.css. Only this card's own row layout lives here. */
+:host {
+  display: flex;
+}
+
+.bookings-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* The amount column is a fixed width, so a long name or route can only ever
+   squeeze the customer column, never push the amount out of place. */
+.col-amount {
+  width: 84px;
+}
+
+.amount-head {
+  text-align: right;
+}
+
+.customer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--color-soft-bg);
+  color: var(--admin-info-text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+/* min-width: 0 lets the text column shrink below its content, which is what
+   makes the ellipsis on the name and route work. */
+.customer-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.customer-name,
+.customer-route {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.customer-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--admin-ink);
+}
+
+.customer-route {
+  font-size: 0.8125rem;
+  color: var(--admin-muted);
+}
+
+.amount-cell {
+  text-align: right;
+}
+
+.amount {
+  margin: 0 0 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--admin-ink);
+}
+
+/* Loading placeholder pieces */
+.sk-avatar {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.sk-lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sk-name {
+  width: 55%;
+  height: 14px;
+}
+
+.sk-route {
+  width: 40%;
+  height: 12px;
+}
+
+.sk-amount {
+  flex-shrink: 0;
+  width: 64px;
+  height: 14px;
+}
+
+.sk-footer {
+  width: 160px;
+  height: 14px;
+}

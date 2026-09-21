@@ -93,6 +93,11 @@ export interface RecentBooking {
   status: BookingStatusTag;
 }
 
+/** Rows shown in the dashboard's Departures and Recent bookings cards. Both
+ * queries use it as their limit, and the cards size themselves to it, so the
+ * two stay in step. */
+export const DASHBOARD_LIST_LIMIT = 5;
+
 export type DepartureStatus = 'Departed' | 'Boarding' | 'Scheduled' | 'Delayed';
 
 export interface Departure {
@@ -101,4 +106,11 @@ export interface Departure {
   seatsSold: number;
   totalSeats: number;
   status: DepartureStatus;
+}
+
+/** Today's departures, limited to what the card shows, with the true total
+ * for its "Showing 5 of 12 trips today" footer. */
+export interface DeparturesData {
+  total: number;
+  departures: Departure[];
 }

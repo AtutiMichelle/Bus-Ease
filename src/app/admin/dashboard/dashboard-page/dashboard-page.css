@@ -128,7 +128,7 @@
 
 .tables-grid {
   display: grid;
-  grid-template-columns: 1.15fr 1fr;
+  grid-template-columns: 2fr 1fr;
   gap: var(--space-4, 24px);
   align-items: stretch;
 }

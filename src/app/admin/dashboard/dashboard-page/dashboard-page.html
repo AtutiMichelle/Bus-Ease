@@ -35,6 +35,12 @@
   }
 </section>
 
+<section class="secondary-grid">
+  <app-summary-list [state]="weekSummary()" (retry)="loadWeekSummary()" />
+  <app-top-routes-card [state]="topRoutes()" (retry)="loadTopRoutes()" />
+  <app-payment-split-donut [state]="paymentSplit()" (retry)="loadPaymentSplit()" />
+</section>
+
 <section class="tables-grid">
   @let departures = departuresToday();
   <app-departures-table
@@ -51,10 +57,4 @@
     [error]="bookings.status === 'error'"
     (retry)="loadRecentBookings()"
   />
-</section>
-
-<section class="secondary-grid">
-  <app-summary-list [state]="weekSummary()" (retry)="loadWeekSummary()" />
-  <app-top-routes-card [state]="topRoutes()" (retry)="loadTopRoutes()" />
-  <app-payment-split-donut [state]="paymentSplit()" (retry)="loadPaymentSplit()" />
 </section>

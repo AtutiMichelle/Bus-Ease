@@ -118,18 +118,18 @@
   grid-column: 1 / -1;
 }
 
-.tables-grid {
+/* Row of three equal cards, above the two tables */
+.secondary-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--space-4);
   margin-bottom: var(--space-4);
   align-items: stretch;
 }
 
-/* Bottom row: three equal cards */
-.secondary-grid {
+.tables-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 2fr 1fr;
   gap: var(--space-4);
   align-items: stretch;
 }

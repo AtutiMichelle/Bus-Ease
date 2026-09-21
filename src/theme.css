@@ -45,3 +45,36 @@
   --radius-md: 8px;
   --shadow-card: 0 2px 8px rgba(26, 58, 107, 0.08);
 }
+/* Admin section (src/app/admin). Where a shared token above is within about 2
+   delta-E of the admin design value (page background, surface, border and the
+   info chip background), admin components use the shared token directly. Only
+   values that differ, or have no equivalent above, live here. */
+:root {
+  --admin-ink: #14213d;
+  --admin-accent: #d9232d;
+  --admin-muted: #5b6474;
+  --admin-secondary: #4a5160;
+  --admin-divider: #efeae1;
+  --admin-track: #ece7de;
+
+  /* Status chips, each a background and text pair (all at least 4.5:1).
+     Info uses --color-soft-bg for its background. Neutral uses
+     --admin-secondary for its text. */
+  --admin-neg-bg: #fbe9ea;
+  --admin-neg-text: #a5121b;
+  --admin-pos-bg: #e3f3ea;
+  --admin-pos-text: #17663f;
+  --admin-warn-bg: #fbf0da;
+  --admin-warn-text: #8a5a00;
+  --admin-info-text: #24468a;
+  --admin-neutral-bg: #f1eee8;
+
+  --admin-radius-card: 16px;
+
+  /* Text on the navy sidebar */
+  --admin-on-navy: #ffffff;
+  --admin-on-navy-muted: rgba(255, 255, 255, 0.72);
+
+  --admin-font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --admin-font-body: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}

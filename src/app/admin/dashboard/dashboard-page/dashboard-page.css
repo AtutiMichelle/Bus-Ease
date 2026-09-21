@@ -10,79 +10,135 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--space-4, 24px);
+  gap: var(--space-4);
   flex-wrap: wrap;
-  margin-bottom: var(--space-4, 24px);
+  margin-bottom: var(--space-3);
 }
 
 .greeting-title {
   margin: 0 0 4px;
-  font-family: var(--font-family, 'Times New Roman', Times, serif);
-  font-size: var(--text-xl, 1.75rem);
-  font-weight: 700;
-  color: var(--color-primary, #12294d);
+  font-family: var(--admin-font-display);
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--admin-ink);
 }
 
 .greeting-meta {
   margin: 0;
-  font-size: var(--text-sm, 0.875rem);
-  color: var(--color-text-muted, #6b6b6b);
+  font-size: 0.9375rem;
+  color: var(--admin-muted);
 }
 
 .primary-cta {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2, 8px);
-  padding: 11px 20px;
+  gap: var(--space-2);
+  height: 48px;
+  padding: 0 var(--space-4);
   border: none;
-  border-radius: 999px;
-  background-color: var(--color-accent, #eb1f1a);
+  border-radius: 12px;
+  background-color: var(--admin-accent);
   color: #fff;
   font-family: inherit;
-  font-size: var(--text-sm, 0.875rem);
-  font-weight: 700;
+  font-size: 0.9375rem;
+  font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(235, 31, 26, 0.3);
-  transition: background-color 0.2s, transform 0.2s;
+  transition: background-color 0.2s;
 }
 
 .primary-cta:hover {
-  background-color: color-mix(in srgb, var(--color-accent, #eb1f1a) 88%, #000);
-  transform: translateY(-1px);
-}
-
-.primary-cta:active {
-  transform: translateY(0);
+  background-color: color-mix(in srgb, var(--admin-accent) 88%, #000);
 }
 
 .primary-cta:focus-visible {
-  outline: 2px solid var(--color-primary-light, #1e88e5);
+  outline: 2px solid var(--color-primary-light);
+  outline-offset: 2px;
+}
+
+/* Performance heading and period control */
+.performance-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-2);
+}
+
+.section-title {
+  margin: 0;
+  font-family: var(--admin-font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--admin-ink);
+}
+
+.segmented {
+  display: inline-flex;
+  padding: 4px;
+  border-radius: 12px;
+  background-color: var(--admin-track);
+}
+
+/* 32px buttons in a 40px control. The ::after extends each button's
+   clickable area to 44px tall without changing how it looks. */
+.segmented button {
+  position: relative;
+  height: 32px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--admin-secondary);
+  font-family: inherit;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.segmented button::after {
+  content: '';
+  position: absolute;
+  inset: -6px 0;
+}
+
+.segmented button[aria-pressed='true'] {
+  background-color: var(--color-surface);
+  color: var(--admin-ink);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(20, 33, 61, 0.12);
+}
+
+.segmented button:focus-visible {
+  outline: 2px solid var(--color-primary-light);
   outline-offset: 2px;
 }
 
 .stat-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-4, 24px);
-  margin-bottom: var(--space-4, 24px);
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
 }
 
 .stat-grid-error {
   grid-column: 1 / -1;
 }
 
+/* Row of three equal cards, above the two tables */
 .secondary-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-4, 24px);
-  margin-bottom: var(--space-4, 24px);
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
   align-items: stretch;
 }
 
 .tables-grid {
   display: grid;
-  grid-template-columns: 1.15fr 1fr;
-  gap: var(--space-4, 24px);
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-3);
   align-items: stretch;
 }
 
@@ -135,6 +191,14 @@
 
   .primary-cta {
     justify-content: center;
+  }
+
+  .segmented {
+    width: 100%;
+  }
+
+  .segmented button {
+    flex: 1;
   }
 }
 

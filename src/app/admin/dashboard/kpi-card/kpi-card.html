@@ -1,67 +1,38 @@
 @if (card(); as data) {
-  <article class="kpi-card" [class]="'tone-' + data.tone">
-    <p class="kpi-label">{{ data.label }}</p>
-    <p class="kpi-value">{{ data.value }}</p>
+  <article class="kpi-card admin-card" [class]="'tone-' + data.tone">
+    <div class="kpi-head">
+      <p class="kpi-label">{{ data.label }}</p>
+      <span class="kpi-icon" aria-hidden="true"><app-admin-icon [paths]="icons[data.icon]" /></span>
+    </div>
 
-    <p class="kpi-delta" [class]="'delta-' + data.delta.direction">
-      @if (data.delta.direction === 'up') {
-        <span aria-hidden="true">&uarr;</span>
-      } @else if (data.delta.direction === 'down') {
-        <span aria-hidden="true">&darr;</span>
+    <p class="kpi-value">
+      @if (data.unit) {
+        <span class="kpi-unit">{{ data.unit }}</span>
       }
-      {{ data.delta.text }}
+      <span class="kpi-number">{{ data.value }}</span>
     </p>
 
-    <div class="kpi-trend">
-      @if (chart(); as c) {
-        <div
-          class="spark"
-          role="img"
-          [attr.aria-label]="c.description"
-          (pointermove)="onPointer($event)"
-          (pointerleave)="hoverIndex.set(null)"
-        >
-          <svg class="spark-svg" [attr.viewBox]="'0 0 200 56'" preserveAspectRatio="none" aria-hidden="true">
-            <defs>
-              <linearGradient [attr.id]="gradientId" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stop-color="currentColor" stop-opacity="0.3" />
-                <stop offset="1" stop-color="currentColor" stop-opacity="0" />
-              </linearGradient>
-            </defs>
-            <path [attr.d]="c.areaPath" [attr.fill]="'url(#' + gradientId + ')'" />
-            <path
-              [attr.d]="c.linePath"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              vector-effect="non-scaling-stroke"
-            />
-          </svg>
-          @if (activeDot(); as dot) {
-            <span class="spark-dot" [style.left.%]="dot.left" [style.top.%]="dot.top"></span>
-          }
-        </div>
-        <p class="spark-caption" aria-hidden="true">
-          @if (readout(); as hovered) {
-            <span>{{ hovered.day }}</span>
-            <strong>{{ hovered.value }}</strong>
-          } @else {
-            <span>{{ c.firstDay }}</span>
-            <span>{{ c.lastDay }}</span>
-          }
-        </p>
-      } @else if (data.sparklineNote) {
-        <p class="spark-note">{{ data.sparklineNote }}</p>
+    <p class="kpi-delta">
+      <span class="admin-chip" [class]="chipClass[data.delta.direction]">
+        @if (data.delta.direction === 'up') {
+          <span aria-hidden="true">&uarr;</span>
+        } @else if (data.delta.direction === 'down') {
+          <span aria-hidden="true">&darr;</span>
+        }
+        <span class="sr-only">{{ directionWord[data.delta.direction] }}</span>{{ data.delta.text }}
+      </span>
+      @if (data.delta.note) {
+        <span class="kpi-note">{{ data.delta.note }}</span>
       }
-    </div>
+    </p>
   </article>
 } @else if (loading()) {
-  <div class="kpi-card kpi-skeleton" aria-hidden="true">
-    <span class="skeleton sk-label"></span>
+  <div class="kpi-card admin-card kpi-skeleton" aria-hidden="true">
+    <div class="kpi-head">
+      <span class="skeleton sk-label"></span>
+      <span class="skeleton sk-icon"></span>
+    </div>
     <span class="skeleton sk-value"></span>
     <span class="skeleton sk-delta"></span>
-    <span class="skeleton sk-chart"></span>
   </div>
 }

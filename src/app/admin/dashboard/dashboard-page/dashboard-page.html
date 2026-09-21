@@ -1,17 +1,23 @@
 <section class="greeting-row">
   <div>
     <h1 class="greeting-title">{{ greeting() }}, {{ adminFirstName() }}</h1>
-    <p class="greeting-meta">
-      {{ greetingDate() }}
-      @if (ticketsSoldThisWeek() !== null) {
-        &middot; {{ ticketsSoldThisWeek() }} tickets sold this week
-      }
-    </p>
+    <p class="greeting-meta">{{ greetingDate() }}</p>
   </div>
   <button type="button" class="primary-cta">
-    <i class="fa-solid fa-plus" aria-hidden="true"></i>
+    <app-admin-icon [paths]="icons.plus" />
     Publish a trip
   </button>
+</section>
+
+<section class="performance-row">
+  <h2 class="section-title">Performance</h2>
+  <div class="segmented" role="group" aria-label="Performance period">
+    @for (option of periods; track option.value) {
+      <button type="button" [attr.aria-pressed]="period() === option.value" (click)="setPeriod(option.value)">
+        {{ option.label }}
+      </button>
+    }
+  </div>
 </section>
 
 @let kpi = kpiCards();
@@ -36,18 +42,19 @@
 </section>
 
 <section class="tables-grid">
+  @let departures = departuresToday();
+  <app-departures-table
+    [departures]="departures.status === 'ready' ? departures.data.departures : []"
+    [total]="departures.status === 'ready' ? departures.data.total : 0"
+    [loading]="departures.status === 'loading'"
+    [error]="departures.status === 'error'"
+    (retry)="loadDeparturesToday()"
+  />
   @let bookings = recentBookings();
-  <app-bookings-table
+  <app-recent-bookings-card
     [bookings]="bookings.status === 'ready' ? bookings.data : []"
     [loading]="bookings.status === 'loading'"
     [error]="bookings.status === 'error'"
     (retry)="loadRecentBookings()"
-  />
-  @let departures = departuresToday();
-  <app-departures-table
-    [departures]="departures.status === 'ready' ? departures.data : []"
-    [loading]="departures.status === 'loading'"
-    [error]="departures.status === 'error'"
-    (retry)="loadDeparturesToday()"
   />
 </section>

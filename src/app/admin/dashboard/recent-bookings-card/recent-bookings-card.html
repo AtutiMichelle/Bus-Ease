@@ -1,0 +1,70 @@
+<section class="bookings-card admin-card" aria-labelledby="recent-bookings-title">
+  <div class="admin-card-header">
+    <h2 id="recent-bookings-title" class="admin-card-title">Recent bookings</h2>
+    <a class="admin-card-link" routerLink="/admin/bookings">View all</a>
+  </div>
+
+  <div class="admin-list-area">
+    @if (error()) {
+      <app-widget-error message="Couldn't load recent bookings." (retry)="retry.emit()" />
+    } @else if (loading()) {
+      <div class="admin-list-skeleton-head" aria-hidden="true"></div>
+      @for (slot of placeholders; track slot) {
+        <div class="admin-list-skeleton-row" aria-hidden="true">
+          <span class="skeleton sk-avatar"></span>
+          <span class="sk-lines">
+            <span class="skeleton sk-name"></span>
+            <span class="skeleton sk-route"></span>
+          </span>
+          <span class="skeleton sk-amount"></span>
+        </div>
+      }
+    } @else {
+      @if (rows().length > 0) {
+        <table class="admin-list-table">
+          <caption class="sr-only">Recent bookings</caption>
+          <colgroup>
+            <col />
+            <col class="col-amount" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th scope="col">Customer</th>
+              <th scope="col" class="amount-head">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (booking of rows(); track booking.reference) {
+              <tr>
+                <td>
+                  <div class="customer">
+                    <span class="avatar" aria-hidden="true">{{ booking.customerInitials }}</span>
+                    <div class="customer-text">
+                      <p class="customer-name" [attr.title]="booking.customerName">{{ booking.customerName }}</p>
+                      <p class="customer-route" [attr.title]="booking.route">{{ booking.route }}</p>
+                    </div>
+                  </div>
+                </td>
+                <td class="amount-cell">
+                  <p class="amount">KSh {{ booking.amount | number }}</p>
+                  <span class="admin-chip" [class]="statusChip[booking.status]">{{ booking.status }}</span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+      @if (hasSpareSpace()) {
+        <p class="admin-soft-empty">{{ emptyMessage() }}</p>
+      }
+    }
+  </div>
+
+  <p class="admin-card-footer">
+    @if (loading()) {
+      <span class="skeleton sk-footer" aria-hidden="true"></span>
+    } @else if (!error()) {
+      {{ footerText() }}
+    }
+  </p>
+</section>

@@ -2,10 +2,13 @@ import { Injectable, inject } from '@angular/core';
 import { Supabase } from './supabase';
 import {
   BookingStatusTag,
+  DASHBOARD_LIST_LIMIT,
   Departure,
+  DeparturesData,
   DepartureStatus,
   KpiCardData,
   KpiDelta,
+  KpiPeriod,
   PaymentSplitData,
   PaymentSplitSlice,
   RecentBooking,
@@ -13,20 +16,19 @@ import {
   TopRoutesData,
   WeekSummary,
 } from '../models/admin-dashboard.model';
-import { formatKsh, formatKshCompact } from '../utils/money';
+import { compactAmount } from '../utils/money';
 
 /** Raw shapes returned by the admin_* database functions (see
- * supabase/sql/2026-09-21-admin-dashboard.sql). Numbers can arrive as
+ * supabase/sql/2026-09-21-admin-dashboard.sql and the other 2026-09-21-admin-*.sql
+ * files). Numbers can arrive as
  * strings when Postgres numeric values are large, so they are always run
  * through Number() when mapped. */
 interface MetricRow {
   current: number | string;
   previous: number | string;
-  daily: (number | string)[] | null;
 }
 
-interface KpiCardsRow {
-  days: string[] | null;
+interface KpiSummaryRow {
   tickets: MetricRow;
   revenue: MetricRow;
   new_customers: MetricRow;
@@ -65,6 +67,11 @@ interface RecentBookingRow {
   origin: string;
   destination: string;
   customer_name: string | null;
+}
+
+interface DeparturesRow {
+  total: number;
+  rows: DepartureRow[];
 }
 
 interface DepartureRow {
@@ -106,19 +113,27 @@ function initials(name: string): string {
     .join('');
 }
 
-/** Change vs the previous 7 days, e.g. "12% vs last week". */
-function weekOverWeek(current: number, previous: number): KpiDelta {
+/** Wording for each period's comparison with the one before it. */
+const PERIOD_COMPARE: Record<KpiPeriod, { versus: string; fromZero: string }> = {
+  today: { versus: 'vs yesterday', fromZero: 'From zero yesterday' },
+  '7d': { versus: 'vs last week', fromZero: 'From zero last week' },
+  '30d': { versus: 'vs previous 30 days', fromZero: 'From zero in the previous 30 days' },
+};
+
+/** Change vs the period before, e.g. chip "12%" with note "vs last week". */
+function periodChange(current: number, previous: number, period: KpiPeriod): KpiDelta {
+  const { versus, fromZero } = PERIOD_COMPARE[period];
   if (previous === 0 && current === 0) {
-    return { direction: 'neutral', text: 'No change vs last week' };
+    return { direction: 'neutral', text: '0%', note: versus };
   }
   if (previous === 0) {
-    return { direction: 'up', text: 'From zero last week' };
+    return { direction: 'up', text: 'New', note: fromZero };
   }
   const percent = Math.round((Math.abs(current - previous) / previous) * 100);
   if (percent === 0) {
-    return { direction: 'neutral', text: 'No change vs last week' };
+    return { direction: 'neutral', text: '0%', note: versus };
   }
-  return { direction: current > previous ? 'up' : 'down', text: `${percent}% vs last week` };
+  return { direction: current > previous ? 'up' : 'down', text: `${percent}%`, note: versus };
 }
 
 /** Compact version for the per-route badge, e.g. "14%". */
@@ -168,14 +183,6 @@ function bookingStatus(status: string): BookingStatusTag {
   }
 }
 
-function ticketLabel(count: number): string {
-  return `${count.toLocaleString('en-US')} ${count === 1 ? 'ticket' : 'tickets'}`;
-}
-
-function toNumbers(values: (number | string)[] | null | undefined): number[] {
-  return (values ?? []).map(Number);
-}
-
 /** Admin dashboard data. Each method makes one call to an admin-only
  * database function that does the aggregation server-side (and refuses to
  * run for non-admins), then maps the raw row into the shape the widget
@@ -205,69 +212,59 @@ export class AdminDashboardService {
     };
   }
 
-  async getKpiCards(): Promise<KpiCardData[]> {
-    const row = await this.rpc<KpiCardsRow>('admin_kpi_cards');
-    const days = row.days ?? [];
+  async getKpiCards(period: KpiPeriod = '7d'): Promise<KpiCardData[]> {
+    const row = await this.rpc<KpiSummaryRow>('admin_kpi_summary', { p_period: period });
 
     const tickets = { current: Number(row.tickets.current), previous: Number(row.tickets.previous) };
     const revenue = { current: Number(row.revenue.current), previous: Number(row.revenue.previous) };
     const customers = { current: Number(row.new_customers.current), previous: Number(row.new_customers.previous) };
     const awaiting = row.awaiting;
-    const ticketsDaily = toNumbers(row.tickets.daily);
-    const revenueDaily = toNumbers(row.revenue.daily);
-    const customersDaily = toNumbers(row.new_customers.daily);
 
+    // Awaiting payment is a live count of open seat holds, so it ignores the
+    // period and is compared with nothing.
     let awaitingDelta: KpiDelta;
     if (awaiting.count === 0) {
-      awaitingDelta = { direction: 'neutral', text: 'Nobody is paying right now' };
+      awaitingDelta = { direction: 'neutral', text: 'Live', note: 'Nobody is paying right now' };
     } else if (awaiting.oldest_minutes === null || awaiting.oldest_minutes < 1) {
-      awaitingDelta = { direction: 'warning', text: 'Oldest just started' };
+      awaitingDelta = { direction: 'warning', text: 'Live', note: 'Oldest just started' };
     } else {
-      awaitingDelta = { direction: 'warning', text: `Oldest ${awaiting.oldest_minutes} min ago` };
+      awaitingDelta = { direction: 'warning', text: 'Live', note: `Oldest ${awaiting.oldest_minutes} min ago` };
     }
 
     return [
       {
         label: 'Tickets sold',
         value: tickets.current.toLocaleString('en-US'),
-        delta: weekOverWeek(tickets.current, tickets.previous),
+        delta: periodChange(tickets.current, tickets.previous, period),
         tone: 'red',
-        sparkline: ticketsDaily,
-        sparklineDays: days,
-        sparklineLabels: ticketsDaily.map(ticketLabel),
+        icon: 'ticket',
       },
       {
         label: 'Revenue',
-        value: formatKshCompact(revenue.current),
-        delta: weekOverWeek(revenue.current, revenue.previous),
+        unit: 'KSh',
+        value: compactAmount(revenue.current),
+        delta: periodChange(revenue.current, revenue.previous, period),
         tone: 'moss',
-        sparkline: revenueDaily,
-        sparklineDays: days,
-        sparklineLabels: revenueDaily.map(formatKsh),
+        icon: 'card',
       },
       {
         label: 'Awaiting payment',
         value: awaiting.count.toLocaleString('en-US'),
         delta: awaitingDelta,
         tone: 'gold',
-        sparkline: [],
-        sparklineDays: [],
-        sparklineLabels: [],
-        sparklineNote: 'Live count, no history kept',
+        icon: 'clock',
       },
       {
         label: 'New customers',
         value: customers.current.toLocaleString('en-US'),
-        delta: weekOverWeek(customers.current, customers.previous),
+        delta: periodChange(customers.current, customers.previous, period),
         tone: 'navy',
-        sparkline: customersDaily,
-        sparklineDays: days,
-        sparklineLabels: customersDaily.map((count) => `${count.toLocaleString('en-US')} new`),
+        icon: 'customers',
       },
     ];
   }
 
-  async getTopRoutes(limit = 4): Promise<TopRoutesData> {
+  async getTopRoutes(limit = 3): Promise<TopRoutesData> {
     const row = await this.rpc<TopRoutesRow>('admin_top_routes', { p_limit: limit });
     const routes: TopRoute[] = row.routes.map((route, index) => ({
       code: route.destination.replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase(),
@@ -301,7 +298,7 @@ export class AdminDashboardService {
     };
   }
 
-  async getRecentBookings(limit = 6): Promise<RecentBooking[]> {
+  async getRecentBookings(limit = DASHBOARD_LIST_LIMIT): Promise<RecentBooking[]> {
     const rows = await this.rpc<RecentBookingRow[]>('admin_recent_bookings', { p_limit: limit });
     return rows.map((row) => {
       const customerName = row.customer_name?.trim() || 'Guest';
@@ -317,14 +314,17 @@ export class AdminDashboardService {
     });
   }
 
-  async getDeparturesToday(): Promise<Departure[]> {
-    const rows = await this.rpc<DepartureRow[]>('admin_departures_today');
-    return rows.map((row) => ({
-      time: row.time,
-      route: routeName(row.origin, row.destination),
-      seatsSold: Number(row.seats_booked),
-      totalSeats: Number(row.total_seats),
-      status: DEPARTURE_STATUS[row.status] ?? 'Scheduled',
-    }));
+  async getDeparturesToday(limit = DASHBOARD_LIST_LIMIT): Promise<DeparturesData> {
+    const row = await this.rpc<DeparturesRow>('admin_departures_summary', { p_limit: limit });
+    return {
+      total: Number(row.total),
+      departures: row.rows.map((departure) => ({
+        time: departure.time,
+        route: routeName(departure.origin, departure.destination),
+        seatsSold: Number(departure.seats_booked),
+        totalSeats: Number(departure.total_seats),
+        status: DEPARTURE_STATUS[departure.status] ?? 'Scheduled',
+      })),
+    };
   }
 }

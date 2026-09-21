@@ -1,222 +1,195 @@
-.top-routes-card {
-  background-color: var(--color-surface, #fff);
-  border-radius: var(--radius-md, 8px);
-  box-shadow: var(--shadow-card, 0 2px 8px rgba(26, 58, 107, 0.08));
-  padding: var(--space-4, 24px);
+/* Card, header and body are the shared admin-* styles in styles.css. */
+:host {
   display: flex;
-  flex-direction: column;
-  height: 100%;
-  box-sizing: border-box;
 }
 
-.card-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-2, 8px);
-  margin-bottom: var(--space-3, 16px);
-}
-
-.card-header h2 {
-  margin: 0;
-  font-family: var(--font-family, 'Times New Roman', Times, serif);
-  font-size: var(--text-lg, 1.25rem);
-  color: var(--color-primary, #12294d);
-}
-
-.card-subtitle {
-  margin: 2px 0 0;
-  font-size: var(--text-sm, 0.875rem);
-  color: var(--color-text-muted, #6b6b6b);
-}
-
-.card-link {
-  flex-shrink: 0;
-  background: none;
-  border: none;
-  padding: 0;
-  font-family: inherit;
-  font-size: var(--text-sm, 0.875rem);
-  font-weight: 600;
-  color: var(--color-accent, #eb1f1a);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  cursor: pointer;
-  border-radius: var(--radius-sm, 4px);
-}
-
-.card-link:hover {
-  color: color-mix(in srgb, var(--color-accent, #eb1f1a) 82%, #000);
-}
-
-.card-link:focus-visible {
-  outline: 2px solid var(--color-primary-light, #1e88e5);
-  outline-offset: 3px;
-}
-
-.route-rows {
+.routes-card {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly;
-  gap: var(--space-3, 16px);
+  min-width: 0;
+}
+
+/* Ranked rows: three of 56px fill the card body exactly */
+.route-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .route-row {
   display: flex;
-  align-items: center;
-  gap: var(--space-3, 16px);
-}
-
-.route-badge {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  font-size: var(--text-xs, 0.75rem);
-  font-weight: 700;
-  color: #fff;
+  gap: 8px;
+  height: 56px;
+  box-sizing: border-box;
 }
 
-.route-badge.tone-red {
-  background-color: var(--color-accent, #eb1f1a);
-}
-
-.route-badge.tone-navy {
-  background-color: var(--color-primary, #12294d);
-}
-
-.route-main {
-  flex: 1;
-  min-width: 0;
+.route-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .route-name {
-  margin: 0;
+  flex: 1;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-weight: 700;
-  font-size: var(--text-sm, 0.875rem);
-  color: var(--color-text, #3a3a3a);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--admin-ink);
 }
 
-.route-meta {
+.route-count {
+  flex-shrink: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
-  margin: 2px 0 6px;
-  font-size: var(--text-xs, 0.75rem);
-  color: var(--color-text-muted, #6b6b6b);
+  color: var(--admin-ink);
 }
 
-.route-bar-track {
-  width: 100%;
-  height: 6px;
-  border-radius: 999px;
-  background-color: var(--color-bg, #faf8f5);
+.route-line .admin-chip {
+  flex-shrink: 0;
+}
+
+.route-track {
+  height: 8px;
+  border-radius: 4px;
+  background-color: var(--admin-track);
   overflow: hidden;
 }
 
-.route-bar-fill {
+.route-fill {
   height: 100%;
-  border-radius: 999px;
-  transition: width 0.3s ease;
+  border-radius: 4px;
+  background-color: var(--admin-ink);
 }
 
-.route-bar-fill.tone-red {
-  background-color: var(--color-accent, #eb1f1a);
+.route-fill-top {
+  background-color: var(--admin-accent);
 }
 
-.route-bar-fill.tone-navy {
-  background-color: var(--color-primary, #12294d);
-}
-
-.route-delta {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: var(--text-xs, 0.75rem);
-  font-weight: 700;
-}
-
-.delta-up {
-  color: var(--color-green, #16a34a);
-  background-color: rgba(22, 163, 74, 0.1);
-}
-
-.delta-down {
-  color: var(--color-danger, #d64545);
-  background-color: rgba(214, 69, 69, 0.1);
-}
-
-.delta-neutral,
-.delta-warning {
-  color: var(--color-text-muted, #6b6b6b);
-  background-color: var(--color-bg, #faf8f5);
-}
-
-.no-sales-footer {
-  margin: var(--space-3, 16px) 0 0;
-  padding-top: var(--space-3, 16px);
-  border-top: 1px solid var(--color-border, #e4dfd6);
-  font-size: var(--text-xs, 0.75rem);
-  color: var(--color-text-muted, #6b6b6b);
-}
-
-.empty-state {
+/* Empty state: faint ghost bars where the ranking will go, then one line
+   saying why they are empty */
+.empty {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin: 0;
-  padding: var(--space-4, 24px);
   text-align: center;
-  color: var(--color-text-muted, #6b6b6b);
-  font-size: var(--text-sm, 0.875rem);
-  background-color: var(--color-bg, #faf8f5);
-  border: 1px dashed var(--color-border, #e4dfd6);
-  border-radius: var(--radius-md, 8px);
 }
 
-.sk-badge {
-  flex-shrink: 0;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
+.ghost-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: var(--space-3);
 }
 
-.sk-line-lg {
-  width: 65%;
-  height: 12px;
-  margin-bottom: 8px;
+.ghost-row {
+  display: flex;
+  gap: 12px;
 }
 
-.sk-line-sm {
-  width: 40%;
-  height: 10px;
-  margin-bottom: 8px;
+.ghost-bar {
+  height: 8px;
+  border-radius: 4px;
+  background-color: var(--admin-track);
+}
+
+.ghost-row-0 .ghost-bar:first-child {
+  flex: 3;
+}
+
+.ghost-row-0 .ghost-bar:last-child {
+  flex: 1.2;
+}
+
+.ghost-row-1 .ghost-bar:first-child {
+  flex: 2.4;
+}
+
+.ghost-row-1 .ghost-bar:last-child {
+  flex: 1.6;
+}
+
+.ghost-row-2 .ghost-bar:first-child {
+  flex: 1.6;
+}
+
+.ghost-row-2 .ghost-bar:last-child {
+  flex: 2;
+}
+
+.empty-title {
+  margin: 0 0 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--admin-ink);
+}
+
+.empty-hint {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--admin-muted);
+}
+
+/* Routes that ran but sold nothing, pinned to the bottom of the card. The
+   minimum height is reserved so the card is the same size with or without
+   them. */
+.no-sales {
+  box-sizing: border-box;
+  min-height: 108px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--admin-divider);
+}
+
+.no-sales-title {
+  margin: 0 0 8px;
+  font-size: 0.8125rem;
+  color: var(--admin-muted);
+}
+
+.no-sales-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.no-sales-list .admin-chip {
+  display: block;
+  max-width: calc(50% - 4px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.no-sales-empty {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--admin-secondary);
+}
+
+/* Loading placeholder pieces */
+.sk-name {
+  width: 60%;
+  height: 14px;
 }
 
 .sk-bar {
   width: 100%;
-  height: 6px;
-  border-radius: 999px;
+  height: 8px;
 }
 
-.sk-pill {
-  flex-shrink: 0;
-  width: 48px;
-  height: 22px;
-  border-radius: 999px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .route-bar-fill {
-    transition: none;
-  }
+.sk-no-sales {
+  width: 70%;
+  height: 14px;
 }

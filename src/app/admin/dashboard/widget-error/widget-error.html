@@ -1,5 +1,5 @@
 <div class="widget-error" role="status">
-  <span class="widget-error-icon" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></span>
+  <span class="widget-error-icon" aria-hidden="true"><app-admin-icon [paths]="alertIcon" /></span>
   <p class="widget-error-text">{{ message() }}</p>
   <p class="widget-error-hint">Check your connection, then try again.</p>
   <button type="button" class="widget-error-retry" (click)="retry.emit()">Try again</button>

@@ -1,20 +1,16 @@
 import { Component, computed, input, output } from '@angular/core';
-import { DashboardTone, WeekSummary, WidgetState } from '../../../models/admin-dashboard.model';
+import { RouterLink } from '@angular/router';
+import { WeekSummary, WidgetState } from '../../../models/admin-dashboard.model';
+import { NAV_SYSTEM } from '../../admin-nav';
 import { WidgetError } from '../widget-error/widget-error';
 
 interface SummaryRow {
-  icon: string;
   label: string;
   value: string;
-  tone: DashboardTone;
-  /** True when there is no data behind the row yet. */
-  notTracked: boolean;
 }
 
-const NOT_TRACKED = 'Not tracked yet';
-
 @Component({
-  imports: [WidgetError],
+  imports: [RouterLink, WidgetError],
   selector: 'app-summary-list',
   styleUrl: './summary-list.css',
   templateUrl: './summary-list.html',
@@ -24,32 +20,53 @@ export class SummaryList {
   retry = output<void>();
 
   /** One placeholder per row while loading. */
-  readonly placeholders = [0, 1, 2, 3, 4];
+  readonly placeholders = [0, 1, 2];
 
-  rows = computed<SummaryRow[]>(() => {
+  /** Where "Set up" goes. Comes from the sidebar, so the link turns on by
+   * itself once Settings has a route. */
+  readonly setupRoute = NAV_SYSTEM.find((item) => item.section === 'settings')?.route ?? null;
+
+  private summary = computed(() => {
     const state = this.state();
-    if (state.status !== 'ready') {
+    return state.status === 'ready' ? state.data : null;
+  });
+
+  /** Only the numbers that can actually be measured. Refunds and ratings
+   * have no data behind them yet, so they get one line below instead of two
+   * rows of "not tracked". */
+  rows = computed<SummaryRow[]>(() => {
+    const summary = this.summary();
+    if (!summary) {
       return [];
     }
-    const summary = state.data;
-    return [
-      { icon: 'fa-ticket', label: 'Tickets sold', value: summary.ticketsSold.toLocaleString(), tone: 'red', notTracked: false },
-      { icon: 'fa-check', label: 'Trips completed', value: summary.tripsCompleted.toLocaleString(), tone: 'moss', notTracked: false },
-      {
-        icon: 'fa-rotate-left',
-        label: 'Refunds issued',
-        value: summary.refundsIssued === null ? NOT_TRACKED : summary.refundsIssued.toLocaleString(),
-        tone: 'gold',
-        notTracked: summary.refundsIssued === null,
-      },
-      { icon: 'fa-circle-plus', label: 'Seats still open today', value: summary.seatsOpenToday.toLocaleString(), tone: 'navy', notTracked: false },
-      {
-        icon: 'fa-star',
-        label: 'Average rating',
-        value: summary.averageRating === null ? NOT_TRACKED : summary.averageRating.toFixed(1),
-        tone: 'moss',
-        notTracked: summary.averageRating === null,
-      },
+    const rows: SummaryRow[] = [
+      { label: 'Tickets sold', value: summary.ticketsSold.toLocaleString('en-US') },
+      { label: 'Trips completed', value: summary.tripsCompleted.toLocaleString('en-US') },
+      { label: 'Seats open on upcoming trips', value: summary.seatsOpenToday.toLocaleString('en-US') },
     ];
+    if (summary.refundsIssued !== null) {
+      rows.push({ label: 'Refunds issued', value: summary.refundsIssued.toLocaleString('en-US') });
+    }
+    if (summary.averageRating !== null) {
+      rows.push({ label: 'Average rating', value: summary.averageRating.toFixed(1) });
+    }
+    return rows;
+  });
+
+  /** The single "not tracked yet" line, or empty when everything is tracked. */
+  untrackedText = computed(() => {
+    const summary = this.summary();
+    if (!summary) {
+      return '';
+    }
+    const refunds = summary.refundsIssued === null;
+    const ratings = summary.averageRating === null;
+    if (refunds && ratings) {
+      return 'Refunds and ratings are not tracked yet';
+    }
+    if (refunds) {
+      return 'Refunds are not tracked yet';
+    }
+    return ratings ? 'Ratings are not tracked yet' : '';
   });
 }

@@ -18,11 +18,9 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 const SEGMENT_GAP = 1.2;
 
 /** Only the single largest slice (the brand's "primary chart series") is
- * red; every other slice cycles through navy shades by position, not by
- * the shared red/moss/gold/navy tone (that 4-tone palette tints card
- * backgrounds elsewhere, but a donut needs as many distinguishable fills
- * as there are non-primary slices, not just one navy). */
-const NAVY_SHADES = ['var(--color-primary, #12294d)', 'var(--color-primary-light, #1e88e5)', 'var(--color-primary-mid, #1c4a7a)'];
+ * red. The others take these fills in order. The legend also gives each
+ * slice's percentage, so colour is never the only way to tell them apart. */
+const OTHER_SLICE_COLORS = ['var(--admin-ink)', 'var(--admin-info-text)', 'var(--admin-muted)'];
 
 @Component({
   imports: [WidgetError],
@@ -46,14 +44,12 @@ export class PaymentSplitDonut {
 
   slices = computed(() => this.data()?.slices ?? []);
   totalCollected = computed(() => this.data()?.totalCollected ?? 0);
-  /** Null means failed payments are not recorded anywhere yet. */
-  failedPayments = computed(() => this.data()?.failedPayments ?? null);
   hasData = computed(() => this.slices().length > 0 && this.totalCollected() > 0);
 
   private sliceColors = computed(() => {
-    let navyIndex = 0;
+    let otherIndex = 0;
     return this.slices().map((slice) =>
-      slice.tone === 'red' ? 'var(--color-accent, #eb1f1a)' : NAVY_SHADES[navyIndex++ % NAVY_SHADES.length],
+      slice.tone === 'red' ? 'var(--admin-accent)' : OTHER_SLICE_COLORS[otherIndex++ % OTHER_SLICE_COLORS.length],
     );
   });
 

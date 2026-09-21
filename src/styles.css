@@ -63,3 +63,219 @@ body {
     animation: none;
   }
 }
+
+/* Card and status chip shared by the admin dashboard widgets. Global for the
+   same reason as .skeleton: they are used across several unrelated
+   components. Colors come from the admin tokens in theme.css. */
+.admin-card {
+  box-sizing: border-box;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--admin-radius-card);
+  background-color: var(--color-surface);
+}
+
+.admin-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.admin-chip-neg {
+  background-color: var(--admin-neg-bg);
+  color: var(--admin-neg-text);
+}
+
+.admin-chip-pos {
+  background-color: var(--admin-pos-bg);
+  color: var(--admin-pos-text);
+}
+
+.admin-chip-warn {
+  background-color: var(--admin-warn-bg);
+  color: var(--admin-warn-text);
+}
+
+.admin-chip-info {
+  background-color: var(--color-soft-bg);
+  color: var(--admin-info-text);
+}
+
+.admin-chip-neutral {
+  background-color: var(--admin-neutral-bg);
+  color: var(--admin-secondary);
+}
+
+/* Header, link, footer and list pieces shared by the admin dashboard cards.
+   A list card shows at most 5 rows of a fixed 60px under a 32px column
+   header, so its list area is always 332px and never scrolls or shifts. The
+   footer sits at the bottom of the card whatever the list holds. */
+.admin-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  margin-bottom: var(--space-2);
+}
+
+/* The header stays on one line at any width (a long title is cut with an
+   ellipsis) so a narrow card is never taller than a wide one. */
+.admin-card-title {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--admin-font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--admin-ink);
+}
+
+.admin-card-header .admin-chip {
+  flex-shrink: 0;
+}
+
+.admin-card-heading {
+  min-width: 0;
+}
+
+.admin-card-subtitle {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--admin-muted);
+}
+
+/* Body of a bottom-row card. The minimum height keeps a card from resizing
+   when it moves between loading, empty and filled. */
+.admin-card-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 168px;
+}
+
+.admin-card-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-left: auto;
+  padding: 0 4px;
+  border-radius: 6px;
+  color: var(--admin-accent);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+a.admin-card-link:hover {
+  text-decoration: underline;
+}
+
+a.admin-card-link:focus-visible {
+  outline: 2px solid var(--color-primary-light);
+  outline-offset: 2px;
+}
+
+/* A link to a page that does not exist yet reads as plain text, like the
+   sidebar items for pages that are not built. */
+.admin-card-link-static {
+  color: var(--admin-muted);
+  font-weight: 500;
+}
+
+.admin-card-footer {
+  box-sizing: border-box;
+  min-height: 40px;
+  margin: auto 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--admin-divider);
+  font-size: 0.8125rem;
+  color: var(--admin-muted);
+}
+
+.admin-list-area {
+  display: flex;
+  flex-direction: column;
+  height: 332px;
+  overflow: hidden;
+}
+
+/* Soft message that fills whatever space the rows leave empty */
+.admin-soft-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0 var(--space-3);
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--admin-muted);
+}
+
+.admin-list-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.admin-list-table th {
+  height: 32px;
+  box-sizing: border-box;
+  padding: 0 12px 0 0;
+  border-bottom: 1px solid var(--admin-divider);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-transform: uppercase;
+  color: var(--admin-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-list-table td {
+  height: 60px;
+  box-sizing: border-box;
+  padding: 0 12px 0 0;
+  border-bottom: 1px solid var(--admin-divider);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.9375rem;
+  color: var(--admin-ink);
+}
+
+.admin-list-table th:last-child,
+.admin-list-table td:last-child {
+  padding-right: 0;
+}
+
+.admin-list-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Loading placeholder with the same row heights as the loaded list */
+.admin-list-skeleton-head {
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.admin-list-skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  height: 60px;
+  border-bottom: 1px solid var(--admin-divider);
+}

@@ -1,13 +1,13 @@
-/* Admin section typography: body/data/labels use the system sans-serif
-   token (--font-family-ui, theme.css), inherited down through every routed
-   page and card. Headings opt back into --font-family (serif) locally in
-   their own component, since Angular's view encapsulation means a reset
-   rule written here can't reach into another component's template. */
+/* Admin section typography: body text uses --admin-font-body, inherited down
+   through every routed page and card. Headings opt into --admin-font-display
+   locally in their own component, since Angular's view encapsulation means a
+   reset rule written here can't reach into another component's template. */
 .admin-shell {
   display: flex;
   min-height: 100vh;
-  background-color: var(--color-bg, #faf8f5);
-  font-family: var(--font-family-ui);
+  background-color: var(--color-bg);
+  color: var(--admin-ink);
+  font-family: var(--admin-font-body);
 }
 
 /* Sidebar */
@@ -19,7 +19,7 @@
   width: 240px;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, var(--color-primary, #12294d), var(--color-primary-mid, #1c4a7a));
+  background-color: var(--admin-ink);
   z-index: 20;
   transition: transform 0.25s ease;
 }
@@ -27,25 +27,31 @@
 .sidebar-logo {
   display: flex;
   align-items: center;
-  gap: var(--space-2, 8px);
+  gap: 12px;
+  height: 72px;
   margin: 0;
-  padding: var(--space-4, 24px) var(--space-4, 24px) var(--space-3, 16px);
-  color: #fff;
-  font-family: var(--font-family, 'Times New Roman', Times, serif);
-  font-size: var(--text-lg, 1.25rem);
-  font-weight: 700;
+  padding: 0 var(--space-4);
+  box-sizing: border-box;
+  color: var(--admin-on-navy);
+  font-family: var(--admin-font-display);
+  font-size: 1.375rem;
+  font-weight: 600;
 }
 
 .sidebar-logo-mark {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-sm, 4px);
-  background-color: var(--color-accent, #eb1f1a);
-  color: #fff;
-  font-size: 0.9rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background-color: var(--admin-accent);
+  color: var(--admin-on-navy);
+}
+
+.sidebar-logo-mark app-admin-icon {
+  width: 20px;
+  height: 20px;
 }
 
 .sidebar-nav {
@@ -53,48 +59,40 @@
   flex-direction: column;
   flex: 1;
   overflow-y: auto;
-  padding-bottom: var(--space-3, 16px);
+  padding: var(--space-2) var(--space-3) var(--space-3);
 }
 
 .nav-section-label {
-  margin: var(--space-3, 16px) 0 var(--space-1, 4px);
-  padding: 0 var(--space-4, 24px);
-  font-size: 0.7rem;
-  font-weight: 700;
+  margin: var(--space-2) 0 var(--space-2);
+  padding: 0 var(--space-3);
+  font-size: 0.75rem;
+  font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.nav-section-label:first-child {
-  margin-top: 0;
+  color: var(--admin-on-navy-muted);
 }
 
 .nav-empty {
-  margin: var(--space-3, 16px) var(--space-4, 24px);
-  font-size: var(--text-sm, 0.875rem);
-  color: rgba(255, 255, 255, 0.6);
+  margin: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--admin-on-navy-muted);
 }
 
 .nav-link {
-  position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin: 2px var(--space-2, 8px);
-  padding: 9px var(--space-3, 16px);
-  border-radius: var(--radius-md, 8px);
-  color: rgba(255, 255, 255, 0.75);
-  font-size: var(--text-sm, 0.875rem);
+  gap: 12px;
+  min-height: 44px;
+  margin-bottom: 2px;
+  padding: 0 var(--space-3);
+  box-sizing: border-box;
+  border-radius: 10px;
+  color: var(--admin-on-navy-muted);
+  font-size: 0.9375rem;
   font-weight: 500;
   text-decoration: none;
   cursor: default;
   transition: background-color 0.15s, color 0.15s;
-}
-
-/* Pages that don't exist yet: readable, but clearly not clickable. */
-span.nav-link {
-  color: rgba(255, 255, 255, 0.55);
 }
 
 a.nav-link {
@@ -103,51 +101,32 @@ a.nav-link {
 
 a.nav-link:hover {
   background-color: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  color: var(--admin-on-navy);
 }
 
-.nav-link i {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.65);
-  transition: background-color 0.15s, color 0.15s;
-}
-
-/* Current page: soft filled row, red accent bar on the sidebar edge and a
-   red icon tile. No outline, so it can't be mistaken for keyboard focus. */
+/* Current page: soft filled row. No outline, so it can't be mistaken for
+   keyboard focus. */
 .nav-link.active {
   background-color: rgba(255, 255, 255, 0.14);
-  color: #fff;
-  font-weight: 700;
+  color: var(--admin-on-navy);
+  font-weight: 600;
 }
 
-.nav-link.active::before {
-  content: '';
-  position: absolute;
-  left: calc(-1 * var(--space-2, 8px));
-  top: 8px;
-  bottom: 8px;
-  width: 4px;
-  border-radius: 0 4px 4px 0;
-  background-color: var(--color-accent, #eb1f1a);
+/* Keyboard focus only. A white ring reads clearly on the navy sidebar and
+   is a different shape from the filled active row. */
+a.nav-link:focus-visible {
+  outline: 2px solid var(--admin-on-navy);
+  outline-offset: 1px;
 }
 
-.nav-link.active i {
-  background-color: var(--color-accent, #eb1f1a);
-  color: #fff;
+a.nav-link:focus:not(:focus-visible) {
+  outline: none;
 }
 
-.sidebar-footer {
-  margin: 0;
-  padding: var(--space-3, 16px) var(--space-4, 24px);
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.45);
-  font-size: var(--text-xs, 0.75rem);
+/* Settings sits at the bottom of the sidebar, apart from the main list. */
+.nav-bottom {
+  margin-top: auto;
+  padding-top: var(--space-3);
 }
 
 .sidebar-backdrop {
@@ -169,11 +148,12 @@ a.nav-link:hover {
   z-index: 10;
   display: flex;
   align-items: center;
-  gap: var(--space-3, 16px);
-  height: 68px;
-  padding: 0 var(--space-4, 24px);
-  background-color: var(--color-surface, #fff);
-  border-bottom: 1px solid var(--color-border, #e4dfd6);
+  gap: var(--space-3);
+  height: 72px;
+  padding: 0 var(--space-5);
+  box-sizing: border-box;
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .icon-btn.sidebar-toggle {
@@ -186,33 +166,42 @@ a.nav-link:hover {
   max-width: 420px;
   display: flex;
   align-items: center;
-  gap: var(--space-2, 8px);
-  padding: 9px var(--space-3, 16px);
-  border-radius: 999px;
-  background-color: var(--color-bg, #faf8f5);
-  color: var(--color-text-muted, #6b6b6b);
+  gap: var(--space-2);
+  height: 44px;
+  padding: 0 var(--space-3);
+  box-sizing: border-box;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background-color: var(--color-bg);
+  color: var(--admin-muted);
+}
+
+.topbar-search:focus-within {
+  outline: 2px solid var(--color-primary-light);
+  outline-offset: 2px;
 }
 
 .topbar-search input {
   flex: 1;
   min-width: 0;
+  height: 100%;
   border: none;
   background: none;
   font-family: inherit;
-  font-size: var(--text-sm, 0.875rem);
-  color: var(--color-text, #3a3a3a);
+  font-size: 0.9375rem;
+  color: var(--admin-ink);
   outline: none;
 }
 
 .topbar-search input::placeholder {
-  color: var(--color-text-muted, #6b6b6b);
+  color: var(--admin-muted);
 }
 
 .topbar-actions {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: var(--space-3, 16px);
+  gap: var(--space-3);
 }
 
 .icon-btn {
@@ -220,53 +209,42 @@ a.nav-link:hover {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
   border-radius: 50%;
-  border: none;
-  background-color: var(--color-bg, #faf8f5);
-  color: var(--color-text-muted, #6b6b6b);
-  font-size: 1rem;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  color: var(--admin-secondary);
   cursor: pointer;
 }
 
 .icon-btn:hover {
-  background-color: var(--color-border, #e4dfd6);
+  background-color: var(--color-bg);
 }
 
 .icon-btn:focus-visible {
-  outline: 2px solid var(--color-primary-light, #1e88e5);
+  outline: 2px solid var(--color-primary-light);
   outline-offset: 2px;
-}
-
-/* Keyboard focus only. A white ring reads clearly on the navy sidebar and
-   is a different shape from the filled active row. */
-a.nav-link:focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 1px;
-}
-
-a.nav-link:focus:not(:focus-visible) {
-  outline: none;
 }
 
 .icon-btn-badge {
   position: absolute;
-  top: 8px;
-  right: 9px;
-  width: 8px;
-  height: 8px;
+  top: 9px;
+  right: 10px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
-  background-color: var(--color-accent, #eb1f1a);
-  border: 2px solid var(--color-surface, #fff);
+  background-color: var(--admin-accent);
+  border: 2px solid var(--color-surface);
 }
 
 .topbar-identity {
   display: flex;
   align-items: center;
-  gap: var(--space-2, 8px);
-  padding-left: var(--space-3, 16px);
-  border-left: 1px solid var(--color-border, #e4dfd6);
+  gap: 12px;
+  padding-left: var(--space-3);
+  border-left: 1px solid var(--color-border);
 }
 
 .topbar-identity-text {
@@ -275,15 +253,15 @@ a.nav-link:focus:not(:focus-visible) {
 
 .topbar-name {
   margin: 0;
-  font-size: var(--text-sm, 0.875rem);
-  font-weight: 700;
-  color: var(--color-text, #3a3a3a);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--admin-ink);
 }
 
 .topbar-role {
   margin: 0;
-  font-size: var(--text-xs, 0.75rem);
-  color: var(--color-text-muted, #6b6b6b);
+  font-size: 0.75rem;
+  color: var(--admin-muted);
 }
 
 .avatar-badge {
@@ -291,21 +269,24 @@ a.nav-link:focus:not(:focus-visible) {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  background-color: var(--color-accent, #eb1f1a);
-  color: #fff;
-  font-weight: 700;
-  font-size: var(--text-sm, 0.875rem);
+  background-color: var(--admin-ink);
+  color: var(--admin-on-navy);
+  font-weight: 600;
+  font-size: 0.875rem;
 }
 
 .admin-content {
   flex: 1;
   width: 100%;
-  max-width: 1400px;
+  /* Caps the page width and centres it, so wide screens get even margins on
+     both sides instead of a blank strip on the right. */
+  max-width: 1500px;
+  margin: 0 auto;
   box-sizing: border-box;
-  padding: var(--space-4, 24px);
+  padding: 20px var(--space-5) var(--space-5);
 }
 
 @media (max-width: 900px) {
@@ -325,7 +306,7 @@ a.nav-link:focus:not(:focus-visible) {
     z-index: 15;
     border: none;
     padding: 0;
-    background-color: rgba(18, 41, 77, 0.4);
+    background-color: rgba(20, 33, 61, 0.4);
   }
 
   .admin-main {
@@ -343,16 +324,21 @@ a.nav-link:focus:not(:focus-visible) {
 
 @media (max-width: 600px) {
   .admin-content {
-    padding: var(--space-3, 16px);
+    padding: var(--space-3);
   }
 
   .admin-topbar {
-    gap: var(--space-2, 8px);
-    padding: 0 var(--space-3, 16px);
+    gap: var(--space-2);
+    padding: 0 var(--space-3);
   }
 
   .topbar-actions {
-    gap: var(--space-2, 8px);
+    gap: var(--space-2);
+  }
+
+  .topbar-identity {
+    padding-left: 0;
+    border-left: none;
   }
 
   .topbar-search {
@@ -362,8 +348,7 @@ a.nav-link:focus:not(:focus-visible) {
 
 @media (prefers-reduced-motion: reduce) {
   .admin-sidebar,
-  .nav-link,
-  .nav-link i {
+  .nav-link {
     transition: none;
   }
 }

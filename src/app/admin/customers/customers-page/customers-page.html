@@ -9,7 +9,7 @@
   <label class="admin-search">
     <app-admin-icon [paths]="icons.search" />
     <span class="sr-only">Search customers by name or email</span>
-    <input type="search" placeholder="Search by name or email" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" />
+    <input type="search" placeholder="Search by name or email" [ngModel]="searchQuery()" (ngModelChange)="setSearchQuery($event)" />
   </label>
 </section>
 
@@ -48,7 +48,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (customer of filteredCustomers(); track customer.id) {
+          @for (customer of pagedCustomers(); track customer.id) {
             <tr>
               <td class="customer-cell">
                 <span class="customer-name">{{ customer.name }}</span>
@@ -68,5 +68,11 @@
         </tbody>
       </table>
     </div>
+    <app-admin-pagination
+      [page]="currentPage()"
+      [pageSize]="pageSize"
+      [totalItems]="filteredCustomers().length"
+      (pageChange)="page.set($event)"
+    />
   }
 </div>

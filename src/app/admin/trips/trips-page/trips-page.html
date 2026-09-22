@@ -27,7 +27,7 @@
   <label class="admin-search">
     <app-admin-icon [paths]="icons.search" />
     <span class="sr-only">Search trips by route or operator</span>
-    <input type="search" placeholder="Search by route or operator" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" />
+    <input type="search" placeholder="Search by route or operator" [ngModel]="searchQuery()" (ngModelChange)="setSearchQuery($event)" />
   </label>
 </section>
 
@@ -68,7 +68,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (row of filteredTrips(); track row.trip.id) {
+          @for (row of pagedTrips(); track row.trip.id) {
             <tr>
               <td class="when-cell">{{ formatWhen(row.trip.departureTime) }}</td>
               <td class="route-cell" [attr.title]="row.trip.origin + ' to ' + row.trip.destination">
@@ -91,6 +91,7 @@
         </tbody>
       </table>
     </div>
+    <app-admin-pagination [page]="currentPage()" [pageSize]="pageSize" [totalItems]="filteredTrips().length" (pageChange)="page.set($event)" />
   }
 </div>
 

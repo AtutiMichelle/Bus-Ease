@@ -9,6 +9,7 @@ import { TripForm } from '../trip-form/trip-form';
 import { ConfirmDialog } from '../../shared/confirm-dialog/confirm-dialog';
 import { AdminIcon } from '../../icon/admin-icon';
 import { WidgetError } from '../../dashboard/widget-error/widget-error';
+import { AdminPagination } from '../../shared/pagination/pagination';
 import { ICONS } from '../../admin-nav';
 
 type StatusFilter = 'all' | TripStatus;
@@ -35,7 +36,7 @@ function tripStatus(departureTime: string, now: Date): TripStatus {
 }
 
 @Component({
-  imports: [FormsModule, DecimalPipe, TripForm, ConfirmDialog, AdminIcon, WidgetError],
+  imports: [FormsModule, DecimalPipe, TripForm, ConfirmDialog, AdminIcon, WidgetError, AdminPagination],
   selector: 'app-trips-page',
   styleUrl: './trips-page.css',
   templateUrl: './trips-page.html',
@@ -48,6 +49,7 @@ export class TripsPage {
 
   readonly icons = ICONS;
   readonly statusFilters = STATUS_FILTERS;
+  readonly pageSize = 10;
 
   trips = signal<AdminTrip[]>([]);
   routesList = signal<AdminRoute[]>([]);
@@ -57,6 +59,7 @@ export class TripsPage {
 
   searchQuery = signal('');
   statusFilter = signal<StatusFilter>('all');
+  page = signal(1);
 
   formTarget = signal<AdminTrip | 'new' | null>(null);
   deleteTarget = signal<AdminTrip | null>(null);
@@ -96,6 +99,22 @@ export class TripsPage {
       : 'No trips yet. Publish your first trip to get started.',
   );
 
+  totalPages = computed(() => Math.max(1, Math.ceil(this.filteredTrips().length / this.pageSize)));
+
+  /** Clamped so a delete that empties the last page falls back to the
+   * previous one instead of showing a blank page. */
+  currentPage = computed(() => Math.min(this.page(), this.totalPages()));
+
+  pagedTrips = computed(() => {
+    const start = (this.currentPage() - 1) * this.pageSize;
+    return this.filteredTrips().slice(start, start + this.pageSize);
+  });
+
+  setSearchQuery(value: string): void {
+    this.searchQuery.set(value);
+    this.page.set(1);
+  }
+
   constructor() {
     this.load();
     this.loadFormData();
@@ -132,6 +151,7 @@ export class TripsPage {
 
   setStatusFilter(status: StatusFilter): void {
     this.statusFilter.set(status);
+    this.page.set(1);
   }
 
   openCreate(): void {

@@ -13,7 +13,7 @@
   <label class="admin-search">
     <app-admin-icon [paths]="icons.search" />
     <span class="sr-only">Search routes by origin or destination</span>
-    <input type="search" placeholder="Search by origin or destination" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" />
+    <input type="search" placeholder="Search by origin or destination" [ngModel]="searchQuery()" (ngModelChange)="setSearchQuery($event)" />
   </label>
 </section>
 
@@ -49,7 +49,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (route of filteredRoutes(); track route.id) {
+          @for (route of pagedRoutes(); track route.id) {
             <tr>
               <td>
                 <div class="route-cell">
@@ -84,6 +84,7 @@
         </tbody>
       </table>
     </div>
+    <app-admin-pagination [page]="currentPage()" [pageSize]="pageSize" [totalItems]="filteredRoutes().length" (pageChange)="page.set($event)" />
   }
 </div>
 

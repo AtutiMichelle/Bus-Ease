@@ -6,10 +6,11 @@ import { RouteForm } from '../route-form/route-form';
 import { ConfirmDialog } from '../../shared/confirm-dialog/confirm-dialog';
 import { AdminIcon } from '../../icon/admin-icon';
 import { WidgetError } from '../../dashboard/widget-error/widget-error';
+import { AdminPagination } from '../../shared/pagination/pagination';
 import { ICONS } from '../../admin-nav';
 
 @Component({
-  imports: [FormsModule, RouteForm, ConfirmDialog, AdminIcon, WidgetError],
+  imports: [FormsModule, RouteForm, ConfirmDialog, AdminIcon, WidgetError, AdminPagination],
   selector: 'app-routes-page',
   styleUrl: './routes-page.css',
   templateUrl: './routes-page.html',
@@ -18,11 +19,13 @@ export class RoutesPage {
   private routesService = inject(AdminRoutesService);
 
   readonly icons = ICONS;
+  readonly pageSize = 10;
 
   routes = signal<AdminRoute[]>([]);
   loading = signal(true);
   error = signal(false);
   searchQuery = signal('');
+  page = signal(1);
 
   formTarget = signal<AdminRoute | 'new' | null>(null);
   deleteTarget = signal<AdminRoute | null>(null);
@@ -36,6 +39,22 @@ export class RoutesPage {
     }
     return this.routes().filter((route) => `${route.origin} ${route.destination}`.toLowerCase().includes(query));
   });
+
+  totalPages = computed(() => Math.max(1, Math.ceil(this.filteredRoutes().length / this.pageSize)));
+
+  /** Clamped so a delete that empties the last page falls back to the
+   * previous one instead of showing a blank page. */
+  currentPage = computed(() => Math.min(this.page(), this.totalPages()));
+
+  pagedRoutes = computed(() => {
+    const start = (this.currentPage() - 1) * this.pageSize;
+    return this.filteredRoutes().slice(start, start + this.pageSize);
+  });
+
+  setSearchQuery(value: string): void {
+    this.searchQuery.set(value);
+    this.page.set(1);
+  }
 
   formatDuration(minutes: number): string {
     const hours = Math.floor(minutes / 60);

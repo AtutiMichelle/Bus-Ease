@@ -104,6 +104,11 @@
   color: var(--color-danger, #d64545);
 }
 
+app-admin-pagination {
+  display: block;
+  margin-top: var(--space-3, 16px);
+}
+
 @media (max-width: 600px) {
   .toolbar {
     flex-direction: column;

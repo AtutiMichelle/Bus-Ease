@@ -1,0 +1,72 @@
+<section class="admin-page-header">
+  <div>
+    <h1 class="admin-page-title">Customers</h1>
+    <p class="admin-page-subtitle">Everyone with a BusEase account</p>
+  </div>
+</section>
+
+<section class="admin-toolbar">
+  <label class="admin-search">
+    <app-admin-icon [paths]="icons.search" />
+    <span class="sr-only">Search customers by name or email</span>
+    <input type="search" placeholder="Search by name or email" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" />
+  </label>
+</section>
+
+<div class="admin-card customers-card">
+  @if (error()) {
+    <app-widget-error message="Couldn't load customers." (retry)="load()" />
+  } @else if (loading()) {
+    <div class="customers-skeleton" aria-hidden="true">
+      @for (slot of [0, 1, 2, 3, 4]; track slot) {
+        <div class="customers-skeleton-row">
+          <span class="skeleton sk-name"></span>
+          <span class="skeleton sk-phone"></span>
+          <span class="skeleton sk-joined"></span>
+          <span class="skeleton sk-bookings"></span>
+          <span class="skeleton sk-spent"></span>
+        </div>
+      }
+    </div>
+  } @else if (filteredCustomers().length === 0) {
+    <div class="admin-empty-state">
+      <span class="admin-empty-state-icon"><app-admin-icon [paths]="icons.customers" /></span>
+      <p class="admin-empty-state-title">No customers found</p>
+      <p>{{ emptyMessage() }}</p>
+    </div>
+  } @else {
+    <div class="table-scroll">
+      <table class="customers-table">
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th>Phone</th>
+            <th>Joined</th>
+            <th>Bookings</th>
+            <th>Total spent</th>
+            <th>Last booking</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (customer of filteredCustomers(); track customer.id) {
+            <tr>
+              <td class="customer-cell">
+                <span class="customer-name">{{ customer.name }}</span>
+                <span class="customer-email">{{ customer.email }}</span>
+              </td>
+              <td>{{ customer.phone ?? '—' }}</td>
+              <td>{{ formatDate(customer.joinedAt) }}</td>
+              <td>
+                <span class="admin-chip" [class]="customer.totalBookings > 0 ? 'admin-chip-info' : 'admin-chip-neutral'">
+                  {{ customer.totalBookings }} {{ customer.totalBookings === 1 ? 'booking' : 'bookings' }}
+                </span>
+              </td>
+              <td>{{ formatKsh(customer.totalSpent) }}</td>
+              <td>{{ formatDate(customer.lastBookingAt) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

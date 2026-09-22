@@ -68,7 +68,7 @@ export const NAV_MAIN: NavItem[] = [
   { label: 'Trips', icon: ICONS.bus, section: 'fleet', route: '/admin/trips' },
   { label: 'Bookings', icon: ICONS.ticket, section: 'bookings', route: '/admin/bookings' },
   { label: 'Routes', icon: ICONS.route, section: 'routes', route: '/admin/routes' },
-  { label: 'Customers', icon: ICONS.customers, section: 'customers', route: null },
+  { label: 'Customers', icon: ICONS.customers, section: 'customers', route: '/admin/customers' },
   { label: 'Payments', icon: ICONS.card, section: 'payments', route: null },
   { label: 'Reports', icon: ICONS.chart, section: 'reports', route: null },
   { label: 'Customer Care', icon: ICONS.headset, section: 'customer-care', route: null },

@@ -12,7 +12,7 @@
 
 .page-subtitle {
   margin: 0;
-  font-size: var(--text-sm, 0.875rem);
+  font-size: 0.9375rem;
   color: var(--color-text-muted, #6b6b6b);
 }
 
@@ -80,7 +80,7 @@
   border: none;
   background: none;
   font-family: inherit;
-  font-size: var(--text-sm, 0.875rem);
+  font-size: 0.9375rem;
   color: var(--color-text, #3a3a3a);
   outline: none;
 }
@@ -95,7 +95,7 @@
   padding: var(--space-6, 48px) var(--space-4, 24px);
   text-align: center;
   color: var(--color-text-muted, #6b6b6b);
-  font-size: var(--text-sm, 0.875rem);
+  font-size: 0.9375rem;
   background-color: var(--color-surface, #fff);
   border-radius: var(--radius-md, 8px);
 }

@@ -58,7 +58,16 @@
                   <span class="route-name">{{ route.destination }}</span>
                 </div>
               </td>
-              <td>{{ route.durationMinutes }} min</td>
+              <td>
+                <span class="duration-cell">
+                  <svg class="duration-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="8" />
+                    <line x1="12" y1="12" x2="12" y2="7.5" />
+                    <line x1="12" y1="12" x2="15.2" y2="13.6" />
+                  </svg>
+                  {{ formatDuration(route.durationMinutes) }}
+                </span>
+              </td>
               <td>
                 <span class="admin-chip" [class]="route.tripCount > 0 ? 'admin-chip-info' : 'admin-chip-neutral'">
                   {{ route.tripCount }} {{ route.tripCount === 1 ? 'trip' : 'trips' }}

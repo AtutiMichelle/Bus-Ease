@@ -27,7 +27,7 @@
 .routes-table td {
   padding: 14px var(--space-4);
   border-bottom: 1px solid var(--admin-divider);
-  font-size: 0.9375rem;
+  font-size: 1rem;
   color: var(--admin-ink);
   vertical-align: middle;
 }
@@ -47,6 +47,19 @@
 .route-arrow {
   color: var(--admin-muted);
   font-weight: 400;
+}
+
+.duration-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.duration-clock {
+  flex-shrink: 0;
+  width: 17px;
+  height: 17px;
+  color: #9a988f;
 }
 
 .actions-col {

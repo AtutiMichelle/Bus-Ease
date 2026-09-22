@@ -37,6 +37,12 @@ export class RoutesPage {
     return this.routes().filter((route) => `${route.origin} ${route.destination}`.toLowerCase().includes(query));
   });
 
+  formatDuration(minutes: number): string {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours}h ${mins.toString().padStart(2, '0')}m`;
+  }
+
   emptyMessage = computed(() =>
     this.searchQuery().trim() ? 'No routes match your search.' : 'No routes yet. Add your first route to get started.',
   );

@@ -27,7 +27,7 @@
 .trips-table td {
   padding: 14px var(--space-4);
   border-bottom: 1px solid var(--admin-divider);
-  font-size: 0.9375rem;
+  font-size: 1rem;
   color: var(--admin-ink);
   vertical-align: middle;
   white-space: nowrap;

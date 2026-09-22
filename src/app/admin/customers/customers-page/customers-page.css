@@ -1,4 +1,4 @@
-.routes-card {
+.customers-card {
   padding: 0;
   overflow: hidden;
 }
@@ -7,12 +7,12 @@
   overflow-x: auto;
 }
 
-.routes-table {
+.customers-table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.routes-table th {
+.customers-table th {
   padding: 14px var(--space-4);
   border-bottom: 1px solid var(--admin-divider);
   text-align: left;
@@ -24,60 +24,40 @@
   white-space: nowrap;
 }
 
-.routes-table td {
+.customers-table td {
   padding: 14px var(--space-4);
   border-bottom: 1px solid var(--admin-divider);
   font-size: 1rem;
   color: var(--admin-ink);
   vertical-align: middle;
-}
-
-.routes-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.route-cell {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 600;
   white-space: nowrap;
 }
 
-.route-arrow {
+.customers-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.customer-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.customer-name {
+  font-weight: 600;
+}
+
+.customer-email {
+  font-size: 0.8125rem;
   color: var(--admin-muted);
-  font-weight: 400;
 }
 
-.duration-cell {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.duration-clock {
-  flex-shrink: 0;
-  width: 17px;
-  height: 17px;
-  color: #9a988f;
-}
-
-.actions-col {
-  text-align: right;
-}
-
-.row-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.routes-skeleton {
+.customers-skeleton {
   display: flex;
   flex-direction: column;
 }
 
-.routes-skeleton-row {
+.customers-skeleton-row {
   display: flex;
   align-items: center;
   gap: var(--space-4);
@@ -86,60 +66,56 @@
   border-bottom: 1px solid var(--admin-divider);
 }
 
-.routes-skeleton-row:last-child {
+.customers-skeleton-row:last-child {
   border-bottom: none;
 }
 
-.sk-route {
-  width: 220px;
+.sk-name {
+  width: 200px;
   height: 16px;
 }
 
-.sk-duration {
-  width: 70px;
+.sk-phone {
+  width: 100px;
   height: 16px;
 }
 
-.sk-trips {
+.sk-joined {
+  width: 90px;
+  height: 16px;
+}
+
+.sk-bookings {
   width: 80px;
   height: 22px;
   border-radius: 999px;
 }
 
-.sk-actions {
-  margin-left: auto;
-  width: 140px;
-  height: 32px;
+.sk-spent {
+  width: 90px;
+  height: 16px;
 }
 
 @media (max-width: 700px) {
-  .routes-table thead {
+  .customers-table thead {
     display: none;
   }
 
-  .routes-table,
-  .routes-table tbody,
-  .routes-table tr,
-  .routes-table td {
+  .customers-table,
+  .customers-table tbody,
+  .customers-table tr,
+  .customers-table td {
     display: block;
     width: 100%;
   }
 
-  .routes-table tr {
+  .customers-table tr {
     padding: var(--space-3) var(--space-4);
   }
 
-  .routes-table td {
+  .customers-table td {
     border-bottom: none;
     padding: 4px 0;
-  }
-
-  .actions-col {
-    text-align: left;
-    margin-top: 8px;
-  }
-
-  .row-actions {
-    justify-content: flex-start;
+    white-space: normal;
   }
 }

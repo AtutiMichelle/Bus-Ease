@@ -1,0 +1,14 @@
+@if (totalPages() > 1) {
+  <div class="admin-pagination">
+    <p class="admin-pagination-summary">Showing {{ rangeStart() }}–{{ rangeEnd() }} of {{ totalItems() }}</p>
+    <div class="admin-pagination-controls">
+      <button type="button" class="admin-btn admin-btn-secondary admin-btn-sm" [disabled]="page() === 1" (click)="goPrev()">
+        Previous
+      </button>
+      <span class="admin-pagination-page">Page {{ page() }} of {{ totalPages() }}</span>
+      <button type="button" class="admin-btn admin-btn-secondary admin-btn-sm" [disabled]="page() === totalPages()" (click)="goNext()">
+        Next
+      </button>
+    </div>
+  </div>
+}

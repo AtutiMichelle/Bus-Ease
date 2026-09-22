@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { AdminBookingsService } from '../../../services/admin-bookings.service';
 import { BookingStatusTag, RecentBooking } from '../../../models/admin-dashboard.model';
 import { BookingsTable } from '../../dashboard/bookings-table/bookings-table';
+import { AdminPagination } from '../../shared/pagination/pagination';
 
 type StatusFilter = 'all' | BookingStatusTag;
 
@@ -14,7 +15,7 @@ const STATUS_FILTERS: { id: StatusFilter; label: string }[] = [
 ];
 
 @Component({
-  imports: [FormsModule, BookingsTable],
+  imports: [FormsModule, BookingsTable, AdminPagination],
   selector: 'app-bookings-page',
   styleUrl: './bookings-page.css',
   templateUrl: './bookings-page.html',
@@ -23,6 +24,7 @@ export class BookingsPage {
   private bookingsService = inject(AdminBookingsService);
 
   readonly statusFilters = STATUS_FILTERS;
+  readonly pageSize = 10;
 
   allBookings = signal<RecentBooking[]>([]);
   loading = signal(true);
@@ -30,6 +32,7 @@ export class BookingsPage {
 
   statusFilter = signal<StatusFilter>('all');
   searchQuery = signal('');
+  page = signal(1);
 
   filteredBookings = computed(() => {
     const status = this.statusFilter();
@@ -57,8 +60,22 @@ export class BookingsPage {
       : 'No bookings yet. New bookings will show up here as customers pay for tickets.',
   );
 
+  totalPages = computed(() => Math.max(1, Math.ceil(this.filteredBookings().length / this.pageSize)));
+  currentPage = computed(() => Math.min(this.page(), this.totalPages()));
+
+  pagedBookings = computed(() => {
+    const start = (this.currentPage() - 1) * this.pageSize;
+    return this.filteredBookings().slice(start, start + this.pageSize);
+  });
+
   setStatusFilter(status: StatusFilter): void {
     this.statusFilter.set(status);
+    this.page.set(1);
+  }
+
+  setSearchQuery(value: string): void {
+    this.searchQuery.set(value);
+    this.page.set(1);
   }
 
   constructor() {

@@ -88,6 +88,12 @@ export const routes: Routes = [
                 title: 'Trips - BusEase Admin',
             },
             {
+                path: 'customers',
+                loadComponent: () => import('./admin/customers/customers-page/customers-page').then((m) => m.CustomersPage),
+                canActivate: [sectionGuard('customers')],
+                title: 'Customers - BusEase Admin',
+            },
+            {
                 path: 'no-access',
                 loadComponent: () => import('./admin/no-access/no-access-page').then((m) => m.NoAccessPage),
                 title: 'No access - BusEase Admin',

@@ -1,0 +1,94 @@
+<section class="admin-page-header">
+  <div>
+    <h1 class="admin-page-title">Routes</h1>
+    <p class="admin-page-subtitle">Every origin and destination pair trips can run on</p>
+  </div>
+  <button type="button" class="admin-btn admin-btn-primary" (click)="openCreate()">
+    <app-admin-icon [paths]="icons.plus" />
+    Add route
+  </button>
+</section>
+
+<section class="admin-toolbar">
+  <label class="admin-search">
+    <app-admin-icon [paths]="icons.search" />
+    <span class="sr-only">Search routes by origin or destination</span>
+    <input type="search" placeholder="Search by origin or destination" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" />
+  </label>
+</section>
+
+<div class="admin-card routes-card">
+  @if (error()) {
+    <app-widget-error message="Couldn't load routes." (retry)="load()" />
+  } @else if (loading()) {
+    <div class="routes-skeleton" aria-hidden="true">
+      @for (slot of [0, 1, 2, 3, 4]; track slot) {
+        <div class="routes-skeleton-row">
+          <span class="skeleton sk-route"></span>
+          <span class="skeleton sk-duration"></span>
+          <span class="skeleton sk-trips"></span>
+          <span class="skeleton sk-actions"></span>
+        </div>
+      }
+    </div>
+  } @else if (filteredRoutes().length === 0) {
+    <div class="admin-empty-state">
+      <span class="admin-empty-state-icon"><app-admin-icon [paths]="icons.route" /></span>
+      <p class="admin-empty-state-title">No routes found</p>
+      <p>{{ emptyMessage() }}</p>
+    </div>
+  } @else {
+    <div class="table-scroll">
+      <table class="routes-table">
+        <thead>
+          <tr>
+            <th>Route</th>
+            <th>Duration</th>
+            <th>Trips</th>
+            <th class="actions-col"><span class="sr-only">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (route of filteredRoutes(); track route.id) {
+            <tr>
+              <td>
+                <div class="route-cell">
+                  <span class="route-name">{{ route.origin }}</span>
+                  <span class="route-arrow" aria-hidden="true">→</span>
+                  <span class="route-name">{{ route.destination }}</span>
+                </div>
+              </td>
+              <td>{{ route.durationMinutes }} min</td>
+              <td>
+                <span class="admin-chip" [class]="route.tripCount > 0 ? 'admin-chip-info' : 'admin-chip-neutral'">
+                  {{ route.tripCount }} {{ route.tripCount === 1 ? 'trip' : 'trips' }}
+                </span>
+              </td>
+              <td class="actions-col">
+                <div class="row-actions">
+                  <button type="button" class="admin-btn admin-btn-secondary admin-btn-sm" (click)="openEdit(route)">Edit</button>
+                  <button type="button" class="admin-btn admin-btn-danger admin-btn-sm" (click)="confirmDelete(route)">Delete</button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+@if (formTarget()) {
+  <app-route-form [route]="formRoute()" (saved)="onSaved()" (closed)="closeForm()" />
+}
+
+@if (deleteTarget()) {
+  <app-confirm-dialog
+    title="Delete route?"
+    [message]="'Delete ' + deleteTarget()!.origin + ' to ' + deleteTarget()!.destination + '. This cannot be undone.'"
+    [busy]="deleteBusy()"
+    [error]="deleteError()"
+    (confirm)="performDelete()"
+    (cancel)="cancelDelete()"
+  />
+}

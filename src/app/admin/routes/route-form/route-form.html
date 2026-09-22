@@ -1,0 +1,54 @@
+<div class="admin-modal-backdrop" (click)="onBackdropClick()">
+  <div class="admin-modal" role="dialog" aria-modal="true" aria-labelledby="route-form-title" (click)="$event.stopPropagation()">
+    <div class="admin-modal-header">
+      <div class="admin-modal-heading">
+        <h2 id="route-form-title" class="admin-modal-title">{{ isEdit ? 'Edit route' : 'Add route' }}</h2>
+        <p class="admin-modal-subtitle">{{ isEdit ? 'Update where this route runs.' : 'Set up a new origin and destination pair.' }}</p>
+      </div>
+      <button type="button" class="admin-modal-close" aria-label="Close" [disabled]="submitting()" (click)="closed.emit()">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <form class="admin-modal-body" (ngSubmit)="submit()">
+      <div class="admin-field-row">
+        <div class="admin-field">
+          <label for="route-origin">Origin</label>
+          <input id="route-origin" type="text" placeholder="Nairobi" [ngModel]="origin()" (ngModelChange)="origin.set($event)" name="origin" required />
+        </div>
+        <div class="admin-field">
+          <label for="route-destination">Destination</label>
+          <input id="route-destination" type="text" placeholder="Mombasa" [ngModel]="destination()" (ngModelChange)="destination.set($event)" name="destination" required />
+          @if (sameOrigin) {
+            <p class="admin-field-error">Origin and destination must be different.</p>
+          }
+        </div>
+      </div>
+
+      <div class="admin-field">
+        <label for="route-duration">Typical duration (minutes)</label>
+        <input
+          id="route-duration"
+          type="number"
+          min="1"
+          placeholder="480"
+          [ngModel]="durationMinutes()"
+          (ngModelChange)="durationMinutes.set($event)"
+          name="durationMinutes"
+          required
+        />
+      </div>
+
+      @if (error()) {
+        <p class="admin-modal-error">{{ error() }}</p>
+      }
+
+      <div class="admin-modal-footer">
+        <button type="button" class="admin-btn admin-btn-secondary" [disabled]="submitting()" (click)="closed.emit()">Cancel</button>
+        <button type="submit" class="admin-btn admin-btn-primary" [disabled]="!canSubmit">
+          {{ submitting() ? 'Saving…' : isEdit ? 'Save changes' : 'Add route' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

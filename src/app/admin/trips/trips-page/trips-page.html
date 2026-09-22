@@ -1,0 +1,110 @@
+<section class="admin-page-header">
+  <div>
+    <h1 class="admin-page-title">Trips</h1>
+    <p class="admin-page-subtitle">Every scheduled, boarding and departed trip</p>
+  </div>
+  <button type="button" class="admin-btn admin-btn-primary" (click)="openCreate()">
+    <app-admin-icon [paths]="icons.plus" />
+    Publish a trip
+  </button>
+</section>
+
+<section class="admin-toolbar">
+  <div class="admin-filter-pills" role="group" aria-label="Filter by status">
+    @for (filter of statusFilters; track filter.id) {
+      <button
+        type="button"
+        class="admin-filter-pill"
+        [class.active]="statusFilter() === filter.id"
+        [attr.aria-pressed]="statusFilter() === filter.id"
+        (click)="setStatusFilter(filter.id)"
+      >
+        {{ filter.label }}
+      </button>
+    }
+  </div>
+
+  <label class="admin-search">
+    <app-admin-icon [paths]="icons.search" />
+    <span class="sr-only">Search trips by route or operator</span>
+    <input type="search" placeholder="Search by route or operator" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" />
+  </label>
+</section>
+
+<div class="admin-card trips-card">
+  @if (error()) {
+    <app-widget-error message="Couldn't load trips." (retry)="load()" />
+  } @else if (loading()) {
+    <div class="trips-skeleton" aria-hidden="true">
+      @for (slot of [0, 1, 2, 3, 4]; track slot) {
+        <div class="trips-skeleton-row">
+          <span class="skeleton sk-when"></span>
+          <span class="skeleton sk-route"></span>
+          <span class="skeleton sk-operator"></span>
+          <span class="skeleton sk-seats"></span>
+          <span class="skeleton sk-status"></span>
+          <span class="skeleton sk-actions"></span>
+        </div>
+      }
+    </div>
+  } @else if (filteredTrips().length === 0) {
+    <div class="admin-empty-state">
+      <span class="admin-empty-state-icon"><app-admin-icon [paths]="icons.bus" /></span>
+      <p class="admin-empty-state-title">No trips found</p>
+      <p>{{ emptyMessage() }}</p>
+    </div>
+  } @else {
+    <div class="table-scroll">
+      <table class="trips-table">
+        <thead>
+          <tr>
+            <th>Departure</th>
+            <th>Route</th>
+            <th>Operator</th>
+            <th>Seats</th>
+            <th>From</th>
+            <th>Status</th>
+            <th class="actions-col"><span class="sr-only">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of filteredTrips(); track row.trip.id) {
+            <tr>
+              <td class="when-cell">{{ formatWhen(row.trip.departureTime) }}</td>
+              <td class="route-cell" [attr.title]="row.trip.origin + ' to ' + row.trip.destination">
+                {{ row.trip.origin }} → {{ row.trip.destination }}
+              </td>
+              <td>{{ row.trip.operatorName }}</td>
+              <td class="seats-cell">{{ row.trip.totalSeats - row.trip.availableSeats }}/{{ row.trip.totalSeats }}</td>
+              <td>KSh {{ row.trip.basePrice | number }}</td>
+              <td>
+                <span class="admin-chip" [class]="statusChip[row.status]">{{ statusLabel[row.status] }}</span>
+              </td>
+              <td class="actions-col">
+                <div class="row-actions">
+                  <button type="button" class="admin-btn admin-btn-secondary admin-btn-sm" (click)="openEdit(row.trip)">Edit</button>
+                  <button type="button" class="admin-btn admin-btn-danger admin-btn-sm" (click)="confirmDelete(row.trip)">Delete</button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+@if (formTarget()) {
+  <app-trip-form [trip]="formTrip()" [routes]="routesList()" [operators]="operators()" (saved)="onSaved()" (closed)="closeForm()" />
+}
+
+@if (deleteTarget()) {
+  <app-confirm-dialog
+    title="Delete trip?"
+    [message]="'Delete the ' + deleteTarget()!.origin + ' to ' + deleteTarget()!.destination + ' trip on ' + formatWhen(deleteTarget()!.departureTime) + '. This cannot be undone.'"
+    [busy]="deleteBusy()"
+    [error]="deleteError()"
+    (confirm)="performDelete()"
+    (cancel)="cancelDelete()"
+  />
+}

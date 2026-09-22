@@ -3,7 +3,7 @@
     <h1 class="greeting-title">{{ greeting() }}, {{ adminFirstName() }}</h1>
     <p class="greeting-meta">{{ greetingDate() }}</p>
   </div>
-  <button type="button" class="primary-cta">
+  <button type="button" class="primary-cta" (click)="publishTrip()">
     <app-admin-icon [paths]="icons.plus" />
     Publish a trip
   </button>

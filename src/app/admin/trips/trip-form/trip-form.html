@@ -1,0 +1,147 @@
+<div class="admin-modal-backdrop" (click)="onBackdropClick()">
+  <div class="admin-modal admin-modal-wide" role="dialog" aria-modal="true" aria-labelledby="trip-form-title" (click)="$event.stopPropagation()">
+    <div class="admin-modal-header">
+      <div class="admin-modal-heading">
+        <h2 id="trip-form-title" class="admin-modal-title">{{ isEdit ? 'Edit trip' : 'Publish a trip' }}</h2>
+        <p class="admin-modal-subtitle">
+          {{ isEdit ? 'Update schedule, price, operator or amenities.' : 'Schedule a new departure and set its seat layout.' }}
+        </p>
+      </div>
+      <button type="button" class="admin-modal-close" aria-label="Close" [disabled]="submitting()" (click)="closed.emit()">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <form class="admin-modal-body trip-form-body" (ngSubmit)="submit()">
+      <div class="admin-field-row">
+        <div class="admin-field">
+          <label for="trip-route">Route</label>
+          <select id="trip-route" [ngModel]="routeId()" (ngModelChange)="routeId.set($event)" name="routeId" required>
+            <option value="" disabled>Select a route</option>
+            @for (route of routes(); track route.id) {
+              <option [value]="route.id">{{ route.origin }} → {{ route.destination }}</option>
+            }
+          </select>
+        </div>
+        <div class="admin-field">
+          <label for="trip-bus-type">Bus type</label>
+          <select id="trip-bus-type" [ngModel]="busType()" (ngModelChange)="busType.set($event)" name="busType" required>
+            @for (type of busTypes; track type) {
+              <option [value]="type">{{ type }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="admin-field">
+        <label>Operator</label>
+        <div class="operator-toggle">
+          <button type="button" class="admin-btn admin-btn-sm" [class.admin-btn-primary]="operatorMode() === 'existing'" [class.admin-btn-secondary]="operatorMode() !== 'existing'" (click)="operatorMode.set('existing')">
+            Existing operator
+          </button>
+          <button type="button" class="admin-btn admin-btn-sm" [class.admin-btn-primary]="operatorMode() === 'new'" [class.admin-btn-secondary]="operatorMode() !== 'new'" (click)="operatorMode.set('new')">
+            New operator
+          </button>
+        </div>
+        @if (operatorMode() === 'existing') {
+          <select [ngModel]="operatorId()" (ngModelChange)="operatorId.set($event)" name="operatorId" required>
+            <option value="" disabled>Select an operator</option>
+            @for (operator of operators(); track operator.id) {
+              <option [value]="operator.id">{{ operator.name }}</option>
+            }
+          </select>
+        } @else {
+          <input type="text" placeholder="Operator name" [ngModel]="newOperatorName()" (ngModelChange)="newOperatorName.set($event)" name="newOperatorName" required />
+        }
+      </div>
+
+      <div class="admin-field-row">
+        <div class="admin-field">
+          <label for="trip-departure">Departure</label>
+          <input id="trip-departure" type="datetime-local" [ngModel]="departureTime()" (ngModelChange)="departureTime.set($event)" name="departureTime" required />
+        </div>
+        <div class="admin-field">
+          <label for="trip-arrival">Arrival</label>
+          <input id="trip-arrival" type="datetime-local" [ngModel]="arrivalTime()" (ngModelChange)="arrivalTime.set($event)" name="arrivalTime" required />
+          @if (departureTime() && arrivalTime() && arrivalTime() <= departureTime()) {
+            <p class="admin-field-error">Arrival must be after departure.</p>
+          }
+        </div>
+      </div>
+
+      <div class="admin-field">
+        <label for="trip-base-price">Starting price (KSh)</label>
+        <input id="trip-base-price" type="number" min="1" placeholder="1200" [ngModel]="basePrice()" (ngModelChange)="basePrice.set($event)" name="basePrice" required />
+      </div>
+
+      @if (isEdit) {
+        <div class="admin-field">
+          <label>Seat classes</label>
+          <p class="static-note">
+            {{ trip()!.totalSeats }} seats total, set when this trip was published and cannot be changed here.
+          </p>
+          <div class="class-summary">
+            @for (c of trip()!.classes; track c.className) {
+              <span class="admin-chip admin-chip-neutral">{{ c.className }} · KSh {{ c.price | number }}</span>
+            }
+          </div>
+        </div>
+      } @else {
+        <div class="admin-field">
+          <label for="trip-rows">Rows (4 seats each, plus a 5-seat back bench)</label>
+          <input id="trip-rows" type="number" min="1" max="20" placeholder="10" [ngModel]="rows()" (ngModelChange)="rows.set($event)" name="rows" required />
+          @if (totalSeatsPreview() > 0) {
+            <p class="static-note">{{ totalSeatsPreview() }} seats total</p>
+          }
+        </div>
+
+        <div class="admin-field">
+          <label>Seat classes and prices</label>
+          <div class="class-grid">
+            @for (field of classFields(); track field.className) {
+              <div class="class-row" [class.class-row-off]="!field.enabled">
+                <label class="class-check">
+                  <input type="checkbox" [checked]="field.enabled" (change)="toggleClass(field.className)" />
+                  {{ field.className }}
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  class="class-price"
+                  placeholder="Price (KSh)"
+                  [disabled]="!field.enabled"
+                  [ngModel]="field.price"
+                  (ngModelChange)="setClassPrice(field.className, $event)"
+                  [name]="'price-' + field.className"
+                />
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <div class="admin-field">
+        <label>Amenities</label>
+        <div class="amenity-grid">
+          @for (amenity of amenityOptions; track amenity) {
+            <label class="amenity-check">
+              <input type="checkbox" [checked]="amenities().includes(amenity)" (change)="toggleAmenity(amenity)" />
+              {{ amenity }}
+            </label>
+          }
+        </div>
+      </div>
+
+      @if (error()) {
+        <p class="admin-modal-error">{{ error() }}</p>
+      }
+
+      <div class="admin-modal-footer">
+        <button type="button" class="admin-btn admin-btn-secondary" [disabled]="submitting()" (click)="closed.emit()">Cancel</button>
+        <button type="submit" class="admin-btn admin-btn-primary" [disabled]="!canSubmit">
+          {{ submitting() ? 'Saving…' : isEdit ? 'Save changes' : 'Publish trip' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

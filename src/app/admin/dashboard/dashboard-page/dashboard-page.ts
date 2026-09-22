@@ -1,4 +1,5 @@
 import { Component, WritableSignal, computed, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { AdminDashboardService } from '../../../services/admin-dashboard.service';
 import {
@@ -46,6 +47,7 @@ function formatGreetingDate(date: Date): string {
 export class DashboardPage {
   private authService = inject(AuthService);
   private dashboardService = inject(AdminDashboardService);
+  private router = inject(Router);
 
   adminFirstName = computed(() => this.authService.displayName().split(/\s+/)[0] ?? this.authService.displayName());
 
@@ -77,6 +79,10 @@ export class DashboardPage {
 
   /** Placeholder slots shown while the stat cards load. */
   readonly kpiPlaceholders = [0, 1, 2, 3];
+
+  publishTrip(): void {
+    this.router.navigate(['/admin/trips'], { queryParams: { new: 1 } });
+  }
 
   constructor() {
     this.loadWeekSummary();

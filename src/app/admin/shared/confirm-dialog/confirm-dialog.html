@@ -1,0 +1,24 @@
+<div class="admin-modal-backdrop" (click)="onBackdropClick()">
+  <div class="admin-modal" role="alertdialog" aria-modal="true" [attr.aria-labelledby]="'confirm-title'" (click)="$event.stopPropagation()">
+    <div class="admin-modal-header">
+      <div class="admin-modal-heading">
+        <h2 id="confirm-title" class="admin-modal-title">{{ title() }}</h2>
+        <p class="admin-modal-subtitle">{{ message() }}</p>
+      </div>
+      <button type="button" class="admin-modal-close" aria-label="Close" [disabled]="busy()" (click)="cancel.emit()">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    @if (error()) {
+      <p class="admin-modal-error">{{ error() }}</p>
+    }
+
+    <div class="admin-modal-footer">
+      <button type="button" class="admin-btn admin-btn-secondary" [disabled]="busy()" (click)="cancel.emit()">Cancel</button>
+      <button type="button" class="admin-btn admin-btn-danger" [disabled]="busy()" (click)="confirm.emit()">
+        {{ busy() ? 'Working…' : confirmLabel() }}
+      </button>
+    </div>
+  </div>
+</div>

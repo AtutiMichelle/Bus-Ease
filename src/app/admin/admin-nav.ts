@@ -65,9 +65,9 @@ export interface NavItem {
 
 export const NAV_MAIN: NavItem[] = [
   { label: 'Overview', icon: ICONS.overview, section: 'dashboard', route: '/admin', exact: true },
-  { label: 'Trips', icon: ICONS.bus, section: 'fleet', route: null },
+  { label: 'Trips', icon: ICONS.bus, section: 'fleet', route: '/admin/trips' },
   { label: 'Bookings', icon: ICONS.ticket, section: 'bookings', route: '/admin/bookings' },
-  { label: 'Routes', icon: ICONS.route, section: 'routes', route: null },
+  { label: 'Routes', icon: ICONS.route, section: 'routes', route: '/admin/routes' },
   { label: 'Customers', icon: ICONS.customers, section: 'customers', route: null },
   { label: 'Payments', icon: ICONS.card, section: 'payments', route: null },
   { label: 'Reports', icon: ICONS.chart, section: 'reports', route: null },

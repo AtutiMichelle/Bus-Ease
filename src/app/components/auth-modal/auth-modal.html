@@ -39,13 +39,16 @@
             [ngModel]="loginPassword()"
             (ngModelChange)="loginPassword.set($event)"
             name="loginPassword"
+            [disabled]="isLocked()"
             required
           />
         </div>
 
         <a routerLink="/forgot-password" class="forgot-link" (click)="close()">Forgot password?</a>
 
-        @if (loginError()) {
+        @if (isLocked()) {
+          <p class="error" role="status">Too many failed attempts. Try again in {{ lockCountdown() }}.</p>
+        } @else if (loginError()) {
           <p class="error">{{ loginError() }}</p>
         }
 

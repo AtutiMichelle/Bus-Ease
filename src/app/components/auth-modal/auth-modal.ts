@@ -1,7 +1,7 @@
-import { Component, DestroyRef, HostListener, inject, signal } from '@angular/core';
+import { Component, DestroyRef, HostListener, computed, effect, inject, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
+import { AuthService, LoginLockedError } from '../../services/auth.service';
 import { AuthModalService } from '../../services/auth-modal.service';
 import { StaffService } from '../../services/staff.service';
 
@@ -24,6 +24,17 @@ export class AuthModal {
   loginSubmitting = signal(false);
   loginError = signal('');
 
+  /** Seconds left on a server-side lockout, ticked down locally. Zero means
+   * the form is usable. */
+  lockSecondsLeft = signal(0);
+  isLocked = computed(() => this.lockSecondsLeft() > 0);
+  lockCountdown = computed(() => {
+    const left = this.lockSecondsLeft();
+    return `${String(Math.floor(left / 60)).padStart(2, '0')}:${String(left % 60).padStart(2, '0')}`;
+  });
+  private lockTimer: ReturnType<typeof setInterval> | null = null;
+  private lockExpiry = 0;
+
   signupFullName = signal('');
   signupEmail = signal('');
   signupPassword = signal('');
@@ -39,7 +50,12 @@ export class AuthModal {
   staffHome = this.staff.homeLink;
 
   get loginCanSubmit(): boolean {
-    return this.loginEmail().trim().length > 0 && this.loginPassword().trim().length > 0 && !this.loginSubmitting();
+    return (
+      this.loginEmail().trim().length > 0 &&
+      this.loginPassword().trim().length > 0 &&
+      !this.loginSubmitting() &&
+      !this.isLocked()
+    );
   }
 
   get signupPasswordsMismatch(): boolean {
@@ -73,8 +89,16 @@ export class AuthModal {
 
   constructor() {
     document.body.style.overflow = 'hidden';
+    // A lockout belongs to an email, not to the form, so the stored one is
+    // looked up whenever the email changes -- including the empty value the
+    // modal opens with, and a value left in place across a page refresh.
+    effect(() => {
+      const email = this.loginEmail();
+      untracked(() => this.syncLockToEmail(email));
+    });
     inject(DestroyRef).onDestroy(() => {
       document.body.style.overflow = '';
+      this.stopLockTimer();
     });
   }
 
@@ -113,14 +137,108 @@ export class AuthModal {
     this.loginSubmitting.set(true);
     try {
       await this.authService.signIn(this.loginEmail().trim(), this.loginPassword());
+      this.clearStoredLock(this.loginEmail());
       // Learn the staff role before the welcome step, so it can offer the
       // right destination. A failed check just means a normal customer login.
       await this.staff.ensureRole().catch((error) => console.warn('Could not check staff role', error));
       this.showWelcome.set(true);
     } catch (error) {
-      this.loginError.set(error instanceof Error ? error.message : 'Could not log in. Please try again.');
+      if (error instanceof LoginLockedError) {
+        this.startLock(error.retryAfter);
+      } else {
+        this.loginError.set(error instanceof Error ? error.message : 'Could not log in. Please try again.');
+      }
     } finally {
       this.loginSubmitting.set(false);
+    }
+  }
+
+  /** Key the lockout is saved under. Normalized the same way the login
+   * function normalizes the email, so both sides agree on which account a
+   * lock belongs to. */
+  private lockKey(email: string): string {
+    return `login_lock:${email.trim().toLowerCase()}`;
+  }
+
+  /** Starts a fresh lockout from the server's remaining seconds. The expiry
+   * is worked out from the local clock rather than a server timestamp, so a
+   * browser whose clock is off still waits the right length of time. */
+  private startLock(seconds: number): void {
+    const expiry = Date.now() + seconds * 1000;
+    this.writeStoredLock(this.loginEmail(), expiry);
+    this.runLock(expiry);
+  }
+
+  /** Locks the form and counts down to `expiry`. */
+  private runLock(expiry: number): void {
+    this.stopLockTimer();
+    this.lockExpiry = expiry;
+    this.loginPassword.set('');
+    this.loginError.set('');
+    this.tickLock();
+    if (this.lockSecondsLeft() > 0) {
+      this.lockTimer = setInterval(() => this.tickLock(), 1000);
+    }
+  }
+
+  private tickLock(): void {
+    const left = Math.max(0, Math.ceil((this.lockExpiry - Date.now()) / 1000));
+    this.lockSecondsLeft.set(left);
+    if (left === 0) {
+      this.stopLockTimer();
+      this.clearStoredLock(this.loginEmail());
+    }
+  }
+
+  private stopLockTimer(): void {
+    if (this.lockTimer !== null) {
+      clearInterval(this.lockTimer);
+      this.lockTimer = null;
+    }
+  }
+
+  /** Drops whatever is on screen and picks up the lock saved for this email,
+   * if it hasn't run out yet. Typing a different email therefore clears the
+   * countdown without touching the other email's saved lock. */
+  private syncLockToEmail(email: string): void {
+    this.stopLockTimer();
+    this.lockSecondsLeft.set(0);
+    const expiry = this.readStoredLock(email);
+    if (expiry === null) {
+      return;
+    }
+    if (expiry > Date.now()) {
+      this.runLock(expiry);
+    } else {
+      this.clearStoredLock(email);
+    }
+  }
+
+  // Storage can be unavailable (private mode, blocked cookies), and that
+  // should only cost the countdown its memory across refreshes, never stop
+  // the form working -- the server-side lockout is the real gate either way.
+  private readStoredLock(email: string): number | null {
+    try {
+      const stored = Number(localStorage.getItem(this.lockKey(email)));
+      return Number.isFinite(stored) && stored > 0 ? stored : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private writeStoredLock(email: string, expiry: number): void {
+    try {
+      localStorage.setItem(this.lockKey(email), String(expiry));
+    } catch {
+      // Nothing to do: the countdown still runs for this page view.
+    }
+  }
+
+  private clearStoredLock(email: string): void {
+    try {
+      localStorage.removeItem(this.lockKey(email));
+    } catch {
+      // Nothing to do.
     }
   }
 

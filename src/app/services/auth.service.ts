@@ -7,6 +7,37 @@ interface LoginResponse {
   error?: { message: string };
 }
 
+/** Thrown when the login function refuses the attempt because the email is
+ * locked out, carrying the whole seconds left on the lock so the form can
+ * count down instead of just showing a sentence. */
+export class LoginLockedError extends Error {
+  constructor(readonly retryAfter: number) {
+    super('Too many failed attempts.');
+    this.name = 'LoginLockedError';
+  }
+}
+
+/** The login function answers a locked-out email with 429, and supabase-js
+ * turns any non-2xx into a FunctionsHttpError whose body it never reads for
+ * us -- the raw Response is on error.context, so the body has to be pulled
+ * off that by hand. Anything that isn't a readable locked payload comes back
+ * null and is handled as a plain failure. */
+async function readRetryAfter(error: unknown): Promise<number | null> {
+  const context = (error as { context?: Response }).context;
+  if (!context || typeof context.json !== 'function' || context.status !== 429) {
+    return null;
+  }
+  try {
+    const body = await context.json();
+    if (body?.error === 'locked' && Number.isFinite(Number(body.retryAfter))) {
+      return Math.max(0, Math.ceil(Number(body.retryAfter)));
+    }
+  } catch {
+    // Body already consumed or not JSON: fall through to a plain failure.
+  }
+  return null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private client = inject(Supabase).getClient();
@@ -51,6 +82,10 @@ export class AuthService {
       body: { email, password },
     });
     if (error) {
+      const retryAfter = await readRetryAfter(error);
+      if (retryAfter !== null) {
+        throw new LoginLockedError(retryAfter);
+      }
       throw new Error('Could not log in. Please try again.');
     }
     if (data?.error) {

@@ -1,13 +1,16 @@
 import { Component, DestroyRef, HostListener, computed, effect, inject, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { AuthService, LoginLockedError } from '../../services/auth.service';
 import { AuthModalService } from '../../services/auth-modal.service';
 import { StaffService } from '../../services/staff.service';
 
+/** How long the resend button stays held after a reset email goes out. */
+const RESEND_SECONDS = 60;
+
 @Component({
   selector: 'app-auth-modal',
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule],
   styleUrl: './auth-modal.css',
   templateUrl: './auth-modal.html',
 })
@@ -35,6 +38,18 @@ export class AuthModal {
   private lockTimer: ReturnType<typeof setInterval> | null = null;
   private lockExpiry = 0;
 
+  forgotEmail = signal('');
+  forgotSubmitting = signal(false);
+  forgotSent = signal(false);
+
+  /** Seconds before another reset link can be asked for. */
+  resendSecondsLeft = signal(0);
+  resendCountdown = computed(() => {
+    const left = this.resendSecondsLeft();
+    return `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
+  });
+  private resendTimer: ReturnType<typeof setInterval> | null = null;
+
   signupFullName = signal('');
   signupEmail = signal('');
   signupPassword = signal('');
@@ -56,6 +71,10 @@ export class AuthModal {
       !this.loginSubmitting() &&
       !this.isLocked()
     );
+  }
+
+  get forgotCanSubmit(): boolean {
+    return this.forgotEmail().trim().length > 0 && !this.forgotSubmitting() && this.resendSecondsLeft() === 0;
   }
 
   get signupPasswordsMismatch(): boolean {
@@ -99,6 +118,7 @@ export class AuthModal {
     inject(DestroyRef).onDestroy(() => {
       document.body.style.overflow = '';
       this.stopLockTimer();
+      this.stopResendTimer();
     });
   }
 
@@ -115,6 +135,59 @@ export class AuthModal {
   switchMode(mode: 'login' | 'signup'): void {
     this.needsEmailConfirmation.set(false);
     this.authModal.open(mode);
+  }
+
+  /** Swaps the modal over to the forgot-password view rather than navigating
+   * to a page of its own, so the user keeps whatever page they were on.
+   * Carries over an email already typed into the login form. */
+  showForgot(): void {
+    if (this.loginEmail().trim().length > 0) {
+      this.forgotEmail.set(this.loginEmail().trim());
+    }
+    this.authModal.open('forgot');
+  }
+
+  backToLogin(): void {
+    this.authModal.open('login');
+  }
+
+  /** Sends the reset email. The same neutral confirmation shows whether or
+   * not the address has an account, so this can't be used to find out which
+   * emails are registered -- which is also why a failure isn't reported. */
+  async sendResetLink(): Promise<void> {
+    if (!this.forgotCanSubmit) {
+      return;
+    }
+    this.forgotSubmitting.set(true);
+    try {
+      await this.authService.resetPasswordForEmail(this.forgotEmail().trim());
+    } catch (error) {
+      console.warn('Could not send the reset email', error);
+    } finally {
+      this.forgotSubmitting.set(false);
+      this.forgotSent.set(true);
+      this.startResendCountdown();
+    }
+  }
+
+  /** Holds the resend button for a minute, so a stuck user can't send
+   * themselves (or anyone else) a pile of reset emails. */
+  private startResendCountdown(): void {
+    this.stopResendTimer();
+    this.resendSecondsLeft.set(RESEND_SECONDS);
+    this.resendTimer = setInterval(() => {
+      this.resendSecondsLeft.update((left) => Math.max(0, left - 1));
+      if (this.resendSecondsLeft() === 0) {
+        this.stopResendTimer();
+      }
+    }, 1000);
+  }
+
+  private stopResendTimer(): void {
+    if (this.resendTimer !== null) {
+      clearInterval(this.resendTimer);
+      this.resendTimer = null;
+    }
   }
 
   continueAfterWelcome(): void {

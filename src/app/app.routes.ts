@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, bookingAccessGuard, sectionGuard, staffGuard } from './guards/auth.guard';
+import { authGuard, bookingAccessGuard, forgotPasswordRedirect, sectionGuard, staffGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
     {
@@ -19,11 +19,17 @@ export const routes: Routes = [
         redirectTo: '/',
     },
     {
+        // Password recovery is a view inside the login modal now, not a page,
+        // so this only catches old /forgot-password links and opens that view
+        // over the home page instead of letting them dead-end.
         path: 'forgot-password',
-        loadComponent: () => import('./pages/forgot-password/forgot-password').then((m) => m.ForgotPassword),
-        title: 'Forgot Password - BusEase',
+        canActivate: [forgotPasswordRedirect],
+        children: [],
     },
     {
+        // Deliberately unguarded: the user arrives here from the emailed link
+        // with a recovery session only, so any auth guard would turn a valid
+        // reset into a bounce back to the login modal.
         path: 'reset-password',
         loadComponent: () => import('./pages/reset-password/reset-password').then((m) => m.ResetPassword),
         title: 'Reset Password - BusEase',

@@ -1,0 +1,267 @@
+/* The shared look of the auth card. The login/sign-up modal (see
+   components/auth-modal) and the reset-password page both render the same
+   card, so its surface, type scale, fields and buttons live here instead of
+   being written twice. It is global because Angular's view encapsulation
+   stops a component's own stylesheet from reaching another component's
+   markup, and every rule is scoped under .auth-card so these common class
+   names (.field, .error) can't leak into the rest of the app.
+
+   Anything to do with being a modal -- the backdrop, the open animation --
+   stays in auth-modal.css, since the page card doesn't want it. */
+
+.auth-card {
+  position: relative;
+  width: min(420px, 100%);
+  background-color: var(--color-surface, #fff);
+  border-radius: 16px;
+  border-left: 5px solid var(--color-accent, #eb1f1a);
+  box-shadow: 0 24px 64px rgba(18, 41, 77, 0.35);
+  padding: 44px var(--space-4, 24px);
+  box-sizing: border-box;
+}
+
+.auth-card .auth-eyebrow {
+  font-family: var(--font-family);
+  color: var(--color-primary-light, #1e88e5);
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 4px 0;
+  text-align: center;
+}
+
+.auth-card h1 {
+  color: var(--color-primary, #12294d);
+  margin: 0 0 var(--space-2, 8px) 0;
+  text-align: center;
+}
+
+.auth-card .auth-subtitle {
+  color: var(--color-text-muted, #6b6b6b);
+  font-size: 1.1rem;
+  margin: 0 0 var(--space-4, 24px) 0;
+  text-align: center;
+}
+
+.auth-card .auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3, 16px);
+}
+
+.auth-card .field {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.auth-card .field label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text, #3a3a3a);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.auth-card .field input {
+  padding: 12px 14px;
+  border: 2px solid var(--color-border, #e4dfd6);
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: inherit;
+  background-color: #fafafa;
+  transition: border-color 0.2s, background-color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.auth-card .field input:focus {
+  outline: none;
+  border-color: var(--color-accent, #eb1f1a);
+  background-color: white;
+  box-shadow: 0 0 0 3px rgba(235, 31, 26, 0.1);
+}
+
+/* Show/hide sits at the end of the input itself, so the row is what it
+   anchors to -- the field around it can also hold hints and rules. */
+.auth-card .password-row {
+  position: relative;
+  display: flex;
+}
+
+.auth-card .password-row input {
+  padding-right: 46px;
+}
+
+.auth-card .password-toggle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 6px;
+  width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: var(--color-text-muted, #6b6b6b);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.auth-card .password-toggle:hover {
+  color: var(--color-primary, #12294d);
+}
+
+.auth-card .forgot-link {
+  align-self: flex-end;
+  font-size: 0.9rem;
+  color: var(--color-primary-light, #1e88e5);
+  text-decoration: none;
+  margin-top: -8px;
+}
+
+/* The link is a button rather than an anchor now that it swaps the modal's
+   view instead of navigating, so it has to shed the button chrome. */
+.auth-card button.forgot-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.auth-card .forgot-link:hover {
+  text-decoration: underline;
+}
+
+/* Pulled up against the form's 16px gap, so an error reads as belonging to
+   the control above it rather than floating between two of them. */
+.auth-card .error {
+  color: var(--color-danger, #d64545);
+  font-size: 0.9rem;
+  margin: -8px 0 0 0;
+}
+
+/* Inside a field there's no gap to pull against, so it just sits under
+   whatever it's complaining about. */
+.auth-card .field .error {
+  margin: 6px 0 0 0;
+}
+
+.auth-card .field-hint {
+  color: var(--color-text-muted, #6b6b6b);
+  font-size: 0.8rem;
+  margin: 4px 0 0 0;
+}
+
+/* Live password rules: each line ticks itself off as the password starts to
+   meet it, so the requirement reads as progress rather than as an error. */
+.auth-card .rule-list {
+  list-style: none;
+  margin: 8px 0 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.auth-card .rule-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--color-text-muted, #6b6b6b);
+}
+
+.auth-card .rule-list li.met {
+  color: var(--color-success, #2fa88a);
+}
+
+.auth-card .rule-list i {
+  font-size: 0.75rem;
+  width: 12px;
+}
+
+.auth-card .auth-cta {
+  display: block;
+  width: 100%;
+  padding: 14px 24px;
+  background-color: var(--color-accent, #eb1f1a);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  box-sizing: border-box;
+  box-shadow: 0 8px 20px rgba(235, 31, 26, 0.25);
+  transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+.auth-card .auth-cta:hover:not(:disabled) {
+  background-color: var(--color-accent-dark, #d68c0f);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(235, 31, 26, 0.35);
+}
+
+.auth-card .auth-cta:disabled {
+  background-color: var(--color-border, #e4dfd6);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.auth-card .modal-cta-link {
+  margin-top: var(--space-2, 8px);
+}
+
+.auth-card .auth-switch {
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--color-text-muted, #6b6b6b);
+  margin: var(--space-4, 24px) 0 0 0;
+}
+
+.auth-card .link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: var(--color-primary-light, #1e88e5);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.auth-card .link-btn:hover {
+  text-decoration: underline;
+}
+
+/* The one-line status the card shows instead of the form: a checked/expired
+   link, a sent email, a changed password. */
+.auth-card .auth-state {
+  text-align: center;
+}
+
+.auth-card .auth-state i.state-icon {
+  font-size: 2.5rem;
+  color: var(--color-success, #2fa88a);
+  margin-bottom: var(--space-3, 16px);
+}
+
+.auth-card .auth-state i.state-icon.is-error {
+  color: var(--color-danger, #d64545);
+}
+
+@media (max-width: 480px) {
+  .auth-card {
+    padding: var(--space-4, 24px) var(--space-3, 16px);
+  }
+}

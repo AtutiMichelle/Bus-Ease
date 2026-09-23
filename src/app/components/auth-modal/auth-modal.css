@@ -1,3 +1,7 @@
+/* Only what makes this card a modal lives here. Its surface, type, fields
+   and buttons come from the shared .auth-card rules in src/auth-card.css,
+   which the reset-password page renders too. */
+
 .auth-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -12,14 +16,6 @@
 }
 
 .auth-modal {
-  position: relative;
-  width: min(420px, 100%);
-  background-color: var(--color-surface, #fff);
-  border-radius: 16px;
-  border-left: 5px solid var(--color-accent, #eb1f1a);
-  box-shadow: 0 24px 64px rgba(18, 41, 77, 0.35);
-  padding: 44px var(--space-4, 24px);
-  box-sizing: border-box;
   animation: scale-in 0.2s ease-out;
 }
 
@@ -61,153 +57,4 @@
 
 .modal-close:hover {
   background-color: var(--color-border, #e4dfd6);
-}
-
-.auth-eyebrow {
-  font-family: var(--font-family);
-  color: var(--color-primary-light, #1e88e5);
-  font-weight: 700;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin: 0 0 4px 0;
-  text-align: center;
-}
-
-.auth-modal h1 {
-  color: var(--color-primary, #12294d);
-  margin: 0 0 var(--space-2, 8px) 0;
-  text-align: center;
-}
-
-.auth-subtitle {
-  color: var(--color-text-muted, #6b6b6b);
-  font-size: 1.1rem;
-  margin: 0 0 var(--space-4, 24px) 0;
-  text-align: center;
-}
-
-.auth-form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3, 16px);
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  text-align: left;
-}
-
-.field label {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--color-text, #3a3a3a);
-  margin-bottom: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.field input {
-  padding: 12px 14px;
-  border: 2px solid var(--color-border, #e4dfd6);
-  border-radius: 6px;
-  font-size: 1rem;
-  background-color: #fafafa;
-  transition: border-color 0.2s, background-color 0.2s;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.field input:focus {
-  outline: none;
-  border-color: var(--color-accent, #eb1f1a);
-  background-color: white;
-  box-shadow: 0 0 0 3px rgba(235, 31, 26, 0.1);
-}
-
-.forgot-link {
-  align-self: flex-end;
-  font-size: 0.9rem;
-  color: var(--color-primary-light, #1e88e5);
-  text-decoration: none;
-  margin-top: -8px;
-}
-
-.forgot-link:hover {
-  text-decoration: underline;
-}
-
-.error {
-  color: var(--color-danger, #d64545);
-  font-size: 0.9rem;
-  margin: -8px 0 0 0;
-}
-
-.field-hint {
-  color: var(--color-text-muted, #6b6b6b);
-  font-size: 0.8rem;
-  margin: 4px 0 0 0;
-}
-
-.auth-cta {
-  display: block;
-  width: 100%;
-  padding: 14px 24px;
-  background-color: var(--color-accent, #eb1f1a);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 1.05rem;
-  font-weight: 700;
-  text-align: center;
-  text-decoration: none;
-  cursor: pointer;
-  box-sizing: border-box;
-  box-shadow: 0 8px 20px rgba(235, 31, 26, 0.25);
-  transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
-}
-
-.auth-cta:hover:not(:disabled) {
-  background-color: var(--color-accent-dark, #d68c0f);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 28px rgba(235, 31, 26, 0.35);
-}
-
-.auth-cta:disabled {
-  background-color: var(--color-border, #e4dfd6);
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
-.modal-cta-link {
-  margin-top: var(--space-2, 8px);
-}
-
-.auth-switch {
-  text-align: center;
-  font-size: 0.95rem;
-  color: var(--color-text-muted, #6b6b6b);
-  margin: var(--space-4, 24px) 0 0 0;
-}
-
-.auth-switch .link-btn {
-  background: none;
-  border: none;
-  padding: 0;
-  font: inherit;
-  color: var(--color-primary-light, #1e88e5);
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.auth-switch .link-btn:hover {
-  text-decoration: underline;
-}
-
-@media (max-width: 480px) {
-  .auth-modal {
-    padding: var(--space-4, 24px) var(--space-3, 16px);
-  }
 }

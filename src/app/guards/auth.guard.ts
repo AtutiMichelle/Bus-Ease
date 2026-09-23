@@ -17,6 +17,14 @@ export const authGuard: CanActivateFn = async (_route, state) => {
   return false;
 };
 
+/** /forgot-password no longer has a page of its own -- password recovery is
+ * a view inside the login modal now. Old links and bookmarks land here and
+ * are sent home with that view already open, rather than dead-ending. */
+export const forgotPasswordRedirect: CanActivateFn = () => {
+  inject(AuthModalService).open('forgot');
+  return inject(Router).parseUrl('/');
+};
+
 /** Gates the whole admin area: only staff get in. Signed-out visitors are
  * sent home with the login modal open; signed-in customers, and anyone whose
  * staff check fails (network error, or the database functions are not

@@ -1,5 +1,5 @@
 <div class="auth-modal-backdrop" (click)="close()">
-  <div class="auth-modal" (click)="$event.stopPropagation()">
+  <div class="auth-modal auth-card" (click)="$event.stopPropagation()">
     <button type="button" class="modal-close" aria-label="Close" (click)="close()">
       <i class="fa-solid fa-xmark" aria-hidden="true"></i>
     </button>
@@ -39,13 +39,16 @@
             [ngModel]="loginPassword()"
             (ngModelChange)="loginPassword.set($event)"
             name="loginPassword"
+            [disabled]="isLocked()"
             required
           />
         </div>
 
-        <a routerLink="/forgot-password" class="forgot-link" (click)="close()">Forgot password?</a>
+        <button type="button" class="forgot-link" (click)="showForgot()">Forgot password?</button>
 
-        @if (loginError()) {
+        @if (isLocked()) {
+          <p class="error" role="status">Too many failed attempts. Try again in {{ lockCountdown() }}.</p>
+        } @else if (loginError()) {
           <p class="error">{{ loginError() }}</p>
         }
 
@@ -56,6 +59,49 @@
 
       <p class="auth-switch">
         Don't have an account? <button type="button" class="link-btn" (click)="switchMode('signup')">Sign Up</button>
+      </p>
+    } @else if (mode() === 'forgot') {
+      <p class="auth-eyebrow">Account recovery</p>
+      <h1>Forgot Password</h1>
+
+      @if (forgotSent()) {
+        <p class="auth-subtitle">
+          If an account exists for that email, we've sent a reset link. Check your inbox and spam folder.
+        </p>
+        <button type="button" class="auth-cta" [disabled]="!forgotCanSubmit" (click)="sendResetLink()">
+          @if (forgotSubmitting()) {
+            Sending…
+          } @else if (resendSecondsLeft() > 0) {
+            Resend in {{ resendCountdown() }}
+          } @else {
+            Resend Link
+          }
+        </button>
+      } @else {
+        <p class="auth-subtitle">Enter your email and we'll send you a link to set a new password.</p>
+
+        <form class="auth-form" (ngSubmit)="sendResetLink()">
+          <div class="field">
+            <label for="am-forgot-email">Email</label>
+            <input
+              id="am-forgot-email"
+              type="email"
+              placeholder="you@example.com"
+              [ngModel]="forgotEmail()"
+              (ngModelChange)="forgotEmail.set($event)"
+              name="forgotEmail"
+              required
+            />
+          </div>
+
+          <button type="submit" class="auth-cta" [disabled]="!forgotCanSubmit">
+            {{ forgotSubmitting() ? 'Sending…' : 'Send Reset Link' }}
+          </button>
+        </form>
+      }
+
+      <p class="auth-switch">
+        <button type="button" class="link-btn" (click)="backToLogin()">Back to Log In</button>
       </p>
     } @else if (mode() === 'signup') {
       @if (needsEmailConfirmation()) {

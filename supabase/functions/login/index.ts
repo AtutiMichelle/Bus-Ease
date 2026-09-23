@@ -13,9 +13,11 @@
 // maybe lock on failure) and hand the session back to the client, which
 // sets it locally via supabase.auth.setSession().
 //
-// Always responds 200 with either { session } or { error: { message } } in
-// the body, even for "you're locked out" -- the client only ever reads the
-// JSON body, so there's no reason to make it also branch on HTTP status.
+// Responds 200 with either { session } or { error: { message } } in the
+// body for the ordinary cases. The one exception is a locked-out email:
+// that answers 429 with { error: 'locked', retryAfter }, where retryAfter
+// is the whole seconds left on the lock, so the client can disable the
+// form and count down instead of just printing a sentence.
 //
 // Deploy with: supabase functions deploy login
 // Needs the login_lockouts table from
@@ -125,23 +127,28 @@ Deno.serve(async (req) => {
     console.error('login_lockouts select failed', selectError);
   }
 
-  if (lockRow?.locked_until && new Date(lockRow.locked_until) > new Date()) {
+  // Seconds left on an active lock, rounded up so the client never counts
+  // down to zero a moment before the server would actually let them back in.
+  const lockedUntil = lockRow?.locked_until ? new Date(lockRow.locked_until).getTime() : 0;
+  if (lockedUntil > Date.now()) {
     return json(
-      { error: { message: `Too many failed attempts. Please try again in a few minutes.` } },
+      { error: 'locked', retryAfter: Math.ceil((lockedUntil - Date.now()) / 1000) },
       headers,
+      429,
     );
   }
 
   if (error || !data.session) {
     const nextCount = (lockRow?.failed_count ?? 0) + 1;
     const locked = nextCount >= MAX_ATTEMPTS;
+    const newLockedUntil = locked ? new Date(Date.now() + LOCKOUT_MINUTES * 60_000) : null;
     background(
       admin
         .from('login_lockouts')
         .upsert({
           email,
           failed_count: nextCount,
-          locked_until: locked ? new Date(Date.now() + LOCKOUT_MINUTES * 60_000).toISOString() : null,
+          locked_until: newLockedUntil ? newLockedUntil.toISOString() : null,
           updated_at: new Date().toISOString(),
         })
         .then(({ error: upsertError }) => {
@@ -151,10 +158,13 @@ Deno.serve(async (req) => {
         }),
     );
 
-    if (locked) {
+    // The attempt that trips the lock answers the same way a later attempt
+    // would, so the countdown starts right away instead of on the next try.
+    if (newLockedUntil) {
       return json(
-        { error: { message: `Too many failed attempts. Please try again in ${LOCKOUT_MINUTES} minutes.` } },
+        { error: 'locked', retryAfter: Math.ceil((newLockedUntil.getTime() - Date.now()) / 1000) },
         headers,
+        429,
       );
     }
     return json({ error: { message: error?.message ?? 'Invalid login credentials' } }, headers);

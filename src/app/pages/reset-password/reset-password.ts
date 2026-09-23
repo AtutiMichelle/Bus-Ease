@@ -1,7 +1,8 @@
-import { Component, OnDestroy, signal } from '@angular/core';
+import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { AuthModalService } from '../../services/auth-modal.service';
 
 type LinkState = 'checking' | 'valid' | 'invalid';
 
@@ -12,24 +13,41 @@ type LinkState = 'checking' | 'valid' | 'invalid';
 const LINK_CHECK_TIMEOUT_MS = 4000;
 
 @Component({
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule],
   selector: 'app-reset-password',
   styleUrl: './reset-password.css',
   templateUrl: './reset-password.html',
 })
 export class ResetPassword implements OnDestroy {
+  private authService = inject(AuthService);
+  private authModal = inject(AuthModalService);
+  private router = inject(Router);
+
   linkState = signal<LinkState>('checking');
 
   newPassword = signal('');
   confirmPassword = signal('');
+  showNewPassword = signal(false);
+  showConfirmPassword = signal(false);
   submitting = signal(false);
   success = signal(false);
   error = signal('');
 
+  /** The same rules the sign-up form enforces, listed one by one so each can
+   * tick itself off as the user types rather than only failing at the end. */
+  passwordRules = computed(() => {
+    const password = this.newPassword();
+    return [
+      { label: 'At least 8 characters', met: password.length >= 8 },
+      { label: 'Contains a letter', met: /[a-zA-Z]/.test(password) },
+      { label: 'Contains a number', met: /[0-9]/.test(password) },
+    ];
+  });
+
   private subscription: { unsubscribe: () => void };
   private timeoutHandle: ReturnType<typeof setTimeout>;
 
-  constructor(private authService: AuthService) {
+  constructor() {
     const { data } = this.authService.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
         this.linkState.set('valid');
@@ -79,11 +97,29 @@ export class ResetPassword implements OnDestroy {
     this.submitting.set(true);
     try {
       await this.authService.updatePassword(this.newPassword());
+      // Signed out on purpose: the recovery link's session is only meant to
+      // authorise this one change, and logging back in proves the new
+      // password works (and clears it from any other device sharing the link).
+      await this.authService.signOut().catch((signOutError) =>
+        console.warn('Could not sign out after the password change', signOutError),
+      );
       this.success.set(true);
     } catch (error) {
       this.error.set(error instanceof Error ? error.message : 'Could not update your password. Please try again.');
     } finally {
       this.submitting.set(false);
     }
+  }
+
+  /** Both of these send the user home with the modal already on the right
+   * view, since login and recovery no longer have pages of their own. */
+  requestNewLink(): void {
+    this.authModal.open('forgot');
+    this.router.navigateByUrl('/');
+  }
+
+  goToLogin(): void {
+    this.authModal.open('login');
+    this.router.navigateByUrl('/');
   }
 }

@@ -109,6 +109,10 @@
               name="signupPassword"
               required
             />
+            <p class="field-hint">At least 8 characters, with a letter and a number.</p>
+            @if (signupPasswordTooWeak) {
+              <p class="error">Password must be at least 8 characters and include a letter and a number.</p>
+            }
           </div>
 
           <div class="field">

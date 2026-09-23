@@ -518,12 +518,22 @@
                   </div>
 
                   @if (accountDeleted()) {
-                    <span class="settings-row-desc">Your account has been scheduled for deletion.</span>
+                    <span class="settings-row-desc">Your account has been deleted.</span>
                   } @else if (confirmingDelete()) {
                     <div class="delete-confirm">
-                      <span>Are you sure?</span>
-                      <button type="button" class="outline-btn outline-btn-danger" (click)="deleteAccount()">Yes, delete</button>
-                      <button type="button" class="text-btn" (click)="cancelDeleteAccount()">Cancel</button>
+                      <span>Are you sure? This can't be undone.</span>
+                      @if (deleteAccountError()) {
+                        <p class="field-error">{{ deleteAccountError() }}</p>
+                      }
+                      <button
+                        type="button"
+                        class="outline-btn outline-btn-danger"
+                        [disabled]="deletingAccount()"
+                        (click)="deleteAccount()"
+                      >
+                        {{ deletingAccount() ? 'Deleting…' : 'Yes, delete' }}
+                      </button>
+                      <button type="button" class="text-btn" [disabled]="deletingAccount()" (click)="cancelDeleteAccount()">Cancel</button>
                     </div>
                   } @else {
                     <button type="button" class="outline-btn outline-btn-danger" (click)="requestDeleteAccount()">Delete account</button>

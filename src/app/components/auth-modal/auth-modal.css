@@ -144,6 +144,12 @@
   margin: -8px 0 0 0;
 }
 
+.field-hint {
+  color: var(--color-text-muted, #6b6b6b);
+  font-size: 0.8rem;
+  margin: 4px 0 0 0;
+}
+
 .auth-cta {
   display: block;
   width: 100%;

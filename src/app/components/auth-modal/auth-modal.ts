@@ -48,12 +48,24 @@ export class AuthModal {
     );
   }
 
+  /** Mirrors the strength rule enforced on the account page's change-password
+   * form, checked here too so a weak password is caught before signup rather
+   * than only at Supabase's own (lower, dashboard-configured) minimum. */
+  get signupPasswordTooWeak(): boolean {
+    const password = this.signupPassword();
+    if (password.length === 0) {
+      return false;
+    }
+    return password.length < 8 || !/[a-zA-Z]/.test(password) || !/[0-9]/.test(password);
+  }
+
   get signupCanSubmit(): boolean {
     return (
       this.signupFullName().trim().length > 0 &&
       this.signupEmail().trim().length > 0 &&
       this.signupPassword().trim().length > 0 &&
       this.signupConfirmPassword().trim().length > 0 &&
+      !this.signupPasswordTooWeak &&
       !this.signupPasswordsMismatch &&
       !this.signupSubmitting()
     );

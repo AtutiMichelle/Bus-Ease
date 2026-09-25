@@ -2,29 +2,47 @@
   display: block;
 }
 
-/* Card box (background, border, radius) comes from the global .admin-card;
-   the padding here is tighter than other cards on purpose. The row heights
-   below are fixed so the loading placeholder and the loaded card are the same
-   height, and all four cards line up. */
+/* Each card takes a faint wash of its own tone (about 5% into the white
+   surface) so the four read as a set without shouting. The row heights
+   below are fixed so the loading placeholder and the loaded card are the
+   same height, and all four cards line up. */
 .kpi-card {
+  --tone: var(--admin-ink);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
   height: 100%;
-  padding: 16px 20px;
+  padding: 10px 16px;
+  background-color: color-mix(in srgb, var(--tone) 5%, var(--color-surface));
+  border-color: color-mix(in srgb, var(--tone) 12%, var(--color-border));
+}
+
+.tone-red {
+  --tone: var(--admin-accent);
+}
+
+.tone-moss {
+  --tone: var(--admin-pos-text);
+}
+
+.tone-gold {
+  --tone: var(--admin-warn-text);
+}
+
+.tone-navy {
+  --tone: var(--admin-info-text);
 }
 
 .kpi-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-height: 32px;
+  gap: 8px;
+  min-height: 26px;
 }
 
 .kpi-label {
   margin: 0;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   font-weight: 500;
   color: var(--admin-secondary);
 }
@@ -34,49 +52,28 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background-color: var(--color-surface);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--tone) 14%, transparent);
+  color: var(--tone);
 }
 
 .kpi-icon app-admin-icon {
-  width: 18px;
-  height: 18px;
+  width: 14px;
+  height: 14px;
 }
 
-.tone-red .kpi-icon {
-  background-color: var(--admin-neg-bg);
-  color: var(--admin-neg-text);
-}
-
-.tone-moss .kpi-icon {
-  background-color: var(--admin-pos-bg);
-  color: var(--admin-pos-text);
-}
-
-.tone-gold .kpi-icon {
-  background-color: var(--admin-warn-bg);
-  color: var(--admin-warn-text);
-}
-
-.tone-navy .kpi-icon {
-  background-color: var(--color-soft-bg);
-  color: var(--admin-info-text);
-}
-
-/* A fixed 40px row with the small "KSh" and the big number sitting on one
-   baseline. Both have line-height 1 so neither can make the row taller
-   (two font sizes on one tall fixed line-height stretch the line and push the
-   card's footer down). */
+/* A fixed 30px row with the small "KSh" and the big number sitting on one
+   baseline. Both have line-height 1 so neither can make the row taller. */
 .kpi-value {
   display: flex;
   align-items: baseline;
-  height: 40px;
-  /* Pulls the number up under its label (the label row is 32px tall to fit
-     the icon chip, which leaves a wide gap otherwise). */
-  margin: -10px 0 0;
+  height: 30px;
+  margin: 0;
   font-family: var(--admin-font-display);
-  font-size: 2.375rem;
+  font-size: 1.625rem;
   font-weight: 600;
   line-height: 1;
   color: var(--admin-ink);
@@ -85,7 +82,7 @@
 
 .kpi-unit {
   margin-right: 6px;
-  font-size: 1.125rem;
+  font-size: 0.875rem;
   font-weight: 500;
   line-height: 1;
   color: var(--admin-muted);
@@ -95,35 +92,58 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
-  min-height: 24px;
+  gap: 6px;
+  min-height: 20px;
   margin: 0;
+  font-size: 0.8125rem;
+}
+
+.kpi-change {
+  display: inline-flex;
+  gap: 3px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--admin-secondary);
+}
+
+.delta-up .kpi-change {
+  color: var(--admin-pos-text);
+}
+
+.delta-down .kpi-change {
+  color: var(--admin-neg-text);
+}
+
+.delta-warning .kpi-change {
+  color: var(--admin-warn-text);
 }
 
 .kpi-note {
-  font-size: 0.8125rem;
   color: var(--admin-muted);
 }
 
 /* Loading placeholder, same row heights as the loaded card */
-.sk-label {
-  width: 40%;
-  height: 16px;
+.kpi-skeleton {
+  background-color: var(--color-surface);
 }
 
 .sk-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+}
+
+.sk-label {
+  width: 40%;
+  height: 14px;
 }
 
 .sk-value {
   width: 50%;
-  height: 40px;
-  margin-top: -10px;
+  height: 30px;
 }
 
 .sk-delta {
   width: 70%;
-  height: 24px;
+  height: 20px;
 }

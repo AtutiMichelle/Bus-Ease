@@ -11,7 +11,7 @@
 
     <nav class="sidebar-nav" aria-label="Admin sections">
       @if (navMain().length > 0) {
-        <p class="nav-section-label">Manage</p>
+        <p class="nav-section-label">Main</p>
         @for (item of navMain(); track item.label) {
           @if (item.route) {
             <a
@@ -37,7 +37,10 @@
         <p class="nav-empty">No sections are available for your role.</p>
       }
 
-      <div class="nav-bottom">
+      <div class="nav-system">
+        @if (navSystem().length > 0) {
+          <p class="nav-section-label">System</p>
+        }
         @for (item of navSystem(); track item.label) {
           <span class="nav-link">
             <app-admin-icon [paths]="item.icon" />
@@ -46,6 +49,8 @@
         }
       </div>
     </nav>
+
+    <p class="sidebar-footer">BusEase Admin</p>
   </aside>
 
   <div class="admin-main">
@@ -70,11 +75,33 @@
         </button>
 
         <div class="topbar-identity">
-          <span class="avatar-badge" aria-hidden="true">{{ adminInitials() }}</span>
-          <div class="topbar-identity-text">
-            <p class="topbar-name">{{ adminName() }}</p>
-            <p class="topbar-role">{{ adminRole() }}</p>
-          </div>
+          <button
+            type="button"
+            class="identity-toggle"
+            aria-haspopup="menu"
+            [attr.aria-expanded]="profileMenuOpen()"
+            (click)="toggleProfileMenu()"
+          >
+            <span class="avatar-badge" aria-hidden="true">{{ adminInitials() }}</span>
+            <span class="topbar-identity-text">
+              <span class="topbar-name">{{ adminName() }}</span>
+              <span class="topbar-role">{{ adminRole() }}</span>
+            </span>
+            <app-admin-icon class="identity-caret" [paths]="icons.chevronDown" />
+          </button>
+
+          @if (profileMenuOpen()) {
+            <div class="profile-menu" role="menu">
+              <a routerLink="/account" [queryParams]="{ tab: 'profile' }" role="menuitem" (click)="closeProfileMenu()">
+                <app-admin-icon [paths]="icons.user" />
+                Profile
+              </a>
+              <button type="button" role="menuitem" (click)="logout()">
+                <app-admin-icon [paths]="icons.logout" />
+                Log out
+              </button>
+            </div>
+          }
         </div>
       </div>
     </header>

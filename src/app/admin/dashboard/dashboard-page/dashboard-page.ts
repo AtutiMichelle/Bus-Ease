@@ -59,9 +59,20 @@ export class DashboardPage {
   // into its error state (with its own retry) and never blanks the page.
   weekSummary = signal<WidgetState<WeekSummary>>({ status: 'loading' });
 
+  /** Second half of the line under the greeting, e.g. "137 tickets sold this
+   * week". Empty until the week summary loads. */
+  ticketsThisWeek = computed(() => {
+    const state = this.weekSummary();
+    if (state.status !== 'ready') {
+      return '';
+    }
+    const count = state.data.ticketsSold;
+    return `${count.toLocaleString('en-US')} ${count === 1 ? 'ticket' : 'tickets'} sold this week`;
+  });
+
   readonly icons = ICONS;
 
-  /** The Performance control. It drives the four stat cards only; the cards
+  /** The period switch next to Publish. It drives the four stat cards only; the cards
    * further down stay on their own fixed windows. */
   readonly periods: { value: KpiPeriod; label: string }[] = [
     { value: 'today', label: 'Today' },

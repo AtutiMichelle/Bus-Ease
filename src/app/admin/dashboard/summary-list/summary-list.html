@@ -11,19 +11,22 @@
     @if (current.status === 'error') {
       <app-widget-error message="Couldn't load this week's numbers." (retry)="retry.emit()" />
     } @else if (current.status === 'loading') {
-      <div aria-hidden="true">
+      <div class="week-list" aria-hidden="true">
         @for (slot of placeholders; track slot) {
-          <div class="summary-row">
+          <div class="week-row">
             <span class="skeleton sk-label"></span>
             <span class="skeleton sk-value"></span>
           </div>
         }
       </div>
     } @else {
-      <dl class="summary-rows">
+      <dl class="week-list">
         @for (row of rows(); track row.label) {
-          <div class="summary-row">
-            <dt>{{ row.label }}</dt>
+          <div class="week-row">
+            <dt>
+              <app-admin-icon class="row-icon" [paths]="icons[rowIcon[row.label] ?? 'chart']" />
+              <span class="row-label">{{ row.label }}</span>
+            </dt>
             <dd>{{ row.value }}</dd>
           </div>
         }

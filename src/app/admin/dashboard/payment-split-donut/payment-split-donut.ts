@@ -1,27 +1,24 @@
 import { Component, computed, input, output } from '@angular/core';
 import { PaymentSplitData, WidgetState } from '../../../models/admin-dashboard.model';
 import { WidgetError } from '../widget-error/widget-error';
-import { compactAmount, formatKsh } from '../../../utils/money';
+import { formatKsh } from '../../../utils/money';
 
-interface DonutSegment {
-  label: string;
-  percent: number;
-  color: string;
-  dashArray: string;
-  dashOffset: number;
-}
+/** One colour per payment method, so a method keeps its colour whatever its
+ * rank or whichever others are present. Checked with the dataviz palette
+ * validator (lightness, chroma and colour-blind separation all pass; the
+ * light blue is below 3:1 on white, which is why every segment is labelled in
+ * the legend with its amount and share). */
+const METHOD_COLORS: Record<string, string> = {
+  'M-Pesa': 'var(--admin-chart-mpesa)',
+  Card: 'var(--admin-chart-card)',
+  'BusEase wallet': 'var(--admin-chart-wallet)',
+};
 
-const RADIUS = 40;
-const STROKE_WIDTH = 12;
-const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-/** Small break between segments so neighbouring slices stay distinct. */
-const SEGMENT_GAP = 1.2;
+/** "Not recorded" and any method not listed above. */
+const OTHER_COLOR = 'var(--admin-chart-other)';
 
-/** Only the single largest slice (the brand's "primary chart series") is
- * red. The others take these fills in order. The legend also gives each
- * slice's percentage, so colour is never the only way to tell them apart. */
-const OTHER_SLICE_COLORS = ['var(--admin-ink)', 'var(--admin-info-text)', 'var(--admin-muted)'];
-
+/** Part-to-whole as one stacked bar under the headline total, with the
+ * breakdown listed below it. */
 @Component({
   imports: [WidgetError],
   selector: 'app-payment-split-donut',
@@ -31,8 +28,6 @@ const OTHER_SLICE_COLORS = ['var(--admin-ink)', 'var(--admin-info-text)', 'var(-
 export class PaymentSplitDonut {
   state = input<WidgetState<PaymentSplitData>>({ status: 'loading' });
   retry = output<void>();
-  readonly radius = RADIUS;
-  readonly strokeWidth = STROKE_WIDTH;
 
   /** Placeholder legend rows shown while loading. */
   readonly placeholders = [0, 1, 2];
@@ -46,41 +41,32 @@ export class PaymentSplitDonut {
   totalCollected = computed(() => this.data()?.totalCollected ?? 0);
   hasData = computed(() => this.slices().length > 0 && this.totalCollected() > 0);
 
-  private sliceColors = computed(() => {
-    let otherIndex = 0;
-    return this.slices().map((slice) =>
-      slice.tone === 'red' ? 'var(--admin-accent)' : OTHER_SLICE_COLORS[otherIndex++ % OTHER_SLICE_COLORS.length],
-    );
-  });
-
-  /** Centre of the ring: the total in short form ("389k") so it always fits
-   * inside the hole. The exact figure is in the chart's aria-label. */
-  totalCompact = computed(() => compactAmount(this.totalCollected()));
+  totalFull = computed(() => formatKsh(this.totalCollected()));
 
   legend = computed(() =>
-    this.slices().map((slice, i) => ({
+    this.slices().map((slice) => ({
       label: slice.label,
       percent: slice.percent,
-      amount: `KSh ${compactAmount(slice.amount)}`,
-      color: this.sliceColors()[i],
+      // Segment widths use the raw amount so a rounded 0% slice still shows.
+      share: slice.amount,
+      amount: formatKsh(slice.amount),
+      color: METHOD_COLORS[slice.label] ?? OTHER_COLOR,
     })),
   );
 
-  segments = computed<DonutSegment[]>(() => {
-    let cumulative = 0;
-    return this.slices().map((slice, i) => {
-      const share = (slice.percent / 100) * CIRCUMFERENCE;
-      const dash = this.slices().length > 1 ? Math.max(share - SEGMENT_GAP, 0.5) : share;
-      const segment: DonutSegment = {
-        label: slice.label,
-        percent: slice.percent,
-        color: this.sliceColors()[i],
-        dashArray: `${dash} ${CIRCUMFERENCE - dash}`,
-        dashOffset: -cumulative,
-      };
-      cumulative += share;
-      return segment;
-    });
+  /** Explains a "Not recorded" share when there is one, otherwise names the
+   * method most customers use. */
+  footerText = computed(() => {
+    const slices = this.slices();
+    const unrecorded = slices.find((slice) => slice.label === 'Not recorded');
+    if (unrecorded && unrecorded.percent === 100) {
+      return 'The payment method is not saved on bookings yet';
+    }
+    if (unrecorded) {
+      return `${unrecorded.percent}% of revenue has no payment method saved`;
+    }
+    const top = slices.reduce((best, slice) => (slice.amount > best.amount ? slice : best), slices[0]);
+    return `Most revenue comes through ${top.label}`;
   });
 
   chartDescription = computed(() => {

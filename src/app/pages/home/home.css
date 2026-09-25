@@ -1,6 +1,10 @@
 .hero-illustrated {
   position: relative;
-  overflow: hidden;
+  /* Clip sideways only, so the search card's calendar and city dropdown can
+     hang below the hero instead of being cut off at its bottom edge. The
+     z-index keeps them above the section that follows. */
+  overflow-x: clip;
+  z-index: 3;
   height: 490px;
 }
 

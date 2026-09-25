@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 
-export type AuthModalMode = 'login' | 'signup' | null;
+export type AuthModalMode = 'login' | 'signup' | 'forgot' | null;
 
 @Injectable({ providedIn: 'root' })
 export class AuthModalService {
@@ -8,10 +8,10 @@ export class AuthModalService {
   returnUrl = signal<string | null>(null);
 
   /** Opens the modal. Omitting `returnUrl` leaves the existing one in place,
-   * so switching between login/signup inside an already-open modal (or a
-   * guard-triggered open) doesn't lose the destination to redirect to after
-   * a successful sign-in. Pass an explicit value to set or clear it. */
-  open(mode: 'login' | 'signup' = 'login', returnUrl?: string): void {
+   * so switching between login/signup/forgot inside an already-open modal
+   * (or a guard-triggered open) doesn't lose the destination to redirect to
+   * after a successful sign-in. Pass an explicit value to set or clear it. */
+  open(mode: Exclude<AuthModalMode, null> = 'login', returnUrl?: string): void {
     this.mode.set(mode);
     if (returnUrl !== undefined) {
       this.returnUrl.set(returnUrl);

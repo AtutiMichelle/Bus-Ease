@@ -48,4 +48,8 @@ Thumbs.db
 docs/superpowers/
 .claude/
 docs/
-supabase/sql/
+
+# Whole Supabase CLI project is local-only (SQL migrations are run by hand,
+supabase/*
+!supabase/functions/
+!supabase/functions/**

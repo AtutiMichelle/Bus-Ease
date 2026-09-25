@@ -39,6 +39,7 @@ export class AdminShell {
 
   adminName = computed(() => this.authService.displayName());
   adminInitials = computed(() => initials(this.adminName()));
+  adminEmail = computed(() => this.authService.user()?.email ?? '');
   // Loaded from staff_users by staffGuard before this page renders.
   adminRole = this.staff.roleLabel;
 

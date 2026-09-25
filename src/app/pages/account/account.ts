@@ -1,6 +1,6 @@
 import { Component, computed, effect, inject, signal, WritableSignal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
@@ -103,6 +103,7 @@ export class AccountPageComponent {
   private walletService = inject(WalletService);
   private preferencesService = inject(AccountPreferencesService);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private queryParamMap = toSignal(this.route.queryParamMap, { initialValue: this.route.snapshot.queryParamMap });
 
   readonly filters = FILTERS;
@@ -184,6 +185,8 @@ export class AccountPageComponent {
 
   confirmingDelete = signal(false);
   accountDeleted = signal(false);
+  deletingAccount = signal(false);
+  deleteAccountError = signal('');
 
   constructor() {
     effect(() => {
@@ -353,6 +356,7 @@ export class AccountPageComponent {
   }
 
   requestDeleteAccount(): void {
+    this.deleteAccountError.set('');
     this.confirmingDelete.set(true);
   }
 
@@ -360,10 +364,24 @@ export class AccountPageComponent {
     this.confirmingDelete.set(false);
   }
 
-  /** Demo-only: self-service account deletion needs an admin-privileged
-   * backend call, which doesn't exist yet. */
-  deleteAccount(): void {
-    this.confirmingDelete.set(false);
-    this.accountDeleted.set(true);
+  /** Runs through delete_own_account() (see supabase/sql), which refuses to
+   * run while a wallet balance is outstanding and anonymizes rather than
+   * deletes past bookings, since the admin side still needs them for
+   * revenue history. */
+  async deleteAccount(): Promise<void> {
+    this.deleteAccountError.set('');
+    this.deletingAccount.set(true);
+    try {
+      await this.authService.deleteOwnAccount();
+      this.confirmingDelete.set(false);
+      this.accountDeleted.set(true);
+      setTimeout(() => this.router.navigateByUrl('/'), 2000);
+    } catch (error) {
+      this.deleteAccountError.set(
+        error instanceof Error ? error.message : 'Could not delete your account. Please try again.',
+      );
+    } finally {
+      this.deletingAccount.set(false);
+    }
   }
 }

@@ -47,6 +47,10 @@
             {{ item.label }}
           </span>
         }
+        <button type="button" class="nav-link nav-logout" (click)="logout()">
+          <app-admin-icon [paths]="icons.logout" />
+          Log out
+        </button>
       </div>
     </nav>
 

@@ -48,7 +48,7 @@ export const ICONS = {
   seat: ['M7 4h6a2 2 0 0 1 2 2v7H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z', 'M5 13v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3', 'M8 18v2', 'M16 18v2'],
   refund: ['M9 14L4 9l5-5', 'M4 9h10.5a5.5 5.5 0 0 1 0 11H11'],
   star: ['M12 4l2.5 5.1 5.5.8-4 3.9.9 5.5L12 16.7l-4.9 2.6.9-5.5-4-3.9 5.5-.8z'],
-  user: ['M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z', 'M5 20a7 7 0 0 1 14 0'],
+  user: ['M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z', 'M5 20v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1'],
   logout: ['M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4', 'M10 16l-4-4 4-4', 'M6 12h10'],
   chevronDown: ['M6 9l6 6 6-6'],
 } as const satisfies Record<string, readonly string[]>;

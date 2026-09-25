@@ -1,22 +1,25 @@
 <section class="greeting-row">
   <div>
     <h1 class="greeting-title">{{ greeting() }}, {{ adminFirstName() }}</h1>
-    <p class="greeting-meta">{{ greetingDate() }}</p>
+    <p class="greeting-meta">
+      {{ greetingDate() }}
+      @if (ticketsThisWeek(); as tickets) {
+        <span aria-hidden="true">&middot;</span> {{ tickets }}
+      }
+    </p>
   </div>
-  <button type="button" class="primary-cta" (click)="publishTrip()">
-    <app-admin-icon [paths]="icons.plus" />
-    Publish a trip
-  </button>
-</section>
-
-<section class="performance-row">
-  <h2 class="section-title">Performance</h2>
-  <div class="segmented" role="group" aria-label="Performance period">
-    @for (option of periods; track option.value) {
-      <button type="button" [attr.aria-pressed]="period() === option.value" (click)="setPeriod(option.value)">
-        {{ option.label }}
-      </button>
-    }
+  <div class="greeting-actions">
+    <div class="segmented" role="group" aria-label="Period for the key metrics">
+      @for (option of periods; track option.value) {
+        <button type="button" [attr.aria-pressed]="period() === option.value" (click)="setPeriod(option.value)">
+          {{ option.label }}
+        </button>
+      }
+    </div>
+    <button type="button" class="primary-cta" (click)="publishTrip()">
+      <app-admin-icon [paths]="icons.plus" />
+      Publish a trip
+    </button>
   </div>
 </section>
 
@@ -42,6 +45,13 @@
 </section>
 
 <section class="tables-grid">
+  @let bookings = recentBookings();
+  <app-recent-bookings-card
+    [bookings]="bookings.status === 'ready' ? bookings.data : []"
+    [loading]="bookings.status === 'loading'"
+    [error]="bookings.status === 'error'"
+    (retry)="loadRecentBookings()"
+  />
   @let departures = departuresToday();
   <app-departures-table
     [departures]="departures.status === 'ready' ? departures.data.departures : []"
@@ -49,12 +59,5 @@
     [loading]="departures.status === 'loading'"
     [error]="departures.status === 'error'"
     (retry)="loadDeparturesToday()"
-  />
-  @let bookings = recentBookings();
-  <app-recent-bookings-card
-    [bookings]="bookings.status === 'ready' ? bookings.data : []"
-    [loading]="bookings.status === 'loading'"
-    [error]="bookings.status === 'error'"
-    (retry)="loadRecentBookings()"
   />
 </section>

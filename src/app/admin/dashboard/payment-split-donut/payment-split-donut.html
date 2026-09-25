@@ -11,56 +11,50 @@
     @if (current.status === 'error') {
       <app-widget-error message="Couldn't load payment methods." (retry)="retry.emit()" />
     } @else if (current.status === 'loading') {
-      <div class="donut-body" aria-hidden="true">
-        <span class="skeleton sk-ring"></span>
-        <div class="legend">
-          @for (slot of placeholders; track slot) {
-            <span class="skeleton sk-legend"></span>
-          }
-        </div>
+      <div aria-hidden="true">
+        <span class="skeleton sk-total"></span>
+        <span class="skeleton sk-bar"></span>
+        @for (slot of placeholders; track slot) {
+          <span class="skeleton sk-legend"></span>
+        }
       </div>
     } @else if (!hasData()) {
       <div class="empty">
-        <svg class="donut-chart donut-ghost" viewBox="0 0 100 100" aria-hidden="true">
-          <circle class="donut-track" cx="50" cy="50" [attr.r]="radius" fill="none" [attr.stroke-width]="strokeWidth" />
-        </svg>
+        <span class="split-bar split-ghost" aria-hidden="true"></span>
         <p class="empty-title">No payments collected yet</p>
         <p class="empty-hint">Once bookings are paid for, the split by method shows up here.</p>
       </div>
     } @else {
-      <div class="donut-body">
-        <svg class="donut-chart" viewBox="0 0 100 100" role="img" [attr.aria-label]="chartDescription()">
-          <g transform="rotate(-90 50 50)">
-            <circle class="donut-track" cx="50" cy="50" [attr.r]="radius" fill="none" [attr.stroke-width]="strokeWidth" />
-            @for (segment of segments(); track segment.label) {
-              <circle
-                cx="50"
-                cy="50"
-                [attr.r]="radius"
-                fill="none"
-                [attr.stroke-width]="strokeWidth"
-                [attr.stroke]="segment.color"
-                [attr.stroke-dasharray]="segment.dashArray"
-                [attr.stroke-dashoffset]="segment.dashOffset"
-              />
-            }
-          </g>
-          <text x="50" y="43" text-anchor="middle" class="donut-currency">KSh</text>
-          <text x="50" y="58.5" text-anchor="middle" class="donut-total">{{ totalCompact() }}</text>
-          <text x="50" y="68" text-anchor="middle" class="donut-total-label">collected</text>
-        </svg>
+      <p class="total">
+        <span class="total-amount">{{ totalFull() }}</span>
+        <span class="total-label">collected</span>
+      </p>
 
-        <ul class="legend">
-          @for (item of legend(); track item.label) {
-            <li class="legend-row">
-              <span class="legend-dot" [style.background-color]="item.color" aria-hidden="true"></span>
-              <span class="legend-label" [attr.title]="item.label">{{ item.label }}</span>
-              <span class="legend-percent">{{ item.percent }}%</span>
-              <span class="legend-amount">{{ item.amount }}</span>
-            </li>
-          }
-        </ul>
+      <div class="split-bar" role="img" [attr.aria-label]="chartDescription()">
+        @for (item of legend(); track item.label) {
+          <span
+            class="split-segment"
+            [style.flex-grow]="item.share"
+            [style.background-color]="item.color"
+            [attr.title]="item.label + ': ' + item.amount + ' (' + item.percent + '%)'"
+          ></span>
+        }
       </div>
+
+      <ul class="legend">
+        @for (item of legend(); track item.label) {
+          <li class="legend-row">
+            <span class="legend-dot" [style.background-color]="item.color" aria-hidden="true"></span>
+            <span class="legend-label" [attr.title]="item.label">{{ item.label }}</span>
+            <span class="legend-amount">{{ item.amount }}</span>
+            <span class="legend-percent">{{ item.percent }}%</span>
+          </li>
+        }
+      </ul>
     }
   </div>
+
+  @if (current.status === 'ready' && hasData()) {
+    <p class="admin-card-footer">{{ footerText() }}</p>
+  }
 </section>

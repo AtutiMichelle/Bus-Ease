@@ -16,13 +16,6 @@ export class KpiCard {
 
   readonly icons = ICONS;
 
-  readonly chipClass: Record<DeltaDirection, string> = {
-    up: 'admin-chip-pos',
-    down: 'admin-chip-neg',
-    warning: 'admin-chip-warn',
-    neutral: 'admin-chip-neutral',
-  };
-
   /** Spoken in place of the arrow, which is decorative. */
   readonly directionWord: Record<DeltaDirection, string> = {
     up: 'Up ',

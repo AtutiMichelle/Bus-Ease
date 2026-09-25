@@ -8,48 +8,50 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  padding: 20px;
 }
 
-.donut-body {
-  flex: 1;
+/* Headline: the total is the number people look for first. */
+.total {
   display: flex;
-  align-items: center;
-  gap: var(--space-3);
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 12px;
 }
 
-.donut-chart {
-  flex-shrink: 0;
-  width: 128px;
-  height: 128px;
-}
-
-.donut-track {
-  stroke: var(--admin-track);
-}
-
-.donut-currency {
-  font-size: 7px;
-  font-weight: 500;
-  fill: var(--admin-muted);
-}
-
-.donut-total {
+.total-amount {
   font-family: var(--admin-font-display);
-  font-size: 15px;
+  font-size: 1.625rem;
   font-weight: 600;
-  fill: var(--admin-ink);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: var(--admin-ink);
 }
 
-.donut-total-label {
-  font-size: 6.5px;
-  fill: var(--admin-muted);
+.total-label {
+  font-size: 0.875rem;
+  color: var(--admin-secondary);
 }
 
-/* min-width: 0 lets the labels shrink and end in an ellipsis instead of
-   pushing the legend out of the card. */
+/* One bar split by method. A 2px gap of card surface keeps neighbouring
+   segments apart; the rounded ends belong to the bar, not each segment. */
+.split-bar {
+  display: flex;
+  gap: 2px;
+  height: 14px;
+  margin-bottom: 12px;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.split-segment {
+  flex-basis: 0;
+  min-width: 4px;
+}
+
 .legend {
-  flex: 1;
-  min-width: 0;
+  display: flex;
+  flex-direction: column;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -57,49 +59,47 @@
 
 .legend-row {
   display: grid;
-  grid-template-columns: 10px minmax(0, 1fr) auto;
-  grid-template-areas:
-    'dot label percent'
-    '. amount amount';
-  column-gap: 8px;
+  grid-template-columns: 10px minmax(0, 1fr) auto 44px;
+  column-gap: 10px;
   align-items: center;
-  height: 40px;
-  box-sizing: border-box;
+  height: 36px;
+  border-bottom: 1px solid var(--admin-divider);
+}
+
+.legend-row:last-child {
+  border-bottom: none;
 }
 
 .legend-dot {
-  grid-area: dot;
   width: 10px;
   height: 10px;
-  border-radius: 50%;
+  border-radius: 3px;
 }
 
 .legend-label {
-  grid-area: label;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--admin-ink);
-}
-
-.legend-percent {
-  grid-area: percent;
-  font-size: 0.875rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
+  font-size: 0.9375rem;
+  font-weight: 500;
   color: var(--admin-ink);
 }
 
 .legend-amount {
-  grid-area: amount;
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   font-variant-numeric: tabular-nums;
-  color: var(--admin-muted);
+  color: var(--admin-secondary);
 }
 
-/* Empty state: a faint ring where the chart will go, then one line saying
+.legend-percent {
+  text-align: right;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--admin-ink);
+}
+
+/* Empty state: a faint bar where the split will go, then one line saying
    why it is empty */
 .empty {
   flex: 1;
@@ -110,10 +110,9 @@
   text-align: center;
 }
 
-.donut-ghost {
-  width: 88px;
-  height: 88px;
-  margin-bottom: var(--space-3);
+.split-ghost {
+  width: 100%;
+  background-color: var(--admin-track);
 }
 
 .empty-title {
@@ -130,14 +129,19 @@
 }
 
 /* Loading placeholder pieces */
-.sk-ring {
-  flex-shrink: 0;
-  width: 128px;
-  height: 128px;
-  border-radius: 50%;
+.sk-total {
+  width: 45%;
+  height: 28px;
+  margin-bottom: 12px;
+}
+
+.sk-bar {
+  width: 100%;
+  height: 12px;
+  margin-bottom: 18px;
 }
 
 .sk-legend {
   height: 14px;
-  margin-bottom: 26px;
+  margin-bottom: 22px;
 }

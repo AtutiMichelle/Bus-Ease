@@ -12,7 +12,14 @@
   justify-content: space-between;
   gap: var(--space-4);
   flex-wrap: wrap;
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.greeting-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .greeting-title {
@@ -34,8 +41,8 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  height: 48px;
-  padding: 0 var(--space-4);
+  height: 44px;
+  padding: 0 20px;
   border: none;
   border-radius: 12px;
   background-color: var(--admin-accent);
@@ -44,7 +51,11 @@
   font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, transform 0.05s;
+}
+
+.primary-cta:active {
+  transform: translateY(1px);
 }
 
 .primary-cta:hover {
@@ -56,29 +67,13 @@
   outline-offset: 2px;
 }
 
-/* Performance heading and period control */
-.performance-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  flex-wrap: wrap;
-  margin-bottom: var(--space-2);
-}
-
-.section-title {
-  margin: 0;
-  font-family: var(--admin-font-display);
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--admin-ink);
-}
-
+/* Period switch for the key metrics */
 .segmented {
   display: inline-flex;
   padding: 4px;
+  border: 1px solid var(--color-border);
   border-radius: 12px;
-  background-color: var(--admin-track);
+  background-color: var(--color-surface);
 }
 
 /* 32px buttons in a 40px control. The ::after extends each button's
@@ -92,8 +87,9 @@
   background: transparent;
   color: var(--admin-secondary);
   font-family: inherit;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   font-weight: 500;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -104,10 +100,9 @@
 }
 
 .segmented button[aria-pressed='true'] {
-  background-color: var(--color-surface);
-  color: var(--admin-ink);
+  background-color: var(--admin-ink);
+  color: var(--admin-on-navy);
   font-weight: 600;
-  box-shadow: 0 1px 2px rgba(20, 33, 61, 0.12);
 }
 
 .segmented button:focus-visible {
@@ -126,7 +121,7 @@
   grid-column: 1 / -1;
 }
 
-/* Row of three equal cards, above the two tables */
+/* Row of three cards, above the two tables */
 .secondary-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -137,7 +132,7 @@
 
 .tables-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1.15fr 1fr;
   gap: var(--space-3);
   align-items: stretch;
 }
@@ -189,12 +184,19 @@
     align-items: stretch;
   }
 
-  .primary-cta {
-    justify-content: center;
+  .greeting-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
   }
 
   .segmented {
     width: 100%;
+    box-sizing: border-box;
+  }
+
+  .primary-cta {
+    justify-content: center;
   }
 
   .segmented button {

@@ -1,7 +1,8 @@
 import { Component, computed, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { WeekSummary, WidgetState } from '../../../models/admin-dashboard.model';
-import { NAV_SYSTEM } from '../../admin-nav';
+import { ICONS, IconName, NAV_SYSTEM } from '../../admin-nav';
+import { AdminIcon } from '../../icon/admin-icon';
 import { WidgetError } from '../widget-error/widget-error';
 
 interface SummaryRow {
@@ -10,7 +11,7 @@ interface SummaryRow {
 }
 
 @Component({
-  imports: [RouterLink, WidgetError],
+  imports: [AdminIcon, RouterLink, WidgetError],
   selector: 'app-summary-list',
   styleUrl: './summary-list.css',
   templateUrl: './summary-list.html',
@@ -21,6 +22,17 @@ export class SummaryList {
 
   /** One placeholder per row while loading. */
   readonly placeholders = [0, 1, 2];
+
+  readonly icons = ICONS;
+
+  /** Icon shown beside each row, by its label. */
+  readonly rowIcon: Record<string, IconName> = {
+    'Tickets sold': 'ticket',
+    'Trips completed': 'check',
+    'Seats open on upcoming trips': 'seat',
+    'Refunds issued': 'refund',
+    'Average rating': 'star',
+  };
 
   /** Where "Set up" goes. Comes from the sidebar, so the link turns on by
    * itself once Settings has a route. */

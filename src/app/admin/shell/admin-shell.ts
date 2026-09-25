@@ -69,18 +69,17 @@ export class AdminShell {
   onDocumentClick(event: MouseEvent): void {
     const identity = this.elementRef.nativeElement.querySelector('.topbar-identity');
     if (this.profileMenuOpen() && !identity?.contains(event.target as Node)) {
-      this.profileMenuOpen.set(false);
+      this.closeProfileMenu();
     }
   }
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
-    this.profileMenuOpen.set(false);
+    this.closeProfileMenu();
   }
 
   async logout(): Promise<void> {
     this.closeProfileMenu();
-    this.closeSidebar();
     await this.authService.signOut();
     this.router.navigate(['/']);
   }

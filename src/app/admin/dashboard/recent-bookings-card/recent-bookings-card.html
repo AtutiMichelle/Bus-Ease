@@ -21,32 +21,33 @@
       }
     } @else {
       @if (rows().length > 0) {
-        <table class="admin-list-table">
+        <!-- Laid out as a grid, so the table roles are set explicitly to keep
+             it a table for screen readers. -->
+        <table class="admin-list-table" role="table">
           <caption class="sr-only">Recent bookings</caption>
-          <colgroup>
-            <col />
-            <col class="col-amount" />
-          </colgroup>
-          <thead>
-            <tr>
-              <th scope="col">Customer</th>
-              <th scope="col" class="amount-head">Amount</th>
+          <thead role="rowgroup">
+            <tr role="row">
+              <th role="columnheader" scope="col">Customer</th>
+              <th role="columnheader" scope="col" class="route-col">Route</th>
+              <th role="columnheader" scope="col" class="amount-col">Amount</th>
+              <th role="columnheader" scope="col">Status</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody role="rowgroup">
             @for (booking of rows(); track booking.reference) {
-              <tr>
-                <td>
+              <tr role="row">
+                <td role="cell">
                   <div class="customer">
                     <span class="avatar" aria-hidden="true">{{ booking.customerInitials }}</span>
                     <div class="customer-text">
                       <p class="customer-name" [attr.title]="booking.customerName">{{ booking.customerName }}</p>
-                      <p class="customer-route" [attr.title]="booking.route">{{ booking.route }}</p>
+                      <p class="customer-time">{{ booking.bookedAt | date: 'MMM d, h:mm a' }}</p>
                     </div>
                   </div>
                 </td>
-                <td class="amount-cell">
-                  <p class="amount">KSh {{ booking.amount | number }}</p>
+                <td role="cell" class="route-col" [attr.title]="booking.route">{{ booking.route }}</td>
+                <td role="cell" class="amount-col">KSh {{ booking.amount | number }}</td>
+                <td role="cell">
                   <span class="admin-chip" [class]="statusChip[booking.status]">{{ booking.status }}</span>
                 </td>
               </tr>

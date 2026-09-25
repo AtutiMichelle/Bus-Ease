@@ -2,7 +2,6 @@
   <div class="admin-card-header">
     <div class="admin-card-heading">
       <h2 id="payments-title" class="admin-card-title">How customers pay</h2>
-      <p class="admin-card-subtitle">Share of revenue, last 7 days</p>
     </div>
   </div>
 
@@ -18,33 +17,36 @@
           <span class="skeleton sk-legend"></span>
         }
       </div>
-    } @else if (!hasData()) {
-      <div class="empty">
-        <span class="split-bar split-ghost" aria-hidden="true"></span>
-        <p class="empty-title">No payments collected yet</p>
-        <p class="empty-hint">Once bookings are paid for, the split by method shows up here.</p>
-      </div>
     } @else {
       <p class="total">
         <span class="total-amount">{{ totalFull() }}</span>
         <span class="total-label">collected</span>
       </p>
 
-      <div class="split-bar" role="img" [attr.aria-label]="chartDescription()">
-        @for (item of legend(); track item.label) {
-          <span
-            class="split-segment"
-            [style.flex-grow]="item.share"
-            [style.background-color]="item.color"
-            [attr.title]="item.label + ': ' + item.amount + ' (' + item.percent + '%)'"
-          ></span>
-        }
-      </div>
+      @if (hasData()) {
+        <div class="split-bar" role="img" [attr.aria-label]="chartDescription()">
+          @for (item of segments(); track item.label) {
+            <span
+              class="split-segment"
+              [class.is-unknown]="item.unknown"
+              [style.flex-grow]="item.share"
+              [style.background-color]="item.color"
+              [attr.title]="item.label + ': ' + item.amount + ' (' + item.percent + '%)'"
+            ></span>
+          }
+        </div>
+      }
 
       <ul class="legend">
         @for (item of legend(); track item.label) {
-          <li class="legend-row">
-            <span class="legend-dot" [style.background-color]="item.color" aria-hidden="true"></span>
+          <li class="legend-row" [class.is-zero]="item.zero">
+            <span
+              class="legend-dot"
+              [class.is-unknown]="item.unknown"
+              [style.background-color]="item.zero ? null : item.color"
+              [style.border-color]="item.color"
+              aria-hidden="true"
+            ></span>
             <span class="legend-label" [attr.title]="item.label">{{ item.label }}</span>
             <span class="legend-amount">{{ item.amount }}</span>
             <span class="legend-percent">{{ item.percent }}%</span>
@@ -53,8 +55,4 @@
       </ul>
     }
   </div>
-
-  @if (current.status === 'ready' && hasData()) {
-    <p class="admin-card-footer">{{ footerText() }}</p>
-  }
 </section>

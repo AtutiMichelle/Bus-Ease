@@ -1,4 +1,4 @@
-/* Card, header, body and footer are the shared admin-* styles in styles.css. */
+/* Card, header and body are the shared admin-* styles in styles.css. */
 :host {
   display: flex;
 }
@@ -8,7 +8,14 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: 20px;
+  padding: 14px 20px 20px;
+}
+
+/* Tighter header than the shared one, so the content sits closer to the
+   title in these compact middle-row cards. */
+.admin-card-header {
+  min-height: 32px;
+  margin-bottom: 6px;
 }
 
 /* A plain ledger: a small icon and the label on the left, the number on
@@ -62,22 +69,6 @@
   color: var(--admin-ink);
 }
 
-/* The one "not tracked yet" line sits at the bottom of the card, with its
-   "Set up" link on the right. */
-.summary-footer {
-  min-height: 0;
-  margin-top: 12px;
-  padding-top: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-}
-
-.summary-footer .admin-card-link {
-  margin-left: 0;
-}
-
 /* Loading placeholder pieces */
 .sk-label {
   width: 55%;
@@ -87,9 +78,4 @@
 .sk-value {
   width: 28px;
   height: 18px;
-}
-
-.sk-footer {
-  width: 60%;
-  height: 14px;
 }

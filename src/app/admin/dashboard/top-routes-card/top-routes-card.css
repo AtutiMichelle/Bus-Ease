@@ -8,11 +8,23 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: 20px;
+  padding: 14px 20px 20px;
 }
 
-/* Ranked rows: a code badge, the route with its tickets and revenue, the
-   change chip, and a bar showing its share against the busiest route. */
+/* Tighter header than the shared one, so the content sits closer to the
+   title in these compact middle-row cards. */
+.admin-card-header {
+  min-height: 32px;
+  margin-bottom: 6px;
+}
+
+.admin-card-link {
+  min-height: 32px;
+}
+
+/* Ranked rows: code badge, route and revenue, the change chip, then the
+   ticket count in its own right-hand column so the numbers line up. The
+   busiest route gets a filled badge; routes with no sales step back. */
 .route-list {
   margin: 0;
   padding: 0;
@@ -47,18 +59,9 @@
   letter-spacing: 0.04em;
 }
 
-.route-main {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.route-line {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.route-row-lead .route-badge {
+  background-color: var(--color-primary);
+  color: var(--admin-on-navy);
 }
 
 .route-text {
@@ -66,6 +69,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 
 .route-name,
@@ -87,26 +91,49 @@
   color: var(--admin-secondary);
 }
 
-.route-line .admin-chip {
+.route-row .admin-chip {
   flex-shrink: 0;
 }
 
-/* Share of the busiest route's tickets */
-.route-track {
-  height: 6px;
-  border-radius: 3px;
-  background-color: var(--admin-track);
-  overflow: hidden;
+.route-count {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 52px;
+  line-height: 1.15;
 }
 
-.route-fill {
-  height: 100%;
-  border-radius: 3px;
-  background-color: var(--admin-ink);
+.route-count-num {
+  font-family: var(--admin-font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--admin-ink);
 }
 
-/* Empty state: faint ghost bars where the ranking will go, then one line
-   saying why they are empty */
+.route-count-label {
+  font-size: 0.75rem;
+  color: var(--admin-muted);
+}
+
+.route-row-idle .route-badge {
+  background-color: var(--admin-neutral-bg);
+  color: var(--admin-muted);
+}
+
+.route-row-idle .route-name {
+  font-weight: 500;
+  color: var(--admin-secondary);
+}
+
+.route-row-idle .route-meta,
+.route-row-idle .route-count-num {
+  color: var(--admin-muted);
+}
+
+/* Only when there are no routes at all. A quiet period still lists the
+   routes, greyed out with 0 tickets. */
 .empty {
   flex: 1;
   display: flex;
@@ -114,49 +141,6 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-}
-
-.ghost-rows {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
-  margin-bottom: var(--space-3);
-}
-
-.ghost-row {
-  display: flex;
-  gap: 12px;
-}
-
-.ghost-bar {
-  height: 8px;
-  border-radius: 4px;
-  background-color: var(--admin-track);
-}
-
-.ghost-row-0 .ghost-bar:first-child {
-  flex: 3;
-}
-
-.ghost-row-0 .ghost-bar:last-child {
-  flex: 1.2;
-}
-
-.ghost-row-1 .ghost-bar:first-child {
-  flex: 2.4;
-}
-
-.ghost-row-1 .ghost-bar:last-child {
-  flex: 1.6;
-}
-
-.ghost-row-2 .ghost-bar:first-child {
-  flex: 1.6;
-}
-
-.ghost-row-2 .ghost-bar:last-child {
-  flex: 2;
 }
 
 .empty-title {
@@ -172,23 +156,6 @@
   color: var(--admin-muted);
 }
 
-/* Routes that ran but sold nothing, in the card footer: at most two lines
-   however many there are. Two names are spelled out, the rest counted, and
-   the full list is in the tooltip. */
-.no-sales-line {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  margin: 0;
-  overflow: hidden;
-  line-height: 1.45;
-}
-
-.no-sales-line strong {
-  font-weight: 600;
-  color: var(--admin-ink);
-}
-
 /* Loading placeholder pieces */
 .sk-badge {
   flex-shrink: 0;
@@ -200,14 +167,16 @@
 .sk-name {
   width: 60%;
   height: 14px;
+  margin-bottom: 4px;
 }
 
-.sk-bar {
-  width: 100%;
-  height: 6px;
+.sk-meta {
+  width: 35%;
+  height: 12px;
 }
 
-.sk-no-sales {
-  width: 70%;
-  height: 14px;
+.sk-count {
+  flex-shrink: 0;
+  width: 40px;
+  height: 28px;
 }

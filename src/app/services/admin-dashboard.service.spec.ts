@@ -82,11 +82,23 @@ describe('AdminDashboardService', () => {
   });
 
   it('marks refunds and ratings as untracked instead of inventing numbers', async () => {
-    const { service } = setup({ admin_week_summary: { tickets_sold: 4, trips_completed: 2, seats_open_today: 3 } });
-    const summary = await service.getWeekSummary();
+    const { service } = setup({
+      admin_period_summary: {
+        tickets_sold: 4,
+        seats_sold: 27,
+        seats_total: 40,
+        trips_completed: 2,
+        trips_upcoming: 6,
+        seats_open_today: 3,
+      },
+    });
+    const summary = await service.getSummary();
     expect(summary).toEqual({
       ticketsSold: 4,
+      seatsSold: 27,
+      seatsTotal: 40,
       tripsCompleted: 2,
+      tripsUpcoming: 6,
       seatsOpenToday: 3,
       refundsIssued: null,
       averageRating: null,
@@ -95,7 +107,7 @@ describe('AdminDashboardService', () => {
 
   it('ranks routes, flags the top one, and lists routes with no sales', async () => {
     const { service } = setup({
-      admin_top_routes: {
+      admin_period_top_routes: {
         routes: [
           { route_id: 'a', origin: 'Nairobi', destination: 'Mombasa', tickets: 62, revenue: '175200', previous_tickets: 54, previous_revenue: 1 },
           { route_id: 'b', origin: 'Mombasa', destination: 'Malindi', tickets: 18, revenue: 41800, previous_tickets: 0, previous_revenue: 0 },
@@ -112,9 +124,26 @@ describe('AdminDashboardService', () => {
     expect(data.noSalesRoutes).toEqual(['Nairobi → Kampala']);
   });
 
+  it('passes the selected period to the summary, top routes and payment functions', async () => {
+    const { service, calls } = setup({
+      admin_period_summary: { tickets_sold: 0, seats_sold: 0, seats_total: 0, trips_completed: 0, trips_upcoming: 0, seats_open_today: 0 },
+      admin_period_top_routes: { routes: [], no_sales: [] },
+      admin_period_payment_split: { total_collected: 0, slices: [] },
+    });
+    await service.getSummary('30d');
+    await service.getTopRoutes('today');
+    await service.getPaymentSplit('30d');
+
+    expect(calls).toEqual([
+      { fn: 'admin_period_summary', args: { p_period: '30d' } },
+      { fn: 'admin_period_top_routes', args: { p_period: 'today', p_limit: 3 } },
+      { fn: 'admin_period_payment_split', args: { p_period: '30d' } },
+    ]);
+  });
+
   it('turns payment amounts into whole percentages that add up to 100', async () => {
     const { service } = setup({
-      admin_payment_split: {
+      admin_period_payment_split: {
         total_collected: 300,
         slices: [
           { method: 'mpesa', amount: 100 },
@@ -131,7 +160,7 @@ describe('AdminDashboardService', () => {
 
   it('labels bookings with no recorded payment method honestly', async () => {
     const { service } = setup({
-      admin_payment_split: { total_collected: 900, slices: [{ method: 'unrecorded', amount: 900 }] },
+      admin_period_payment_split: { total_collected: 900, slices: [{ method: 'unrecorded', amount: 900 }] },
     });
     const split = await service.getPaymentSplit();
     expect(split.slices[0]).toMatchObject({ label: 'Not recorded', percent: 100 });
@@ -170,7 +199,7 @@ describe('AdminDashboardService', () => {
   });
 
   it('throws when the database call fails, so the widget can show its error state', async () => {
-    const { service } = setup({}, ['admin_top_routes']);
+    const { service } = setup({}, ['admin_period_top_routes']);
     await expect(service.getTopRoutes()).rejects.toMatchObject({ message: 'boom' });
   });
 });

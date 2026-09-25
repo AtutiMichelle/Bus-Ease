@@ -37,7 +37,10 @@ interface KpiSummaryRow {
 
 interface WeekSummaryRow {
   tickets_sold: number;
+  seats_sold: number;
+  seats_total: number;
   trips_completed: number;
+  trips_upcoming: number;
   seats_open_today: number;
 }
 
@@ -200,11 +203,14 @@ export class AdminDashboardService {
     return data as T;
   }
 
-  async getWeekSummary(): Promise<WeekSummary> {
-    const row = await this.rpc<WeekSummaryRow>('admin_week_summary');
+  async getSummary(period: KpiPeriod = '7d'): Promise<WeekSummary> {
+    const row = await this.rpc<WeekSummaryRow>('admin_period_summary', { p_period: period });
     return {
       ticketsSold: Number(row.tickets_sold),
+      seatsSold: Number(row.seats_sold),
+      seatsTotal: Number(row.seats_total),
       tripsCompleted: Number(row.trips_completed),
+      tripsUpcoming: Number(row.trips_upcoming),
       seatsOpenToday: Number(row.seats_open_today),
       // No refunds or ratings tables exist yet, so there is nothing to count.
       refundsIssued: null,
@@ -264,8 +270,8 @@ export class AdminDashboardService {
     ];
   }
 
-  async getTopRoutes(limit = 3): Promise<TopRoutesData> {
-    const row = await this.rpc<TopRoutesRow>('admin_top_routes', { p_limit: limit });
+  async getTopRoutes(period: KpiPeriod = '7d', limit = 3): Promise<TopRoutesData> {
+    const row = await this.rpc<TopRoutesRow>('admin_period_top_routes', { p_period: period, p_limit: limit });
     const routes: TopRoute[] = row.routes.map((route, index) => ({
       code: route.destination.replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase(),
       name: routeName(route.origin, route.destination),
@@ -280,8 +286,8 @@ export class AdminDashboardService {
     };
   }
 
-  async getPaymentSplit(): Promise<PaymentSplitData> {
-    const row = await this.rpc<PaymentSplitRow>('admin_payment_split');
+  async getPaymentSplit(period: KpiPeriod = '7d'): Promise<PaymentSplitData> {
+    const row = await this.rpc<PaymentSplitRow>('admin_period_payment_split', { p_period: period });
     const amounts = row.slices.map((slice) => Number(slice.amount));
     const percents = percentagesOf(amounts);
     const slices: PaymentSplitSlice[] = row.slices.map((slice, index) => ({

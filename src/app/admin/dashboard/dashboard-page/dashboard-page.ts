@@ -38,6 +38,13 @@ function formatGreetingDate(date: Date): string {
   return `${weekday}, ${date.getDate()} ${month}`;
 }
 
+/** How the greeting line names each period. */
+const PERIOD_PHRASE: Record<KpiPeriod, string> = {
+  today: 'today',
+  '7d': 'in the last 7 days',
+  '30d': 'in the last 30 days',
+};
+
 @Component({
   imports: [AdminIcon, KpiCard, SummaryList, TopRoutesCard, PaymentSplitDonut, RecentBookingsCard, DeparturesTable, WidgetError],
   selector: 'app-dashboard-page',
@@ -59,28 +66,31 @@ export class DashboardPage {
   // into its error state (with its own retry) and never blanks the page.
   weekSummary = signal<WidgetState<WeekSummary>>({ status: 'loading' });
 
-  /** Second half of the line under the greeting, e.g. "137 tickets sold this
-   * week". Empty until the week summary loads. */
-  ticketsThisWeek = computed(() => {
+  /** Second half of the line under the greeting, e.g. "137 tickets sold in
+   * the last 7 days". Empty until the summary loads. */
+  ticketsInPeriod = computed(() => {
     const state = this.weekSummary();
     if (state.status !== 'ready') {
       return '';
     }
     const count = state.data.ticketsSold;
-    return `${count.toLocaleString('en-US')} ${count === 1 ? 'ticket' : 'tickets'} sold this week`;
+    return `${count.toLocaleString('en-US')} ${count === 1 ? 'ticket' : 'tickets'} sold ${PERIOD_PHRASE[this.period()]}`;
   });
 
   readonly icons = ICONS;
 
-  /** The period switch next to Publish. It drives the four stat cards only; the cards
-   * further down stay on their own fixed windows. */
+  /** The period switch next to Publish. It drives the stat cards and the
+   * summary, top routes and payment cards. The two tables below keep their
+   * own windows (latest bookings, departures today). */
   readonly periods: { value: KpiPeriod; label: string }[] = [
     { value: 'today', label: 'Today' },
     { value: '7d', label: '7 days' },
     { value: '30d', label: '30 days' },
   ];
   period = signal<KpiPeriod>('7d');
-  private kpiRequest = 0;
+  /** Bumped on every period switch. Switching quickly can finish out of
+   * order, so a response only lands if no switch happened since it began. */
+  private periodRequest = 0;
 
   kpiCards = signal<WidgetState<KpiCardData[]>>({ status: 'loading' });
   topRoutes = signal<WidgetState<TopRoutesData>>({ status: 'loading' });
@@ -105,7 +115,8 @@ export class DashboardPage {
   }
 
   loadWeekSummary(): void {
-    this.load(this.weekSummary, () => this.dashboardService.getWeekSummary(), 'week summary');
+    const period = this.period();
+    this.load(this.weekSummary, () => this.dashboardService.getSummary(period), 'summary', this.isLatest());
   }
 
   setPeriod(period: KpiPeriod): void {
@@ -113,28 +124,32 @@ export class DashboardPage {
       return;
     }
     this.period.set(period);
+    this.periodRequest++;
+    this.loadWeekSummary();
     this.loadKpiCards();
+    this.loadTopRoutes();
+    this.loadPaymentSplit();
   }
 
   loadKpiCards(): void {
-    // Switching periods quickly can finish out of order, so only the latest
-    // request is allowed to update the cards.
-    const request = ++this.kpiRequest;
     const period = this.period();
-    this.load(
-      this.kpiCards,
-      () => this.dashboardService.getKpiCards(period),
-      'key metrics',
-      () => request === this.kpiRequest,
-    );
+    this.load(this.kpiCards, () => this.dashboardService.getKpiCards(period), 'key metrics', this.isLatest());
   }
 
   loadTopRoutes(): void {
-    this.load(this.topRoutes, () => this.dashboardService.getTopRoutes(), 'top routes');
+    const period = this.period();
+    this.load(this.topRoutes, () => this.dashboardService.getTopRoutes(period), 'top routes', this.isLatest());
   }
 
   loadPaymentSplit(): void {
-    this.load(this.paymentSplit, () => this.dashboardService.getPaymentSplit(), 'payment split');
+    const period = this.period();
+    this.load(this.paymentSplit, () => this.dashboardService.getPaymentSplit(period), 'payment split', this.isLatest());
+  }
+
+  /** True while no period switch has happened since this call. */
+  private isLatest(): () => boolean {
+    const request = this.periodRequest;
+    return () => request === this.periodRequest;
   }
 
   loadRecentBookings(): void {

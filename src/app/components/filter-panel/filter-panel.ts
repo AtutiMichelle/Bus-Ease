@@ -1,7 +1,14 @@
 import { Component, computed, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Bus, BusClassOption } from '../../models/bus.model';
-import { AMENITY_ZONES, DEPARTURE_ZONES, DeparturePeriod, FilterState, filterOptions } from '../../utils/bus-filters';
+import { BusClassOption } from '../../models/bus.model';
+import {
+  AMENITY_ZONES,
+  DEPARTURE_ZONES,
+  DeparturePeriod,
+  FilterState,
+  FilterableTrip,
+  filterOptions,
+} from '../../utils/bus-filters';
 
 function toggleSet<T>(set: Set<T>, value: T): Set<T> {
   const next = new Set(set);
@@ -20,7 +27,7 @@ function toggleSet<T>(set: Set<T>, value: T): Set<T> {
   imports: [FormsModule],
 })
 export class FilterPanel {
-  buses = input<Bus[]>([]);
+  buses = input<FilterableTrip[]>([]);
   filtersChange = output<FilterState>();
 
   options = computed(() => filterOptions(this.buses()));
@@ -28,12 +35,15 @@ export class FilterPanel {
   selectedSeatTypes = signal<Set<BusClassOption['className']>>(new Set());
   selectedDepartureTimes = signal<Set<DeparturePeriod>>(new Set());
   selectedAmenities = signal<Set<string>>(new Set());
-  selectedBusTypes = signal<Set<Bus['busType']>>(new Set());
+  selectedBusTypes = signal<Set<string>>(new Set());
   selectedOperator = signal<string | null>(null);
 
   readonly seatTypeOptions: BusClassOption['className'][] = ['Normal', 'Business', 'VIP'];
   readonly departureZones = DEPARTURE_ZONES;
   readonly amenityZones = AMENITY_ZONES;
+
+  /** Amenity tiles only make sense when the results actually list amenities. */
+  hasAmenities = computed(() => this.buses().some((bus) => bus.amenities.length > 0));
 
   seatTypeCounts = computed(() => {
     const buses = this.buses();
@@ -77,7 +87,7 @@ export class FilterPanel {
     this.emitChange();
   }
 
-  toggleBusType(name: Bus['busType']): void {
+  toggleBusType(name: string): void {
     this.selectedBusTypes.update((set) => toggleSet(set, name));
     this.emitChange();
   }

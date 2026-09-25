@@ -330,29 +330,11 @@
   background-position: center;
 }
 
-.flag {
-  position: absolute;
-  top: var(--space-2, 10px);
-  left: var(--space-2, 10px);
-  background-color: var(--color-accent, #eb1f1a);
-  color: white;
-  font-size: 0.65rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 3px 10px;
-  border-radius: 3px;
-}
-
 .panel {
   padding: var(--space-3, 16px);
 }
 
-.panel-luxury {
-  background-color: var(--color-primary, #12294d);
-}
-
-.panel-luxury .route-cities {
+.route-cities {
   color: white;
 }
 

@@ -1,107 +1,157 @@
-import { Component, DestroyRef, HostListener, computed, effect, inject, input, output, signal } from '@angular/core';
-import { DecimalPipe, NgTemplateOutlet } from '@angular/common';
+import {
+  Component,
+  DestroyRef,
+  ElementRef,
+  HostListener,
+  computed,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+  untracked,
+  viewChild,
+} from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { BusService } from '../../services/bus.service';
 import { AuthService } from '../../services/auth.service';
 import { AuthModalService } from '../../services/auth-modal.service';
-import { Bus } from '../../models/bus.model';
-import { getGuestToken } from '../../utils/guest-token';
+import { BookingDraftService } from '../../services/booking-draft.service';
+import { TravlerApiService } from '../../travler/travler-api.service';
+import { travlerErrorMessage } from '../../travler/travler-errors';
+import { BoardingDroppingPoints, LayoutSeat, SeatClassName, SeatLayout, Trip } from '../../models/trip.model';
+import { SelectedSeat } from '../../models/booking.model';
 
 /** No one, logged in or not, can select more than this many seats in one booking. */
 const MAX_SEATS_PER_BOOKING = 6;
 
-interface UiSeat {
-  number: string;
-  status: 'available' | 'selected' | 'booked';
-  className?: 'VIP' | 'Business' | 'Normal';
-  price?: number;
+/** Seats never grow past this multiple of the layout's own size, so a
+ * small bus in a wide panel doesn't turn into giant buttons. */
+const MAX_SCALE = 1.4;
+
+interface PlacedSeat {
+  seat: LayoutSeat;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  selected: boolean;
+  disabled: boolean;
 }
 
-
-interface SeatRowLayout {
-  left: UiSeat[];
-  middle?: UiSeat;
-  right: UiSeat[];
-}
-
-function splitRow(rowSeats: UiSeat[]): SeatRowLayout {
-  const hasMiddle = rowSeats.length % 2 === 1;
-  const middle = hasMiddle ? rowSeats[rowSeats.length - 1] : undefined;
-  const pairSeats = hasMiddle ? rowSeats.slice(0, -1) : rowSeats;
-  const half = Math.ceil(pairSeats.length / 2);
-  return { left: pairSeats.slice(0, half), middle, right: pairSeats.slice(half) };
+interface LegendEntry {
+  label: string;
+  className?: SeatClassName;
+  price: number;
 }
 
 @Component({
   selector: 'app-seat-panel',
   styleUrl: './seat-panel.css',
   templateUrl: './seat-panel.html',
-  imports: [NgTemplateOutlet, FormsModule, DecimalPipe],
+  imports: [FormsModule, DecimalPipe],
 })
 export class SeatPanel {
-  busId = input.required<string>();
+  trip = input.required<Trip>();
   closed = output<void>();
 
-  bus = signal<Bus | undefined>(undefined);
-  seats = signal<UiSeat[]>([]);
-  selectedSeats = signal<string[]>([]);
-  loading = signal(true);
-  errorMessage = signal('');
-  selectionNotice = signal('');
-
-  readonly maxSeats = MAX_SEATS_PER_BOOKING;
-
-  
-  boardingPoint = signal('');
-  dropoffPoint = signal('');
-
-  totalPrice = computed(() => {
-    const fallback = this.bus()?.price ?? 0;
-    return this.seats()
-      .filter((seat) => seat.status === 'selected')
-      .reduce((sum, seat) => sum + (seat.price ?? fallback), 0);
-  });
-
-  selectedSeatDetails = computed(() => this.seats().filter((seat) => seat.status === 'selected'));
-
-  /** Seats grouped by their real row number (the leading digits of the seat number),
-   * then split left/right of the aisle — with a `middle` seat when a row has an odd
-   * count, e.g. a 5-seat back bench row. */
-  seatRows = computed(() => {
-    const byRow = new Map<number, UiSeat[]>();
-    for (const seat of this.seats()) {
-      const rowNum = parseInt(seat.number, 10) || 0;
-      const row = byRow.get(rowNum);
-      if (row) {
-        row.push(seat);
-      } else {
-        byRow.set(rowNum, [seat]);
-      }
-    }
-    return Array.from(byRow.entries())
-      .sort(([a], [b]) => a - b)
-      .map(([rowNumber, rowSeats]) => ({ rowNumber, ...splitRow(rowSeats) }));
-  });
-
-  private static readonly CLASS_RANK: Record<string, number> = { VIP: 0, Business: 1, Normal: 2 };
-
-  
-  legendClasses = computed(() => {
-    const names = new Set(
-      this.seats()
-        .map((seat) => seat.className)
-        .filter((name): name is NonNullable<typeof name> => !!name),
-    );
-    return Array.from(names).sort((a, b) => (SeatPanel.CLASS_RANK[a] ?? 99) - (SeatPanel.CLASS_RANK[b] ?? 99));
-  });
-
-  private busService = inject(BusService);
+  private travler = inject(TravlerApiService);
   private router = inject(Router);
   private authService = inject(AuthService);
   private authModal = inject(AuthModalService);
+  private bookingDraft = inject(BookingDraftService);
 
+  layout = signal<SeatLayout | undefined>(undefined);
+  points = signal<BoardingDroppingPoints>({ boarding: [], dropping: [] });
+  loading = signal(true);
+  errorMessage = signal('');
+  selectionNotice = signal('');
+  selectedIds = signal<string[]>([]);
+  boardingId = signal('');
+  droppingId = signal('');
+  /** Set once the user tries to continue, so missing stops only show as errors then. */
+  triedContinue = signal(false);
+
+  readonly maxSeats = MAX_SEATS_PER_BOOKING;
   isGuest = computed(() => !this.authService.user());
+
+  private seatMap = viewChild<ElementRef<HTMLElement>>('seatMap');
+  private mapWidth = signal(0);
+
+  selectedSeats = computed(() => {
+    const byId = new Map((this.layout()?.seats ?? []).map((seat) => [seat.id, seat]));
+    return this.selectedIds()
+      .map((id) => byId.get(id))
+      .filter((seat): seat is LayoutSeat => !!seat);
+  });
+
+  totalPrice = computed(() => this.selectedSeats().reduce((sum, seat) => sum + (seat.price ?? 0), 0));
+
+  legend = computed<LegendEntry[]>(() => {
+    const byType = new Map<string, LegendEntry>();
+    for (const seat of this.layout()?.seats ?? []) {
+      if (seat.price !== null && !byType.has(seat.type)) {
+        byType.set(seat.type, { label: seat.typeLabel, className: seat.className, price: seat.price });
+      }
+    }
+    return [...byType.values()].sort((a, b) => b.price - a.price);
+  });
+
+  /** The API lays the bus out sideways (front on the left). Turn it upright
+   * (front at the top) whenever it's wider than tall, so it fits a narrow
+   * panel and scrolls down like the real aisle. */
+  private upright = computed(() => {
+    const layout = this.layout();
+    return !!layout && layout.width > layout.height;
+  });
+
+  private naturalWidth = computed(() => {
+    const layout = this.layout();
+    return layout ? (this.upright() ? layout.height : layout.width) : 0;
+  });
+
+  private scale = computed(() => {
+    const natural = this.naturalWidth();
+    const available = this.mapWidth();
+    return natural > 0 && available > 0 ? Math.min(MAX_SCALE, available / natural) : 1;
+  });
+
+  mapHeight = computed(() => {
+    const layout = this.layout();
+    return layout ? (this.upright() ? layout.width : layout.height) * this.scale() : 0;
+  });
+
+  labelSize = computed(() => Math.max(10, Math.min(15, 12 * this.scale())));
+
+  placedSeats = computed<PlacedSeat[]>(() => {
+    const layout = this.layout();
+    if (!layout) {
+      return [];
+    }
+    const scale = this.scale();
+    const upright = this.upright();
+    const selected = new Set(this.selectedIds());
+    return layout.seats.map((seat) => {
+      // Rotating a left-facing bus 90° clockwise: the left edge becomes the
+      // top, and the bottom (door side) becomes the left.
+      const x = upright ? layout.height - (seat.top + seat.height) : seat.left;
+      const y = upright ? seat.left : seat.top;
+      const width = upright ? seat.height : seat.width;
+      const height = upright ? seat.width : seat.height;
+      return {
+        seat,
+        x: x * scale,
+        y: y * scale,
+        width: width * scale,
+        height: height * scale,
+        selected: selected.has(seat.id),
+        disabled: seat.status === 'taken' || seat.price === null,
+      };
+    });
+  });
+
+  canContinue = computed(() => this.selectedIds().length > 0 && !!this.boardingId() && !!this.droppingId());
 
   constructor() {
     document.body.style.overflow = 'hidden';
@@ -110,7 +160,23 @@ export class SeatPanel {
     });
 
     effect(() => {
-      this.load(this.busId());
+      const trip = this.trip();
+      untracked(() => this.load(trip));
+    });
+
+    // Scale the seat map to whatever width the panel gives it.
+    effect((onCleanup) => {
+      const element = this.seatMap()?.nativeElement;
+      if (!element) {
+        return;
+      }
+      this.mapWidth.set(element.clientWidth);
+      if (typeof ResizeObserver === 'undefined') {
+        return;
+      }
+      const observer = new ResizeObserver((entries) => this.mapWidth.set(entries[0].contentRect.width));
+      observer.observe(element);
+      onCleanup(() => observer.disconnect());
     });
   }
 
@@ -123,70 +189,91 @@ export class SeatPanel {
     this.closed.emit();
   }
 
-  private async load(busId: string): Promise<void> {
+  private async load(trip: Trip): Promise<void> {
     this.loading.set(true);
     this.errorMessage.set('');
-    this.selectedSeats.set([]);
+    this.selectedIds.set([]);
+    this.layout.set(undefined);
     try {
-      const heldBy = this.authService.user()?.id ?? getGuestToken();
-      const [bus, seats] = await Promise.all([this.busService.getById(busId), this.busService.getSeats(busId, heldBy)]);
-      this.bus.set(bus);
-      this.boardingPoint.set(bus?.from ?? '');
-      this.dropoffPoint.set(bus?.to ?? '');
-      this.seats.set(
-        seats.map((seat) => ({ number: seat.number, status: seat.status, className: seat.className, price: seat.price })),
-      );
-      if (!bus) {
-        this.errorMessage.set('We could not find that bus.');
+      const [layout, points] = await Promise.all([
+        this.travler.getSeatLayout(trip),
+        this.travler.getBoardingDroppingPoints(trip),
+      ]);
+      this.layout.set(layout);
+      this.points.set(points);
+      // With only one option there's nothing to choose, so pick it.
+      this.boardingId.set(points.boarding.length === 1 ? points.boarding[0].id : '');
+      this.droppingId.set(points.dropping.length === 1 ? points.dropping[0].id : '');
+      if (layout.seats.length === 0) {
+        this.errorMessage.set("This bus doesn't have a seat map yet.");
       }
-    } catch {
-      this.errorMessage.set('Could not load the seat map. Please try again.');
+    } catch (error) {
+      this.errorMessage.set(travlerErrorMessage(error, 'Could not load the seat map. Please try again.'));
     } finally {
       this.loading.set(false);
     }
   }
 
-  toggleSeat(seat: UiSeat): void {
-    if (seat.status === 'booked') {
+  retry(): void {
+    this.load(this.trip());
+  }
+
+  seatLabel(placed: PlacedSeat): string {
+    const { seat } = placed;
+    if (seat.status === 'taken') {
+      return `Seat ${seat.name}, taken`;
+    }
+    if (seat.price === null) {
+      return `Seat ${seat.name}, not available`;
+    }
+    return `Seat ${seat.name}, ${seat.typeLabel}, KES ${seat.price}${placed.selected ? ', selected' : ''}`;
+  }
+
+  toggleSeat(placed: PlacedSeat): void {
+    if (placed.disabled) {
       return;
     }
-    const isSelected = seat.status === 'selected';
-
-    if (!isSelected) {
-      if (this.selectedSeats().length >= this.maxSeats) {
+    const id = placed.seat.id;
+    if (!placed.selected) {
+      if (this.selectedIds().length >= this.maxSeats) {
         this.selectionNotice.set(`You can book up to ${this.maxSeats} seats at a time.`);
         return;
       }
-      if (!this.authService.user() && this.selectedSeats().length >= 1) {
+      if (this.isGuest() && this.selectedIds().length >= 1) {
         this.authModal.open('login', this.router.url);
         return;
       }
     }
-
     this.selectionNotice.set('');
-    this.seats.update((seats) =>
-      seats.map((s) => (s.number === seat.number ? { ...s, status: isSelected ? 'available' : 'selected' } : s)),
-    );
-    this.selectedSeats.update((selected) =>
-      isSelected ? selected.filter((n) => n !== seat.number) : [...selected, seat.number],
-    );
+    this.selectedIds.update((ids) => (placed.selected ? ids.filter((n) => n !== id) : [...ids, id]));
   }
 
   continue(): void {
-    const bus = this.bus();
-    if (this.selectedSeats().length === 0 || !bus) {
+    this.triedContinue.set(true);
+    const boarding = this.points().boarding.find((p) => p.id === this.boardingId());
+    const dropping = this.points().dropping.find((p) => p.id === this.droppingId());
+    const seats = this.selectedSeats();
+    if (seats.length === 0 || !boarding || !dropping) {
       return;
     }
+    const trip = this.trip();
+    this.bookingDraft.set({
+      trip,
+      seats: seats.map(
+        (seat): SelectedSeat => ({
+          id: seat.id,
+          name: seat.name,
+          type: seat.type,
+          typeLabel: seat.typeLabel,
+          className: seat.className,
+          price: seat.price ?? 0,
+        }),
+      ),
+      boarding,
+      dropping,
+    });
     this.router.navigate(['/confirmation'], {
-      queryParams: {
-        busId: bus.id,
-        origin: bus.from,
-        destination: bus.to,
-        journeyDate: bus.date,
-        seats: this.selectedSeats().join(','),
-        boardingPoint: this.boardingPoint(),
-        dropoffPoint: this.dropoffPoint(),
-      },
+      queryParams: { busId: trip.id, seats: seats.map((seat) => seat.name).join(',') },
     });
   }
 }

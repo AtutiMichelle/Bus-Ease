@@ -342,6 +342,12 @@
   font-size: 16px;
 }
 
+.bus-rating-count {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-muted, #6b6b6b);
+}
+
 .bus-seater {
   font-size: 17px;
   color: var(--color-text, #3a3a3a);
@@ -628,10 +634,18 @@
   transition: transform 0.2s;
 }
 
-.select-seats-btn:hover {
+.select-seats-btn:hover:not(:disabled) {
   background-color: #c81915;
   transform: translateY(-2px);
   box-shadow: 0 10px 22px rgba(235, 31, 26, 0.32);
+}
+
+.select-seats-btn:disabled {
+  background-color: var(--color-border, #e4dfd6);
+  color: var(--color-text-muted, #6b6b6b);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .select-seats-btn:hover i {

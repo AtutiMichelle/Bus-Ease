@@ -1,10 +1,8 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
-import { BusService, Seat } from '../../services/bus.service';
-import { Bus } from '../../models/bus.model';
-
-type Phase = 'loading' | 'ready' | 'error';
+import { BookingDraftService } from '../../services/booking-draft.service';
+import { TravlerApiService } from '../../travler/travler-api.service';
 
 @Component({
   imports: [RouterLink, DecimalPipe],
@@ -16,57 +14,74 @@ export class Ticket {
   readonly steps = ['Search', 'Seats', 'Details', 'Payment', 'Confirmation'];
   readonly currentStepIndex = 4;
 
-  bus = signal<Bus | undefined>(undefined);
-  seats = signal<Seat[]>([]);
-  phase = signal<Phase>('loading');
-  errorMessage = signal('');
-  reference = signal('');
-  seatNumbers = signal<string[]>([]);
+  private route = inject(ActivatedRoute);
+  private bookingDraft = inject(BookingDraftService);
+  private travler = inject(TravlerApiService);
 
-  seatList = computed(() => this.seatNumbers().join(', '));
-  totalPrice = computed(() => {
-    const fallback = this.bus()?.price ?? 0;
-    const priceByNumber = new Map(this.seats().map((s) => [s.number, s.price ?? fallback]));
-    return this.seatNumbers().reduce((sum, n) => sum + (priceByNumber.get(n) ?? fallback), 0);
+  ticketNumber = signal('');
+  reference = signal('');
+  printing = signal(false);
+  /** The printable ticket couldn't be opened, so the on-screen details stand in for it. */
+  printFallback = signal(false);
+
+  /** The booking this ticket belongs to, when this tab still has it. */
+  booking = computed(() => {
+    const draft = this.bookingDraft.current();
+    if (!draft?.ticketNumber && !draft?.hold) {
+      return undefined;
+    }
+    const matchesTicket = !!this.ticketNumber() && draft.ticketNumber === this.ticketNumber();
+    const matchesReference = !!this.reference() && draft.hold?.reference === this.reference();
+    return matchesTicket || matchesReference ? draft : undefined;
   });
 
-  private busId: string;
+  seatList = computed(() => (this.booking()?.seats ?? []).map((s) => s.name).join(', '));
+  totalPaid = computed(() => this.booking()?.hold?.totalAmount ?? 0);
 
-  constructor(
-    private route: ActivatedRoute,
-    private busService: BusService,
-  ) {
+  constructor() {
     const params = this.route.snapshot.queryParamMap;
-    this.busId = params.get('busId') ?? '';
+    this.ticketNumber.set(params.get('ticket') ?? '');
     this.reference.set(params.get('reference') ?? '');
-    const seatsParam = params.get('seats') ?? '';
-    this.seatNumbers.set(seatsParam ? seatsParam.split(',') : []);
-    this.load();
   }
 
-  private async load(): Promise<void> {
-    if (!this.busId || !this.reference() || this.seatNumbers().length === 0) {
-      this.errorMessage.set('Missing booking details.');
-      this.phase.set('error');
+  /** Opens the API's printable ticket in a new tab. The tab is opened
+   * straight away, while the click still counts as a user action, since
+   * browsers block pop-ups opened after an await. If the URL can't be
+   * fetched or reached, the tab closes and the details stay on screen. */
+  async print(): Promise<void> {
+    if (this.printing()) {
       return;
     }
+    const ticketNumber = this.ticketNumber();
+    if (!ticketNumber) {
+      this.printFallback.set(true);
+      return;
+    }
+    const tab = window.open('', '_blank');
+    this.printing.set(true);
+    this.printFallback.set(false);
     try {
-      const bus = await this.busService.getById(this.busId);
-      if (!bus) {
-        this.errorMessage.set("We couldn't find that bus.");
-        this.phase.set('error');
-        return;
+      const { url } = await this.travler.getPrintableTicket(ticketNumber);
+      if (!/^https?:\/\//i.test(url)) {
+        throw new Error('No printable URL');
       }
-      this.bus.set(bus);
-      this.seats.set(await this.busService.getSeats(this.busId));
-      this.phase.set('ready');
+      // An opaque no-cors request can't read the file, but it does fail on
+      // DNS or network errors, which is the case worth catching here.
+      await fetch(url, { method: 'HEAD', mode: 'no-cors' });
+      if (!tab) {
+        throw new Error('Pop-up blocked');
+      }
+      tab.opener = null;
+      tab.location.href = url;
     } catch {
-      this.errorMessage.set('Could not load your ticket. Please try again.');
-      this.phase.set('error');
+      tab?.close();
+      this.printFallback.set(true);
+    } finally {
+      this.printing.set(false);
     }
   }
 
-  print(): void {
+  printPage(): void {
     window.print();
   }
 }

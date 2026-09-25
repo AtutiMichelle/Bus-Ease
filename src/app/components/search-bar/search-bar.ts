@@ -1,7 +1,13 @@
-import { Component, computed, effect, input, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { todayDateString } from '../../utils/date';
+import { TravlerApiService } from '../../travler/travler-api.service';
+import { travlerErrorMessage } from '../../travler/travler-errors';
+import { City } from '../../models/trip.model';
+
+/** How many city suggestions to show at once. */
+const MAX_SUGGESTIONS = 8;
 
 @Component({
   imports: [FormsModule],
@@ -18,9 +24,22 @@ export class SearchBar {
   origin = input('', { alias: 'origin' });
   destination = input('', { alias: 'destination' });
   date = input('', { alias: 'date' });
+  originId = input('', { alias: 'originId' });
+  destinationId = input('', { alias: 'destinationId' });
 
+  private travler = inject(TravlerApiService);
+
+  /** What the user sees and types: city names. */
   originValue = signal('');
   destinationValue = signal('');
+  /** What the search actually uses: the booking API's city ids. */
+  originCityId = signal('');
+  destinationCityId = signal('');
+
+  sourceCities = signal<City[]>([]);
+  destinationCities = signal<City[]>([]);
+  loadingDestinations = signal(false);
+  citiesError = signal('');
   dateValue = signal('');
   dateDisplayValue = signal('');
   dateError = signal<string | null>(null);
@@ -70,61 +89,144 @@ export class SearchBar {
     return cells;
   });
 
-  kenyanTowns: string[] = [
-    'Nairobi', 'Mombasa', 'Kisumu', 'Nakuru', 'Eldoret', 'Malindi', 'Kampala', 'Kericho',
-    'Kitale', 'Meru', 'Nyeri', 'Naivasha', 'Kakamega', 'Bungoma', 'Machakos', 'Thika',
-    'Kisii', 'Narok', 'Voi', 'Lamu', 'Garissa', 'Isiolo',
-  ];
-
   showOriginSuggestions = signal(false);
   showDestinationSuggestions = signal(false);
 
-  originSuggestions = computed(() => this.matchTowns(this.originValue()));
-  destinationSuggestions = computed(() => this.matchTowns(this.destinationValue()));
+  originSuggestions = computed(() => this.matchCities(this.sourceCities(), this.originValue()));
+  destinationSuggestions = computed(() => this.matchCities(this.destinationCities(), this.destinationValue()));
+
+  /** Typed text that doesn't match any city, shown once the field loses focus. */
+  originUnknown = computed(
+    () => !this.showOriginSuggestions() && this.originValue().trim().length > 0 && !this.originCityId() && this.sourceCities().length > 0,
+  );
+  destinationUnknown = computed(
+    () =>
+      !this.showDestinationSuggestions() &&
+      this.destinationValue().trim().length > 0 &&
+      !!this.originCityId() &&
+      !this.destinationCityId() &&
+      !this.loadingDestinations(),
+  );
 
   constructor(private router: Router) {
+    this.loadSourceCities();
+
     effect(() => {
-      this.originValue.set(this.origin());
-      this.destinationValue.set(this.destination());
+      const origin = this.origin();
+      const destination = this.destination();
+      const originId = this.originId();
+      const destinationId = this.destinationId();
       const iso = this.date() || todayDateString();
-      this.dateValue.set(iso);
-      this.dateDisplayValue.set(this.isoToDisplay(iso));
-      this.dateError.set(null);
+      untracked(() => {
+        this.originValue.set(origin);
+        this.destinationValue.set(destination);
+        this.originCityId.set(originId);
+        this.destinationCityId.set(destinationId);
+        this.dateValue.set(iso);
+        this.dateDisplayValue.set(this.isoToDisplay(iso));
+        this.dateError.set(null);
+        if (originId) {
+          this.loadDestinations(originId);
+        }
+      });
     });
   }
 
-  private matchTowns(query: string): string[] {
-    const q = query.trim().toLowerCase();
-    if (!q) {
-      return [];
+  private async loadSourceCities(): Promise<void> {
+    this.citiesError.set('');
+    try {
+      const cities = await this.travler.getCities();
+      this.sourceCities.set(cities);
+      // A name that arrived without an id (e.g. a Popular Route link) still
+      // resolves once the list is in.
+      if (!this.originCityId()) {
+        this.onOriginInput(this.originValue());
+      }
+    } catch (error) {
+      this.citiesError.set(travlerErrorMessage(error, "We couldn't load the list of cities."));
     }
-    return this.kenyanTowns.filter((town) => town.toLowerCase().startsWith(q)).slice(0, 6);
   }
 
-  selectOrigin(town: string): void {
-    this.originValue.set(town);
+  private async loadDestinations(sourceId: string): Promise<void> {
+    this.loadingDestinations.set(true);
+    try {
+      const cities = await this.travler.getCities(sourceId);
+      if (this.originCityId() !== sourceId) {
+        return;
+      }
+      this.destinationCities.set(cities);
+      const current = this.destinationCityId();
+      if (current && !cities.some((city) => city.id === current)) {
+        this.destinationCityId.set('');
+      }
+      if (!this.destinationCityId()) {
+        this.onDestinationInput(this.destinationValue());
+      }
+    } catch (error) {
+      this.citiesError.set(travlerErrorMessage(error, "We couldn't load destinations for that city."));
+    } finally {
+      if (this.originCityId() === sourceId) {
+        this.loadingDestinations.set(false);
+      }
+    }
+  }
+
+  private matchCities(cities: City[], query: string): City[] {
+    const q = query.trim().toLowerCase();
+    const matches = q ? cities.filter((city) => city.name.toLowerCase().startsWith(q)) : cities;
+    return matches.slice(0, MAX_SUGGESTIONS);
+  }
+
+  private findCity(cities: City[], name: string): City | undefined {
+    const q = name.trim().toLowerCase();
+    return q ? cities.find((city) => city.name.toLowerCase() === q) : undefined;
+  }
+
+  /** Typing an exact city name counts as picking it. */
+  onOriginInput(value: string): void {
+    this.originValue.set(value);
+    const match = this.findCity(this.sourceCities(), value);
+    this.setOriginId(match?.id ?? '');
+  }
+
+  onDestinationInput(value: string): void {
+    this.destinationValue.set(value);
+    const match = this.findCity(this.destinationCities(), value);
+    this.destinationCityId.set(match?.id ?? '');
+  }
+
+  private setOriginId(id: string): void {
+    if (id === this.originCityId()) {
+      return;
+    }
+    this.originCityId.set(id);
+    this.destinationCities.set([]);
+    this.destinationCityId.set('');
+    if (id) {
+      this.loadDestinations(id);
+    } else {
+      this.loadingDestinations.set(false);
+    }
+  }
+
+  selectOrigin(city: City): void {
+    this.originValue.set(city.name);
+    this.setOriginId(city.id);
     this.showOriginSuggestions.set(false);
   }
 
-  selectDestination(town: string): void {
-    this.destinationValue.set(town);
+  selectDestination(city: City): void {
+    this.destinationValue.set(city.name);
+    this.destinationCityId.set(city.id);
     this.showDestinationSuggestions.set(false);
   }
 
   get sameOriginDestination(): boolean {
-    return (
-      this.originValue().trim().length > 0 &&
-      this.originValue().trim().toLowerCase() === this.destinationValue().trim().toLowerCase()
-    );
+    return !!this.originCityId() && this.originCityId() === this.destinationCityId();
   }
 
   get canSearch(): boolean {
-    return (
-      this.originValue().trim().length > 0 &&
-      this.destinationValue().trim().length > 0 &&
-      !this.sameOriginDestination &&
-      !this.dateError()
-    );
+    return !!this.originCityId() && !!this.destinationCityId() && !this.sameOriginDestination && !this.dateError();
   }
 
   /** Reformats the dd/mm/yyyy mask as the user types and keeps the caret in place. */
@@ -280,6 +382,8 @@ export class SearchBar {
       queryParams: {
         origin: this.originValue().trim(),
         destination: this.destinationValue().trim(),
+        originId: this.originCityId(),
+        destinationId: this.destinationCityId(),
         journeyDate: this.dateValue().trim() || todayDateString(),
       },
     });

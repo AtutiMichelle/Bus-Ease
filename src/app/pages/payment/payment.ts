@@ -1,26 +1,20 @@
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BookingDraftService } from '../../services/booking-draft.service';
-import { BookingService } from '../../services/booking.service';
-import { AuthService } from '../../services/auth.service';
-import { Bus } from '../../models/bus.model';
-import { PassengerInput } from '../../models/booking.model';
+import { TravlerApiService } from '../../travler/travler-api.service';
+import { TravlerApiError, travlerErrorMessage } from '../../travler/travler-errors';
+import { BOOKING_HOLD_MINUTES } from '../../travler/travler.adapters';
 import { TripSummary } from '../../components/trip-summary/trip-summary';
 import { environment } from '../../../environment';
-import { getGuestToken } from '../../utils/guest-token';
+import { normalizeKenyanPhone } from '../../utils/validation';
 
-type PaymentMethod = 'mpesa' | 'airtel' | 'wallet';
-type Phase = 'reserving' | 'ready' | 'processing' | 'error' | 'missing' | 'expired';
+type Phase = 'ready' | 'starting' | 'awaiting' | 'rejected' | 'timeout' | 'error' | 'expired';
 
-/** How long the simulated gateway prompt (STK push / card auth) takes before
- * the booking actually gets created. There's no real payment gateway wired
- * up yet, so this just stands in for that round trip. */
-const GATEWAY_DELAY_MS = 1500;
-
-/** How long a seat hold lasts once someone reaches this page. */
-const HOLD_MINUTES = 15;
+/** How often, and for how long, to ask whether the M-Pesa PIN was entered. */
+const POLL_INTERVAL_MS = 3_000;
+const POLL_TIMEOUT_MS = 90_000;
 
 @Component({
   imports: [RouterLink, FormsModule, TripSummary, DecimalPipe],
@@ -31,33 +25,35 @@ const HOLD_MINUTES = 15;
 export class Payment {
   readonly steps = ['Search', 'Seats', 'Details', 'Payment', 'Confirmation'];
   readonly currentStepIndex = 3;
-  readonly holdMinutes = HOLD_MINUTES;
+  readonly holdMinutes = BOOKING_HOLD_MINUTES;
+  readonly mpesaLogo = environment.assets.paymentLogos.mpesa;
 
-  bus = signal<Bus | undefined>(undefined);
-  passengers = signal<PassengerInput[]>([]);
-  boardingPoint = signal('');
-  dropoffPoint = signal('');
+  private bookingDraft = inject(BookingDraftService);
+  private travler = inject(TravlerApiService);
+  private router = inject(Router);
 
-  phase = signal<Phase>('missing');
+  draft = this.bookingDraft.current;
+  hold = computed(() => this.draft()?.hold);
+
+  phase = signal<Phase>('ready');
   errorMessage = signal('');
-
-  method = signal<PaymentMethod>('mpesa');
   phone = signal('');
+  /** Set once the user tries to pay, so the phone error only shows then. */
+  triedPay = signal(false);
 
-  readonly paymentLogos = environment.assets.paymentLogos;
-
-  /** Seat hold expiry, and a ticking clock to count down to it. */
-  reservedUntil = signal<Date | null>(null);
   private now = signal(Date.now());
   private countdownHandle?: ReturnType<typeof setInterval>;
-  private heldBy = '';
+  private pollHandle?: ReturnType<typeof setTimeout>;
+  /** Bumped on every new payment attempt, so a late poll from an old one is ignored. */
+  private attempt = 0;
+  private destroyed = false;
 
   remainingSeconds = computed(() => {
-    const until = this.reservedUntil();
-    if (!until) {
+    const hold = this.hold();
+    if (!hold) {
       return 0;
     }
-    return Math.max(0, Math.floor((until.getTime() - this.now()) / 1000));
+    return Math.max(0, Math.floor((new Date(hold.heldUntil).getTime() - this.now()) / 1000));
   });
 
   remainingLabel = computed(() => {
@@ -67,82 +63,59 @@ export class Payment {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   });
 
-  totalPrice = computed(() => {
-    const fallback = this.bus()?.price ?? 0;
-    return this.passengers().reduce((sum, p) => sum + (p.price ?? fallback), 0);
-  });
+  totalPrice = computed(() => this.hold()?.totalAmount ?? 0);
+  normalizedPhone = computed(() => normalizeKenyanPhone(this.phone()));
+  phoneError = computed(() => (this.normalizedPhone() ? '' : 'Enter a Safaricom number, e.g. 0712 345 678.'));
+  busy = computed(() => this.phase() === 'starting' || this.phase() === 'awaiting');
 
   backQueryParams = computed(() => {
-    const b = this.bus();
-    return b ? { busId: b.id, seats: this.passengers().map((p) => p.seatNumber).join(',') } : {};
+    const d = this.draft();
+    return d ? { busId: d.trip.id, seats: d.seats.map((s) => s.name).join(',') } : {};
   });
 
-  canPay = computed(() => {
-    if (this.method() === 'wallet') {
-      return true;
-    }
-    return /^\d{9}$/.test(this.phone().trim());
+  ticketQueryParams = computed(() => {
+    const d = this.draft();
+    return d
+      ? {
+          ticket: d.ticketNumber || null,
+          reference: d.hold?.reference ?? null,
+          busId: d.trip.id,
+          seats: d.seats.map((s) => s.name).join(','),
+        }
+      : {};
   });
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private bookingDraft: BookingDraftService,
-    private bookingService: BookingService,
-    private authService: AuthService,
-  ) {
-    const draft = this.bookingDraft.current();
-    if (!draft) {
-      this.phase.set('missing');
-      return;
-    }
-    this.bus.set(draft.bus);
-    this.passengers.set(draft.passengers);
-    this.boardingPoint.set(draft.boardingPoint);
-    this.dropoffPoint.set(draft.dropoffPoint);
-    this.heldBy = this.authService.user()?.id ?? getGuestToken();
-    this.phase.set('reserving');
-    this.reserve();
+  constructor() {
+    const draft = this.draft();
+    const contactPhone = draft?.contact?.phone;
+    // Show the contact number the way people write it locally: 07XX...
+    this.phone.set(contactPhone ? `0${contactPhone.slice(3)}` : '');
 
-    inject(DestroyRef).onDestroy(() => this.stopCountdown());
-  }
-
-  private async reserve(): Promise<void> {
-    const bus = this.bus();
-    if (!bus) {
-      return;
-    }
-    this.errorMessage.set('');
-    try {
-      const reservedUntil = await this.bookingService.reserveSeats(
-        bus.id,
-        this.passengers().map((p) => p.seatNumber),
-        this.heldBy,
-        HOLD_MINUTES,
-      );
-      this.reservedUntil.set(new Date(reservedUntil));
+    if (draft?.hold && !draft.ticketNumber) {
       this.startCountdown();
-      this.phase.set('ready');
-    } catch (error) {
-      this.errorMessage.set(
-        error instanceof Error
-          ? error.message
-          : 'One or more of your seats were just taken. Please go back and reselect.',
-      );
-      this.phase.set('error');
     }
+
+    inject(DestroyRef).onDestroy(() => {
+      this.destroyed = true;
+      this.stopCountdown();
+      this.stopPolling();
+    });
   }
 
   private startCountdown(): void {
     this.stopCountdown();
+    this.tick();
+    this.countdownHandle = setInterval(() => this.tick(), 1000);
+  }
+
+  private tick(): void {
     this.now.set(Date.now());
-    this.countdownHandle = setInterval(() => {
-      this.now.set(Date.now());
-      if (this.remainingSeconds() <= 0 && this.phase() === 'ready') {
-        this.phase.set('expired');
-        this.stopCountdown();
-      }
-    }, 1000);
+    // A payment already in flight is left to finish: the PIN may have been
+    // entered just before the hold ran out.
+    if (this.remainingSeconds() <= 0 && !this.busy()) {
+      this.phase.set('expired');
+      this.stopCountdown();
+    }
   }
 
   private stopCountdown(): void {
@@ -152,62 +125,131 @@ export class Payment {
     }
   }
 
-  selectMethod(method: PaymentMethod): void {
-    this.method.set(method);
-    this.errorMessage.set('');
+  private stopPolling(): void {
+    if (this.pollHandle) {
+      clearTimeout(this.pollHandle);
+      this.pollHandle = undefined;
+    }
   }
 
-  /** The expired seats are no longer held for this booking (someone else
-   * could claim them any moment), so there's nothing left to do with the
-   * old draft — clear it and send the user back to pick fresh seats. */
+  /** The hold has lapsed, so the seats may already be someone else's.
+   * Keep the trip (the seat map needs it) but drop the dead booking. */
   backToSeatSelection(): void {
-    const bus = this.bus();
+    const trip = this.draft()?.trip;
     this.bookingDraft.clear();
-    if (!bus) {
+    if (!trip) {
       this.router.navigate(['/']);
       return;
     }
     this.router.navigate(['/results'], {
-      queryParams: { origin: bus.from, destination: bus.to, journeyDate: bus.date, busId: bus.id },
+      queryParams: {
+        origin: trip.from,
+        destination: trip.to,
+        originId: trip.fromCityId,
+        destinationId: trip.toCityId,
+        journeyDate: trip.date,
+        busId: trip.id,
+      },
     });
   }
 
-  /** The retry link can follow either a failed hold attempt (nothing reserved
-   * yet) or a failed payment (hold already in place) — re-run whichever one
-   * actually needs redoing. */
-  retry(): void {
-    if (!this.reservedUntil()) {
-      this.phase.set('reserving');
-      this.reserve();
+  async pay(): Promise<void> {
+    this.triedPay.set(true);
+    const hold = this.hold();
+    const phone = this.normalizedPhone();
+    if (!hold || !phone || this.busy() || this.phase() === 'expired') {
       return;
     }
-    this.pay();
+    if (this.remainingSeconds() <= 0) {
+      this.phase.set('expired');
+      return;
+    }
+
+    const attempt = ++this.attempt;
+    this.stopPolling();
+    this.errorMessage.set('');
+    this.phase.set('starting');
+    try {
+      const payment = await this.travler.startMpesaPayment(hold.reference, phone, hold.totalAmount);
+      if (attempt !== this.attempt || this.destroyed) {
+        return;
+      }
+      this.bookingDraft.update({ paymentReference: payment.reference });
+      this.phase.set('awaiting');
+      this.schedulePoll(attempt, payment.reference, Date.now() + POLL_TIMEOUT_MS);
+    } catch (error) {
+      if (attempt !== this.attempt) {
+        return;
+      }
+      this.failWith(error, "We couldn't start the M-Pesa payment. Please try again.");
+    }
   }
 
-  async pay(): Promise<void> {
-    const bus = this.bus();
-    if (!bus || !this.canPay() || this.phase() !== 'ready') {
+  private schedulePoll(attempt: number, reference: string, deadline: number): void {
+    this.pollHandle = setTimeout(() => this.poll(attempt, reference, deadline), POLL_INTERVAL_MS);
+  }
+
+  private async poll(attempt: number, reference: string, deadline: number): Promise<void> {
+    try {
+      const status = await this.travler.checkMpesaPayment(reference);
+      if (attempt !== this.attempt || this.destroyed) {
+        return;
+      }
+      if (status.state === 'success') {
+        this.succeed(status.ticketNumber ?? '', reference);
+        return;
+      }
+      if (status.state === 'rejected') {
+        this.errorMessage.set('The M-Pesa payment was declined or cancelled. Please try again.');
+        this.phase.set('rejected');
+        return;
+      }
+    } catch (error) {
+      if (attempt !== this.attempt || this.destroyed) {
+        return;
+      }
+      // A clear answer from the API ends the wait; a dropped connection
+      // doesn't, the next check may well get through.
+      if (error instanceof TravlerApiError && error.code) {
+        this.failWith(error, "We couldn't confirm your payment.");
+        return;
+      }
+    }
+
+    if (Date.now() + POLL_INTERVAL_MS > deadline) {
+      this.phase.set(this.remainingSeconds() <= 0 ? 'expired' : 'timeout');
       return;
     }
-    this.errorMessage.set('');
-    this.phase.set('processing');
-    try {
-      await new Promise((resolve) => setTimeout(resolve, GATEWAY_DELAY_MS));
-      const reference = await this.bookingService.confirmBooking(bus, this.passengers(), this.heldBy);
-      this.stopCountdown();
-      this.bookingDraft.clear();
-      this.router.navigate(['/ticket'], {
-        queryParams: {
-          reference,
-          busId: bus.id,
-          seats: this.passengers().map((p) => p.seatNumber).join(','),
-        },
-      });
-    } catch (error) {
-      this.errorMessage.set(
-        error instanceof Error ? error.message : 'We could not process your payment. Please try again.',
-      );
-      this.phase.set('error');
+    this.schedulePoll(attempt, reference, deadline);
+  }
+
+  private failWith(error: unknown, fallback: string): void {
+    this.errorMessage.set(travlerErrorMessage(error, fallback));
+    const rejected = error instanceof TravlerApiError && error.code === 'PAYMENT_REJECTED';
+    this.phase.set(rejected ? 'rejected' : 'error');
+    if (this.remainingSeconds() <= 0) {
+      this.phase.set('expired');
     }
+  }
+
+  private succeed(ticketNumber: string, paymentReference: string): void {
+    this.stopCountdown();
+    this.stopPolling();
+    this.bookingDraft.update({ ticketNumber, paymentReference });
+    this.router.navigate(['/ticket'], { queryParams: this.ticketQueryParams() });
+  }
+
+  /** After a timeout the PIN may still have gone through late, so check
+   * once more before sending a second prompt. */
+  async checkAgain(): Promise<void> {
+    const reference = this.draft()?.paymentReference;
+    if (!reference || this.busy()) {
+      return;
+    }
+    const attempt = ++this.attempt;
+    this.errorMessage.set('');
+    this.phase.set('awaiting');
+    // One short extra window rather than the full 90 seconds.
+    this.schedulePoll(attempt, reference, Date.now() + POLL_INTERVAL_MS * 3);
   }
 }

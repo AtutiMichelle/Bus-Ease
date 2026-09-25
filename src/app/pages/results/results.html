@@ -1,9 +1,16 @@
 <section class="results-toolbar">
   <div class="section-container">
-    <app-search-bar variant="compact" [origin]="origin()" [destination]="destination()" [date]="journeyDate()" />
+    <app-search-bar
+      variant="compact"
+      [origin]="origin()"
+      [destination]="destination()"
+      [originId]="originId()"
+      [destinationId]="destinationId()"
+      [date]="journeyDate()"
+    />
 
     <div class="results-status-inner">
-      <p class="results-count"><i class="fa-solid fa-bus" aria-hidden="true"></i> {{ filteredBuses().length }} {{ filteredBuses().length === 1 ? 'bus' : 'buses' }} found</p>
+      <p class="results-count"><i class="fa-solid fa-bus" aria-hidden="true"></i> {{ filteredTrips().length }} {{ filteredTrips().length === 1 ? 'trip' : 'trips' }} found</p>
       <p class="results-subtitle">
         {{ origin() || 'Anywhere' }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i> {{ destination() || 'Anywhere' }}
         <span class="meta-dot" aria-hidden="true"></span>
@@ -19,20 +26,26 @@
     @if (loading()) {
       <div class="state-panel">
         <i class="fa-solid fa-bus state-icon state-icon-pulse" aria-hidden="true"></i>
-        <p class="state-title">Searching for buses…</p>
+        <p class="state-title">Searching for trips…</p>
       </div>
     } @else if (errorMessage()) {
       <div class="state-panel state-panel-error">
         <i class="fa-solid fa-triangle-exclamation state-icon" aria-hidden="true"></i>
         <p class="state-title">{{ errorMessage() }}</p>
       </div>
-    } @else if (buses().length === 0) {
+    } @else if (routeNotServed()) {
+      <div class="state-panel">
+        <i class="fa-solid fa-route state-icon" aria-hidden="true"></i>
+        <p class="state-title">No trips found</p>
+        <p class="state-subtitle">We don't have trips from {{ origin() || 'there' }} to {{ destination() || 'there' }} yet. Try another route.</p>
+      </div>
+    } @else if (trips().length === 0) {
       <div class="state-panel">
         <i class="fa-regular fa-face-frown state-icon" aria-hidden="true"></i>
-        <p class="state-title">No buses found for this route yet.</p>
-        <p class="state-subtitle">Try a different date or route.</p>
+        <p class="state-title">No trips found</p>
+        <p class="state-subtitle">Nothing is running from {{ origin() }} to {{ destination() }} on {{ formattedDate() }}. Try a different date.</p>
       </div>
-    } @else if (filteredBuses().length === 0) {
+    } @else if (filteredTrips().length === 0) {
       <div class="state-panel">
         <i class="fa-solid fa-filter-circle-xmark state-icon" aria-hidden="true"></i>
         <p class="state-title">No buses match your filters.</p>
@@ -40,12 +53,15 @@
       </div>
     }
 
-    @for (bus of filteredBuses(); track bus.id) {
+    @for (trip of filteredTrips(); track trip.id) {
       <article class="bus-card">
         <div class="bus-main">
-          <!-- Demo-only promo text; no promo/discount data source yet. -->
           <div class="bus-top-row">
-            <span class="promo-badge">Get KSh 100 off with code SAVE100</span>
+            @if (trip.isPromotional) {
+              <span class="promo-badge">Promotional fare</span>
+            } @else {
+              <span></span>
+            }
             <!-- Demo-only; no cancellation-policy content/route to link to yet. -->
             <button type="button" class="cancellation-link">Cancellation policy</button>
           </div>
@@ -55,38 +71,34 @@
           <div class="bus-info-row">
             <div class="bus-info-left">
               <div class="bus-operator">
-                @if (bus.operatorLogo) {
-                  <span class="operator-avatar">
-                    <img [src]="bus.operatorLogo" [alt]="bus.operator" />
-                  </span>
-                } @else {
-                  <span class="operator-avatar" aria-hidden="true">{{ operatorInitials(bus.operator) }}</span>
-                }
+                <span class="operator-avatar">
+                  <img [src]="logoFor(trip)" [alt]="trip.operator + ' logo'" (error)="onLogoError(trip)" />
+                </span>
                 <div class="bus-operator-text">
-                  <p class="operator-name">{{ bus.operator }}</p>
-                  <span class="bus-rating-value">
-                    <i class="fa-solid fa-star" aria-hidden="true"></i>
-                    <!-- Demo-only fallback; bus.rating isn't tracked by the real data yet. -->
-                    {{ (bus.rating ?? 4.2) | number: '1.1-1' }}
-                  </span>
+                  <p class="operator-name">{{ trip.operator }}</p>
+                  @if (trip.rating !== undefined) {
+                    <span class="bus-rating-value">
+                      <i class="fa-solid fa-star" aria-hidden="true"></i>
+                      {{ trip.rating | number: '1.1-1' }}
+                      @if (trip.ratingCount) {
+                        <span class="bus-rating-count">({{ trip.ratingCount | number }})</span>
+                      }
+                    </span>
+                  }
                 </div>
               </div>
             </div>
 
             <div class="bus-info-center">
-              <!-- "A" is a placeholder seat-layout letter; there's no layout data source yet. -->
-              <span class="bus-seater">{{ bus.totalSeats }} seater A</span>
-              @if (cardAmenities(bus).length > 0) {
-                <span class="bus-amenity-icons">
-                  @for (amenity of cardAmenities(bus); track amenity) {
-                    <i class="fa-solid {{ amenityIcon(amenity) }}" [attr.aria-label]="amenity" [title]="amenity"></i>
-                  }
-                </span>
+              @if (trip.busType) {
+                <span class="bus-seater">{{ trip.busType }}</span>
               }
             </div>
 
             <div class="bus-info-right">
-              <span class="seats-left" [class.seats-low]="bus.seatsAvailable <= 5">{{ bus.seatsAvailable }} seats left</span>
+              <span class="seats-left" [class.seats-low]="trip.seatsAvailable <= 5">
+                {{ trip.seatsAvailable }} {{ trip.seatsAvailable === 1 ? 'seat' : 'seats' }} left
+              </span>
             </div>
           </div>
 
@@ -94,12 +106,12 @@
 
           <div class="bus-times">
             <div class="time-block time-block-start">
-              <p class="time">{{ bus.departureTime }}</p>
-              <p class="time-label">{{ bus.from }}</p>
+              <p class="time">{{ trip.departureTime }}</p>
+              <p class="time-label">{{ trip.from }}</p>
             </div>
             <div class="duration-block">
               <div class="duration-track">
-                <p class="duration">{{ bus.duration }}</p>
+                <p class="duration">{{ trip.duration }}</p>
                 <div class="duration-line">
                   <span class="route-dot route-dot-start" aria-hidden="true"></span>
                   <span class="route-dot route-dot-end" aria-hidden="true"></span>
@@ -108,8 +120,8 @@
               </div>
             </div>
             <div class="time-block time-block-end">
-              <p class="time">{{ bus.arrivalTime }}</p>
-              <p class="time-label">{{ bus.to }}</p>
+              <p class="time">{{ trip.arrivalTime }}</p>
+              <p class="time-label">{{ trip.to }}</p>
             </div>
           </div>
         </div>
@@ -121,34 +133,37 @@
         </div>
 
         <div class="bus-price-cta">
-          <!-- Demo-only route-type label; no route-type data source yet. -->
-          <span class="route-type-badge">Highway</span>
+          @if (trip.routeKind) {
+            <span class="route-type-badge">{{ trip.routeKind }}</span>
+          }
 
           <div class="class-price-list">
-            @for (cls of orderedClasses(bus); track cls.className) {
-              <div class="class-price-row">
-                <span class="class-chip">{{ cls.className }}</span>
-                <span class="class-price"><span class="price-currency">KSh</span>{{ cls.price | number }}</span>
-              </div>
-            } @empty {
-              <div class="class-price-row">
-                <span class="class-price"><span class="price-currency">KSh</span>{{ bus.price | number }}</span>
-              </div>
-            }
+            <div class="class-price-row">
+              <span class="class-chip">From</span>
+              <span class="class-price"><span class="price-currency">KES</span>{{ trip.fromPrice | number }}</span>
+            </div>
           </div>
 
-          <button type="button" class="select-seats-btn" (click)="selectBus(bus)">
-            Select Seats <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+          <button
+            type="button"
+            class="select-seats-btn"
+            [disabled]="trip.seatsAvailable <= 0"
+            (click)="selectTrip(trip)"
+          >
+            {{ trip.seatsAvailable > 0 ? 'Select Seats' : 'Sold out' }}
+            @if (trip.seatsAvailable > 0) {
+              <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+            }
           </button>
         </div>
       </article>
     }
     </div>
 
-    <app-filter-panel class="results-sidebar" [buses]="buses()" (filtersChange)="filters.set($event)" />
+    <app-filter-panel class="results-sidebar" [buses]="trips()" (filtersChange)="filters.set($event)" />
   </div>
 </section>
 
-@if (selectedBusId(); as busId) {
-  <app-seat-panel [busId]="busId" (closed)="closeSeatPanel()" />
+@if (selectedTrip(); as trip) {
+  <app-seat-panel [trip]="trip" (closed)="closeSeatPanel()" />
 }

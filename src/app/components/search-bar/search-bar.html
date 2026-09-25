@@ -8,7 +8,7 @@
         type="text"
         placeholder="Leaving from…"
         [ngModel]="originValue()"
-        (ngModelChange)="originValue.set($event)"
+        (ngModelChange)="onOriginInput($event)"
         (focus)="showOriginSuggestions.set(true)"
         (blur)="showOriginSuggestions.set(false)"
         name="origin"
@@ -18,14 +18,19 @@
     </div>
     @if (showOriginSuggestions() && originSuggestions().length > 0) {
       <ul class="suggestion-list">
-        @for (town of originSuggestions(); track town) {
+        @for (city of originSuggestions(); track city.id) {
           <li>
-            <button type="button" (mousedown)="$event.preventDefault()" (click)="selectOrigin(town)">
-              {{ town }}
+            <button type="button" (mousedown)="$event.preventDefault()" (click)="selectOrigin(city)">
+              {{ city.name }}
             </button>
           </li>
         }
       </ul>
+    }
+    @if (originUnknown()) {
+      <p class="error">Choose a city from the list.</p>
+    } @else if (citiesError()) {
+      <p class="error">{{ citiesError() }}</p>
     }
   </div>
 
@@ -36,9 +41,10 @@
       <input
         id="sb-destination"
         type="text"
-        placeholder="Going to…"
+        [placeholder]="originCityId() ? 'Going to…' : 'Pick where you leave from first'"
+        [disabled]="!originCityId()"
         [ngModel]="destinationValue()"
-        (ngModelChange)="destinationValue.set($event)"
+        (ngModelChange)="onDestinationInput($event)"
         (focus)="showDestinationSuggestions.set(true)"
         (blur)="showDestinationSuggestions.set(false)"
         name="destination"
@@ -48,10 +54,10 @@
     </div>
     @if (showDestinationSuggestions() && destinationSuggestions().length > 0) {
       <ul class="suggestion-list">
-        @for (town of destinationSuggestions(); track town) {
+        @for (city of destinationSuggestions(); track city.id) {
           <li>
-            <button type="button" (mousedown)="$event.preventDefault()" (click)="selectDestination(town)">
-              {{ town }}
+            <button type="button" (mousedown)="$event.preventDefault()" (click)="selectDestination(city)">
+              {{ city.name }}
             </button>
           </li>
         }
@@ -59,6 +65,10 @@
     }
     @if (sameOriginDestination) {
       <p class="error">Origin and destination can't be the same.</p>
+    } @else if (destinationUnknown()) {
+      <p class="error">
+        {{ destinationCities().length ? 'Choose a destination from the list.' : 'No destinations from this city yet.' }}
+      </p>
     }
   </div>
 

@@ -5,11 +5,19 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SearchBar } from '../../components/search-bar/search-bar';
 import { SeatPanel } from '../../components/seat-panel/seat-panel';
 import { FilterPanel } from '../../components/filter-panel/filter-panel';
-import { BusService } from '../../services/bus.service';
-import { Bus } from '../../models/bus.model';
+import { TravlerApiService } from '../../travler/travler-api.service';
+import { travlerErrorMessage } from '../../travler/travler-errors';
+import { Trip } from '../../models/trip.model';
 import { todayDateString } from '../../utils/date';
 import { FilterState, emptyFilterState, matchesFilters } from '../../utils/bus-filters';
-import { amenityIcon } from '../../utils/amenity-icons';
+
+/** Shown in place of an operator logo that's missing or fails to load. */
+const FALLBACK_LOGO = 'logos/operator-fallback.svg';
+
+interface ResolvedRoute {
+  fromCityId: string;
+  toCityId: string;
+}
 
 @Component({
   imports: [SearchBar, SeatPanel, FilterPanel, DecimalPipe],
@@ -20,43 +28,43 @@ import { amenityIcon } from '../../utils/amenity-icons';
 export class Results {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private busService = inject(BusService);
+  private travler = inject(TravlerApiService);
 
   private queryParamMap = toSignal(this.route.queryParamMap, { initialValue: this.route.snapshot.queryParamMap });
 
   origin = computed(() => this.queryParamMap().get('origin') ?? '');
   destination = computed(() => this.queryParamMap().get('destination') ?? '');
+  originId = computed(() => this.queryParamMap().get('originId') ?? '');
+  destinationId = computed(() => this.queryParamMap().get('destinationId') ?? '');
   journeyDate = computed(() => this.queryParamMap().get('journeyDate') || todayDateString());
   selectedBusId = computed(() => this.queryParamMap().get('busId'));
 
-  buses = signal<Bus[]>([]);
+  trips = signal<Trip[]>([]);
   loading = signal(true);
   errorMessage = signal('');
+  /** Set when the route itself isn't served, as opposed to no trips that day. */
+  routeNotServed = signal(false);
 
   filters = signal<FilterState>(emptyFilterState());
-  filteredBuses = computed(() => this.buses().filter((bus) => matchesFilters(bus, this.filters())));
+  filteredTrips = computed(() => this.trips().filter((trip) => matchesFilters(trip, this.filters())));
 
-  amenityIcon = amenityIcon;
+  selectedTrip = computed(() => {
+    const busId = this.selectedBusId();
+    return busId ? this.trips().find((trip) => trip.id === busId) : undefined;
+  });
 
-  /** Shown inline on each result card; kept to the first 3-4 amenities so the row stays compact. */
-  cardAmenities(bus: Bus): string[] {
-    return bus.amenities.slice(0, 4);
+  /** Trip ids whose logo failed to load, so they fall back to the default. */
+  private brokenLogos = signal<Set<string>>(new Set());
+
+  logoFor(trip: Trip): string {
+    return trip.operatorLogo && !this.brokenLogos().has(trip.id) ? trip.operatorLogo : FALLBACK_LOGO;
   }
 
-  private static readonly CLASS_ORDER: Record<string, number> = { VIP: 0, Business: 1, Normal: 2 };
-
-  /** Price panel rows always read VIP, Business, Normal (only the classes actually offered), regardless of DB row order. */
-  orderedClasses(bus: Bus): Bus['classes'] {
-    return [...bus.classes].sort((a, b) => Results.CLASS_ORDER[a.className] - Results.CLASS_ORDER[b.className]);
-  }
-
-  operatorInitials(name: string): string {
-    return name
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((word) => word[0].toUpperCase())
-      .join('');
+  onLogoError(trip: Trip): void {
+    if (this.brokenLogos().has(trip.id)) {
+      return;
+    }
+    this.brokenLogos.update((set) => new Set(set).add(trip.id));
   }
 
   formattedDate = computed(() => {
@@ -70,6 +78,8 @@ export class Results {
     }
     return parsed.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
   });
+
+  private loadToken = 0;
 
   constructor() {
     // A search with no date (e.g. a Popular Route click) lands here without
@@ -85,27 +95,60 @@ export class Results {
     }
 
     effect(() => {
-      this.load(this.origin(), this.destination(), this.journeyDate());
+      this.load(this.origin(), this.destination(), this.originId(), this.destinationId(), this.journeyDate());
     });
   }
 
-  private async load(origin: string, destination: string, journeyDate: string): Promise<void> {
+  /** Links that only carry city names (Popular Routes, old bookmarks) are
+   * matched to the booking API's city ids by name. */
+  private async resolveRoute(origin: string, destination: string, originId: string, destinationId: string): Promise<ResolvedRoute | null> {
+    if (originId && destinationId) {
+      return { fromCityId: originId, toCityId: destinationId };
+    }
+    const byName = (name: string) => (city: { name: string }) => city.name.toLowerCase() === name.trim().toLowerCase();
+    const from = originId || (await this.travler.getCities()).find(byName(origin))?.id;
+    if (!from) {
+      return null;
+    }
+    const to = destinationId || (await this.travler.getCities(from)).find(byName(destination))?.id;
+    return to ? { fromCityId: from, toCityId: to } : null;
+  }
+
+  private async load(origin: string, destination: string, originId: string, destinationId: string, journeyDate: string): Promise<void> {
+    const token = ++this.loadToken;
     this.loading.set(true);
     this.errorMessage.set('');
+    this.routeNotServed.set(false);
     try {
-      const buses = await this.busService.search(origin, destination, journeyDate);
-      this.buses.set(buses);
-    } catch {
-      this.errorMessage.set('Could not load buses for this route. Please try again.');
+      const resolved = await this.resolveRoute(origin, destination, originId, destinationId);
+      if (token !== this.loadToken) {
+        return;
+      }
+      if (!resolved) {
+        this.trips.set([]);
+        this.routeNotServed.set(true);
+        return;
+      }
+      const trips = await this.travler.searchTrips({ ...resolved, from: origin, to: destination, date: journeyDate });
+      if (token !== this.loadToken) {
+        return;
+      }
+      this.trips.set(trips);
+    } catch (error) {
+      if (token === this.loadToken) {
+        this.errorMessage.set(travlerErrorMessage(error, 'Could not load trips for this route. Please try again.'));
+      }
     } finally {
-      this.loading.set(false);
+      if (token === this.loadToken) {
+        this.loading.set(false);
+      }
     }
   }
 
-  selectBus(bus: Bus): void {
+  selectTrip(trip: Trip): void {
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { busId: bus.id },
+      queryParams: { busId: trip.id },
       queryParamsHandling: 'merge',
     });
   }

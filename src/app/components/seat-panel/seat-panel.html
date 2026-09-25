@@ -1,49 +1,85 @@
 <div class="seat-panel-backdrop" (click)="close()">
   <aside class="seat-panel" (click)="$event.stopPropagation()">
-    @if (bus(); as b) {
-      <header class="panel-trip">
-        <button type="button" class="panel-close" aria-label="Close seat selection" (click)="close()">
-          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-        </button>
+    <header class="panel-trip">
+      <button type="button" class="panel-close" aria-label="Close seat selection" (click)="close()">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
 
-        <p class="trip-operator">{{ b.operator }}</p>
+      <p class="trip-operator">{{ trip().operator }}</p>
 
-        <div class="trip-route">
-          <span class="trip-route-city">{{ b.from }}</span>
-          <span class="trip-route-line" aria-hidden="true">
-            <span class="trip-route-dot"></span>
-            <span class="trip-route-dot"></span>
-          </span>
-          <span class="trip-route-city">{{ b.to }}</span>
-        </div>
+      <div class="trip-route">
+        <span class="trip-route-city">{{ trip().from }}</span>
+        <span class="trip-route-line" aria-hidden="true">
+          <span class="trip-route-dot"></span>
+          <span class="trip-route-dot"></span>
+        </span>
+        <span class="trip-route-city">{{ trip().to }}</span>
+      </div>
 
-        <p class="trip-meta">{{ b.departureTime }} – {{ b.arrivalTime }} · {{ b.duration }}</p>
-      </header>
+      <p class="trip-meta">{{ trip().departureTime }} – {{ trip().arrivalTime }} · {{ trip().duration }}</p>
+    </header>
 
+    @if (loading()) {
+      <div class="panel-status">
+        <p>Loading seat map…</p>
+      </div>
+    } @else if (errorMessage() || !layout()) {
+      <div class="panel-status">
+        <p>
+          {{ errorMessage() || 'Could not load the seat map.' }}
+          <button type="button" class="retry-link" (click)="retry()">Try again</button>
+        </p>
+      </div>
+    } @else {
       <div class="panel-body">
         <div class="stops-row">
           <div class="field field-boarding">
             <label for="boarding-point"><span class="dot dot-boarding" aria-hidden="true"></span> Boarding point</label>
-            <select id="boarding-point" [ngModel]="boardingPoint()" (ngModelChange)="boardingPoint.set($event)">
-              <option [value]="b.from">{{ b.from }}</option>
+            <select
+              id="boarding-point"
+              required
+              [class.invalid]="triedContinue() && !boardingId()"
+              [ngModel]="boardingId()"
+              (ngModelChange)="boardingId.set($event)"
+            >
+              <option value="" disabled>Choose where you board</option>
+              @for (point of points().boarding; track point.id) {
+                <option [value]="point.id">{{ point.name }}{{ point.time ? ' · ' + point.time : '' }}</option>
+              }
             </select>
+            @if (triedContinue() && !boardingId()) {
+              <p class="field-error">Choose a boarding point.</p>
+            }
           </div>
 
           <div class="field field-dropoff">
             <label for="dropoff-point"><span class="dot dot-dropoff" aria-hidden="true"></span> Drop-off point</label>
-            <select id="dropoff-point" [ngModel]="dropoffPoint()" (ngModelChange)="dropoffPoint.set($event)">
-              <option [value]="b.to">{{ b.to }}</option>
+            <select
+              id="dropoff-point"
+              required
+              [class.invalid]="triedContinue() && !droppingId()"
+              [ngModel]="droppingId()"
+              (ngModelChange)="droppingId.set($event)"
+            >
+              <option value="" disabled>Choose where you get off</option>
+              @for (point of points().dropping; track point.id) {
+                <option [value]="point.id">{{ point.name }}{{ point.time ? ' · ' + point.time : '' }}</option>
+              }
             </select>
+            @if (triedContinue() && !droppingId()) {
+              <p class="field-error">Choose a drop-off point.</p>
+            }
           </div>
         </div>
 
         <div class="seat-legend">
-          @for (cls of legendClasses(); track cls) {
+          @for (entry of legend(); track entry.label) {
             <span class="legend-pill">
-              <span [class]="'legend-swatch class-' + cls.toLowerCase()"></span> {{ cls }}
+              <span [class]="'legend-swatch ' + (entry.className ? 'class-' + entry.className.toLowerCase() : 'class-other')"></span>
+              {{ entry.label }} · KES {{ entry.price | number }}
             </span>
           }
-          <span class="legend-pill"><span class="legend-swatch booked"></span> Booked</span>
+          <span class="legend-pill"><span class="legend-swatch booked"></span> Taken</span>
           <span class="legend-pill"><span class="legend-swatch selected"></span> Selected</span>
         </div>
 
@@ -51,73 +87,43 @@
           <p class="guest-hint">Booking as a guest: 1 seat max. Log in to book up to {{ maxSeats }}.</p>
         }
 
-        <ng-template #seatButton let-seat="seat">
-          <button
-            type="button"
-            class="seat"
-            [class.available]="seat.status === 'available'"
-            [class.selected]="seat.status === 'selected'"
-            [class.booked]="seat.status === 'booked'"
-            [class]="seat.className ? 'class-' + seat.className.toLowerCase() : ''"
-            [disabled]="seat.status === 'booked'"
-            [attr.aria-label]="'Seat ' + seat.number + (seat.className ? ', ' + seat.className : '')"
-            (click)="toggleSeat(seat)"
-          >
-            <i class="fa-solid fa-couch" aria-hidden="true"></i>
-            <span class="seat-number">{{ seat.number }}</span>
-          </button>
-        </ng-template>
-
         <div class="bus-shell">
           <div class="bus-shell-front" aria-hidden="true">
-            <span class="row-number-spacer"></span>
-
-            <div class="seat-pair">
-              <span class="front-marker door-marker">
-                <i class="fa-solid fa-door-open" aria-hidden="true"></i>
-              </span>
-              <span class="front-marker-spacer"></span>
-            </div>
-
-            <div class="aisle"></div>
-
-            <div class="seat-pair">
-              <span class="front-marker-spacer"></span>
-              <span class="front-marker wheel-marker">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
-                  <circle cx="12" cy="12" r="2.2" fill="currentColor" />
-                  <line x1="12" y1="3" x2="12" y2="9.8" stroke="currentColor" stroke-width="2" />
-                  <line x1="4.8" y1="16.5" x2="10.3" y2="13.5" stroke="currentColor" stroke-width="2" />
-                  <line x1="19.2" y1="16.5" x2="13.7" y2="13.5" stroke="currentColor" stroke-width="2" />
-                </svg>
-              </span>
-            </div>
+            <span class="front-marker door-marker">
+              <i class="fa-solid fa-door-open"></i>
+            </span>
+            <span class="front-label">Front</span>
+            <span class="front-marker wheel-marker">
+              <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
+                <circle cx="12" cy="12" r="2.2" fill="currentColor" />
+                <line x1="12" y1="3" x2="12" y2="9.8" stroke="currentColor" stroke-width="2" />
+                <line x1="4.8" y1="16.5" x2="10.3" y2="13.5" stroke="currentColor" stroke-width="2" />
+                <line x1="19.2" y1="16.5" x2="13.7" y2="13.5" stroke="currentColor" stroke-width="2" />
+              </svg>
+            </span>
           </div>
 
-          <div class="seat-rows">
-            @for (row of seatRows(); track $index) {
-              <div class="seat-row">
-                <span class="row-number">{{ row.rowNumber }}</span>
-
-                <div class="seat-pair">
-                  @for (seat of row.left; track seat.number) {
-                    <ng-container [ngTemplateOutlet]="seatButton" [ngTemplateOutletContext]="{ seat: seat }" />
-                  }
-                </div>
-
-                <div class="aisle">
-                  @if (row.middle; as seat) {
-                    <ng-container [ngTemplateOutlet]="seatButton" [ngTemplateOutletContext]="{ seat: seat }" />
-                  }
-                </div>
-
-                <div class="seat-pair">
-                  @for (seat of row.right; track seat.number) {
-                    <ng-container [ngTemplateOutlet]="seatButton" [ngTemplateOutletContext]="{ seat: seat }" />
-                  }
-                </div>
-              </div>
+          <div #seatMap class="seat-map" [style.height.px]="mapHeight()" [style.font-size.px]="labelSize()">
+            @for (placed of placedSeats(); track placed.seat.id) {
+              <button
+                type="button"
+                [class]="'seat ' + (placed.seat.className ? 'class-' + placed.seat.className.toLowerCase() : 'class-other')"
+                [class.available]="!placed.disabled && !placed.selected"
+                [class.selected]="placed.selected"
+                [class.booked]="placed.disabled"
+                [style.left.px]="placed.x"
+                [style.top.px]="placed.y"
+                [style.width.px]="placed.width"
+                [style.height.px]="placed.height"
+                [disabled]="placed.disabled"
+                [attr.aria-pressed]="placed.selected"
+                [attr.aria-label]="seatLabel(placed)"
+                [title]="seatLabel(placed)"
+                (click)="toggleSeat(placed)"
+              >
+                {{ placed.seat.name }}
+              </button>
             }
           </div>
         </div>
@@ -131,33 +137,19 @@
           <p class="footer-empty">Select at least one seat to continue.</p>
         } @else {
           <div class="footer-chips">
-            @for (seat of selectedSeatDetails(); track seat.number) {
-              <span [class]="'seat-chip ' + (seat.className ? 'class-' + seat.className.toLowerCase() : '')">{{ seat.number }}</span>
+            @for (seat of selectedSeats(); track seat.id) {
+              <span [class]="'seat-chip ' + (seat.className ? 'class-' + seat.className.toLowerCase() : '')">{{ seat.name }}</span>
             }
           </div>
         }
         <div class="footer-total">
           <span>Total</span>
-          <span>KSh {{ totalPrice() | number }}</span>
+          <span>KES {{ totalPrice() | number }}</span>
         </div>
         <button type="button" class="continue-cta" [disabled]="selectedSeats().length === 0" (click)="continue()">
           Continue
         </button>
       </footer>
-    } @else if (loading()) {
-      <div class="panel-status">
-        <button type="button" class="panel-close" aria-label="Close seat selection" (click)="close()">
-          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-        </button>
-        <p>Loading seat map…</p>
-      </div>
-    } @else {
-      <div class="panel-status">
-        <button type="button" class="panel-close" aria-label="Close seat selection" (click)="close()">
-          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-        </button>
-        <p>{{ errorMessage() || "We couldn't find that bus." }}</p>
-      </div>
     }
   </aside>
 </div>

@@ -1,7 +1,7 @@
 import { Component, computed, input } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
-import { Bus } from '../../models/bus.model';
-import { PassengerInput } from '../../models/booking.model';
+import { Trip } from '../../models/trip.model';
+import { SelectedSeat } from '../../models/booking.model';
 
 @Component({
   selector: 'app-trip-summary',
@@ -11,13 +11,11 @@ import { PassengerInput } from '../../models/booking.model';
   templateUrl: './trip-summary.html',
 })
 export class TripSummary {
-  bus = input.required<Bus>();
-  passengers = input<PassengerInput[]>([]);
+  trip = input.required<Trip>();
+  seats = input<SelectedSeat[]>([]);
   boardingPoint = input('');
   dropoffPoint = input('');
 
-  totalPrice = computed(() => {
-    const fallback = this.bus()?.price ?? 0;
-    return this.passengers().reduce((sum, p) => sum + (p.price ?? fallback), 0);
-  });
+  /** Seat layout prices, the same figure the booking is sent with. */
+  totalPrice = computed(() => this.seats().reduce((sum, seat) => sum + seat.price, 0));
 }

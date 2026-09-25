@@ -1,94 +1,130 @@
-@switch (phase()) {
-  @case ('loading') {
-    <section class="not-found">
-      <div class="section-container">
-        <p>Loading your ticket…</p>
-      </div>
-    </section>
-  }
+@if (!ticketNumber() && !reference()) {
+  <section class="not-found">
+    <div class="section-container">
+      <p>We couldn't find that ticket. <a routerLink="/">Go back home</a>.</p>
+    </div>
+  </section>
+} @else {
+  <section class="confirmation-hero">
+    <div class="section-container">
+      <div class="confirmation-icon"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></div>
+      <h1>Booking Confirmed</h1>
+      @if (ticketNumber()) {
+        <p class="confirmation-ref">Ticket: <strong>{{ ticketNumber() }}</strong></p>
+      }
+      @if (reference()) {
+        <p class="confirmation-ref">Booking reference: <strong>{{ reference() }}</strong></p>
+      }
 
-  @case ('error') {
-    <section class="not-found">
-      <div class="section-container">
-        <p>{{ errorMessage() }} <a routerLink="/">Go back home</a>.</p>
-      </div>
-    </section>
-  }
+      <ol class="stepper">
+        @for (step of steps; track step; let i = $index) {
+          <li
+            class="stepper-step"
+            [class.completed]="i < currentStepIndex"
+            [class.current]="i === currentStepIndex"
+            [class.line-filled]="i > 0 && i <= currentStepIndex"
+          >
+            <span class="stepper-dot">
+              @if (i < currentStepIndex) {
+                <i class="fa-solid fa-check" aria-hidden="true"></i>
+              } @else {
+                {{ i + 1 }}
+              }
+            </span>
+            <span class="stepper-label">{{ step }}</span>
+          </li>
+        }
+      </ol>
+    </div>
+  </section>
 
-  @case ('ready') {
-    @if (bus(); as b) {
-      <section class="confirmation-hero">
-        <div class="section-container">
-          <div class="confirmation-icon"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></div>
-          <h1>Booking Confirmed</h1>
-          <p class="confirmation-ref">Reference: <strong>{{ reference() }}</strong></p>
+  <section class="ticket-section">
+    <div class="section-container">
+      <div class="ticket-card">
+        @if (printFallback()) {
+          <p class="print-fallback" role="alert">
+            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+            We couldn't open the printable ticket right now, so your ticket details are below. You can print this page instead.
+          </p>
+        }
 
-          <ol class="stepper">
-            @for (step of steps; track step; let i = $index) {
-              <li
-                class="stepper-step"
-                [class.completed]="i < currentStepIndex"
-                [class.current]="i === currentStepIndex"
-                [class.line-filled]="i > 0 && i <= currentStepIndex"
-              >
-                <span class="stepper-dot">
-                  @if (i < currentStepIndex) {
-                    <i class="fa-solid fa-check" aria-hidden="true"></i>
-                  } @else {
-                    {{ i + 1 }}
-                  }
-                </span>
-                <span class="stepper-label">{{ step }}</span>
-              </li>
-            }
-          </ol>
-        </div>
-      </section>
+        @if (booking(); as b) {
+          <div class="ticket-route">
+            <p class="route-cities">{{ b.trip.from }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i> {{ b.trip.to }}</p>
+            <p class="route-date">{{ b.trip.date }}</p>
+          </div>
 
-      <section class="ticket-section">
-        <div class="section-container">
-          <div class="ticket-card">
-            <div class="ticket-route">
-              <p class="route-cities">{{ b.from }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i> {{ b.to }}</p>
-              <p class="route-date">{{ b.date }}</p>
+          <div class="ticket-grid">
+            <div>
+              <p class="ticket-label">Operator</p>
+              <p class="ticket-value">{{ b.trip.operator }}</p>
             </div>
-
-            <div class="ticket-grid">
-              <div>
-                <p class="ticket-label">Operator</p>
-                <p class="ticket-value">{{ b.operator }}</p>
-              </div>
-              <div>
-                <p class="ticket-label">Bus Type</p>
-                <p class="ticket-value">{{ b.busType }}</p>
-              </div>
-              <div>
-                <p class="ticket-label">Departure</p>
-                <p class="ticket-value">{{ b.departureTime }}</p>
-              </div>
-              <div>
-                <p class="ticket-label">Arrival</p>
-                <p class="ticket-value">{{ b.arrivalTime }}</p>
-              </div>
-              <div>
-                <p class="ticket-label">Seats</p>
-                <p class="ticket-value">{{ seatList() }}</p>
-              </div>
-              <div>
-                <p class="ticket-label">Total Paid</p>
-                <p class="ticket-value total">KSh {{ totalPrice() | number }}</p>
-              </div>
+            <div>
+              <p class="ticket-label">Bus Type</p>
+              <p class="ticket-value">{{ b.trip.busType || 'Not listed' }}</p>
             </div>
-
-            <div class="ticket-actions">
-              <button type="button" class="print-cta" (click)="print()">
-                <i class="fa-solid fa-print" aria-hidden="true"></i> Print Ticket
-              </button>
-              <a routerLink="/" class="home-link">Back to Home</a>
+            <div>
+              <p class="ticket-label">Departure</p>
+              <p class="ticket-value">{{ b.trip.departureTime }}</p>
+            </div>
+            <div>
+              <p class="ticket-label">Arrival</p>
+              <p class="ticket-value">{{ b.trip.arrivalTime }}</p>
+            </div>
+            <div>
+              <p class="ticket-label">Boarding</p>
+              <p class="ticket-value">{{ b.boarding.name }}{{ b.boarding.time ? ' · ' + b.boarding.time : '' }}</p>
+            </div>
+            <div>
+              <p class="ticket-label">Drop-off</p>
+              <p class="ticket-value">{{ b.dropping.name }}{{ b.dropping.time ? ' · ' + b.dropping.time : '' }}</p>
+            </div>
+            <div>
+              <p class="ticket-label">Seats</p>
+              <p class="ticket-value">{{ seatList() }}</p>
+            </div>
+            <div>
+              <p class="ticket-label">Total Paid</p>
+              <p class="ticket-value total">KES {{ totalPaid() | number }}</p>
             </div>
           </div>
+
+          @if (b.passengers?.length) {
+            <p class="ticket-label passenger-heading">Passengers</p>
+            <ul class="passenger-list">
+              @for (p of b.passengers; track p.seatName) {
+                <li>
+                  <span class="passenger-seat">Seat {{ p.seatName }}</span>
+                  <span>{{ p.fullName }}</span>
+                  <span class="passenger-id">ID {{ p.idNumber }}</span>
+                </li>
+              }
+            </ul>
+          }
+
+          @if (b.contact?.email) {
+            <p class="ticket-note">A copy of your ticket goes to {{ b.contact?.email }}.</p>
+          }
+        } @else {
+          <p class="ticket-note">
+            Your payment went through. Trip details aren't available in this tab, but your ticket number above is all
+            you need at boarding, and the printable ticket has the full details.
+          </p>
+        }
+
+        <div class="ticket-actions">
+          @if (printFallback()) {
+            <button type="button" class="print-cta" (click)="printPage()">
+              <i class="fa-solid fa-print" aria-hidden="true"></i> Print this page
+            </button>
+          } @else {
+            <button type="button" class="print-cta" [disabled]="printing()" (click)="print()">
+              <i class="fa-solid fa-print" aria-hidden="true"></i> {{ printing() ? 'Opening ticket…' : 'Print ticket' }}
+            </button>
+          }
+          <a routerLink="/" class="home-link">Back to Home</a>
         </div>
-      </section>
-    }
-  }
+      </div>
+    </div>
+  </section>
 }

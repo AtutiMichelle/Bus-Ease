@@ -44,6 +44,10 @@
             {{ item.label }}
           </span>
         }
+        <button type="button" class="nav-link nav-logout" (click)="logout()">
+          <app-admin-icon [paths]="icons.logout" />
+          Log out
+        </button>
       </div>
     </nav>
   </aside>
@@ -70,11 +74,40 @@
         </button>
 
         <div class="topbar-identity">
-          <span class="avatar-badge" aria-hidden="true">{{ adminInitials() }}</span>
-          <div class="topbar-identity-text">
-            <p class="topbar-name">{{ adminName() }}</p>
-            <p class="topbar-role">{{ adminRole() }}</p>
-          </div>
+          <button
+            type="button"
+            class="identity-toggle"
+            aria-haspopup="menu"
+            [attr.aria-expanded]="profileMenuOpen()"
+            (click)="toggleProfileMenu()"
+          >
+            <span class="avatar-badge" aria-hidden="true">{{ adminInitials() }}</span>
+            <span class="topbar-identity-text">
+              <span class="topbar-name">{{ adminName() }}</span>
+              <span class="topbar-role">{{ adminRole() }}</span>
+            </span>
+            <app-admin-icon class="identity-caret" [paths]="icons.chevronDown" />
+          </button>
+
+          @if (profileMenuOpen()) {
+            <div class="profile-menu" role="menu">
+              <div class="profile-menu-head">
+                <p class="profile-menu-name">{{ adminName() }}</p>
+                @if (adminEmail()) {
+                  <p class="profile-menu-email">{{ adminEmail() }}</p>
+                }
+                <p class="profile-menu-role">{{ adminRole() }}</p>
+              </div>
+              <a routerLink="/account" [queryParams]="{ tab: 'profile' }" role="menuitem" class="profile-menu-item" (click)="closeProfileMenu()">
+                <app-admin-icon [paths]="icons.user" />
+                My profile
+              </a>
+              <button type="button" role="menuitem" class="profile-menu-item profile-menu-logout" (click)="logout()">
+                <app-admin-icon [paths]="icons.logout" />
+                Log out
+              </button>
+            </div>
+          }
         </div>
       </div>
     </header>

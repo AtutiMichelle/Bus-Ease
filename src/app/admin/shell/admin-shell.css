@@ -123,7 +123,27 @@ a.nav-link:focus:not(:focus-visible) {
   outline: none;
 }
 
-/* Settings sits at the bottom of the sidebar, apart from the main list. */
+/* Log out sits under Settings at the bottom of the sidebar. */
+.nav-logout {
+  width: 100%;
+  border: none;
+  background: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.nav-logout:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--admin-on-navy);
+}
+
+.nav-logout:focus-visible {
+  outline: 2px solid var(--admin-on-navy);
+  outline-offset: 1px;
+}
+
+/* Settings and Log out sit at the bottom of the sidebar, apart from the main list. */
 .nav-bottom {
   margin-top: auto;
   padding-top: var(--space-3);
@@ -240,11 +260,33 @@ a.nav-link:focus:not(:focus-visible) {
 }
 
 .topbar-identity {
+  position: relative;
+  padding-left: var(--space-3);
+  border-left: 1px solid var(--color-border);
+}
+
+.identity-toggle {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding-left: var(--space-3);
-  border-left: 1px solid var(--color-border);
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.identity-toggle:focus-visible {
+  outline: 2px solid var(--color-primary-light);
+  outline-offset: 4px;
+  border-radius: 24px;
+}
+
+.identity-caret {
+  width: 16px;
+  height: 16px;
+  color: var(--admin-muted);
 }
 
 .topbar-identity-text {
@@ -252,6 +294,7 @@ a.nav-link:focus:not(:focus-visible) {
 }
 
 .topbar-name {
+  display: block;
   margin: 0;
   font-size: 0.875rem;
   font-weight: 600;
@@ -259,6 +302,7 @@ a.nav-link:focus:not(:focus-visible) {
 }
 
 .topbar-role {
+  display: block;
   margin: 0;
   font-size: 0.75rem;
   color: var(--admin-muted);
@@ -276,6 +320,80 @@ a.nav-link:focus:not(:focus-visible) {
   color: var(--admin-on-navy);
   font-weight: 600;
   font-size: 0.875rem;
+}
+
+/* Profile menu, opened from the name and avatar in the top bar. */
+.profile-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 30;
+  min-width: 220px;
+  padding: 6px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background-color: var(--color-surface);
+  box-shadow: 0 12px 32px rgba(18, 41, 77, 0.14);
+}
+
+.profile-menu-head {
+  padding: 10px 12px 12px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.profile-menu-name {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--admin-ink);
+}
+
+.profile-menu-email,
+.profile-menu-role {
+  margin: 2px 0 0;
+  font-size: 0.8125rem;
+  color: var(--admin-muted);
+  overflow-wrap: anywhere;
+}
+
+.profile-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--admin-ink);
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.profile-menu-item app-admin-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--admin-secondary);
+}
+
+.profile-menu-item:hover {
+  background-color: var(--color-bg);
+}
+
+.profile-menu-item:focus-visible {
+  outline: 2px solid var(--color-primary-light);
+  outline-offset: -2px;
+}
+
+.profile-menu-logout,
+.profile-menu-logout app-admin-icon {
+  color: var(--admin-accent);
 }
 
 .admin-content {

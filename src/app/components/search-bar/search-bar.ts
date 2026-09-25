@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
+import { Component, ElementRef, computed, effect, inject, input, signal, untracked, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { todayDateString } from '../../utils/date';
@@ -17,6 +17,8 @@ const MAX_SUGGESTIONS = 8;
   host: {
     '[class.compact]': "variant() === 'compact'",
     '[class.ticket]': "variant() === 'ticket'",
+    '(document:mousedown)': 'closeCalendarIfOutside($event)',
+    '(document:focusin)': 'closeCalendarIfOutside($event)',
   },
 })
 export class SearchBar {
@@ -47,6 +49,7 @@ export class SearchBar {
   minDate = todayDateString();
 
   showCalendar = signal(false);
+  private dateField = viewChild<ElementRef<HTMLElement>>('dateField');
   calendarViewYear = signal(new Date().getFullYear());
   calendarViewMonth = signal(new Date().getMonth());
 
@@ -274,6 +277,16 @@ export class SearchBar {
 
   onDateBlur(): void {
     this.showCalendar.set(false);
+  }
+
+  /** Opening the calendar from its icon never focuses the date input, so its
+   * blur can't close it. Close it on any click or focus outside the date
+   * field instead. */
+  closeCalendarIfOutside(event: Event): void {
+    const field = this.dateField()?.nativeElement;
+    if (this.showCalendar() && field && !field.contains(event.target as Node)) {
+      this.showCalendar.set(false);
+    }
   }
 
   toggleCalendar(): void {

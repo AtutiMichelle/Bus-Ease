@@ -2,7 +2,6 @@
   <div class="admin-card-header">
     <div class="admin-card-heading">
       <h2 id="top-routes-title" class="admin-card-title">Top routes</h2>
-      <p class="admin-card-subtitle">Tickets sold, last 7 days</p>
     </div>
     @if (routesRoute) {
       <a class="admin-card-link" [routerLink]="routesRoute">All routes</a>
@@ -20,74 +19,56 @@
         @for (slot of placeholders; track slot) {
           <div class="route-row">
             <span class="skeleton sk-badge"></span>
-            <span class="route-main">
+            <span class="route-text">
               <span class="skeleton sk-name"></span>
-              <span class="skeleton sk-bar"></span>
+              <span class="skeleton sk-meta"></span>
             </span>
+            <span class="skeleton sk-count"></span>
           </div>
         }
       </div>
-    } @else if (routes().length === 0) {
+    } @else if (routes().length === 0 && idleRoutes().length === 0) {
       <div class="empty">
-        <div class="ghost-rows" aria-hidden="true">
-          @for (slot of placeholders; track slot) {
-            <span class="ghost-row ghost-row-{{ slot }}">
-              <span class="ghost-bar"></span>
-              <span class="ghost-bar"></span>
-            </span>
-          }
-        </div>
-        <p class="empty-title">No tickets sold on any route yet</p>
-        <p class="empty-hint">Once bookings come in, your busiest routes will rank here.</p>
+        <p class="empty-title">No routes set up yet</p>
+        <p class="empty-hint">Add a route and it will rank here once tickets sell.</p>
       </div>
     } @else {
       <ol class="route-list">
-        @for (route of routes(); track route.name) {
-          <li class="route-row">
+        @for (route of routes(); track route.name; let first = $first) {
+          <li class="route-row" [class.route-row-lead]="first">
             <span class="route-badge" aria-hidden="true">{{ route.code }}</span>
-            <div class="route-main">
-              <div class="route-line">
-                <span class="route-text">
-                  <span class="route-name" [attr.title]="route.name">{{ route.name }}</span>
-                  <span class="route-meta">
-                    {{ route.ticketCount }} {{ route.ticketCount === 1 ? 'ticket' : 'tickets' }}
-                    <span aria-hidden="true">&middot;</span> {{ formatKsh(route.revenue) }}
-                  </span>
-                </span>
-                <span class="admin-chip" [class]="deltaChip[route.delta.direction]">
-                  @if (route.delta.direction === 'up') {
-                    <span aria-hidden="true">&uarr;</span>
-                  } @else if (route.delta.direction === 'down') {
-                    <span aria-hidden="true">&darr;</span>
-                  }
-                  <span class="sr-only">{{ directionWord[route.delta.direction] }}</span>{{ route.delta.text }}
-                </span>
-              </div>
-              <div class="route-track">
-                <div class="route-fill" [style.width.%]="(route.ticketCount / maxTickets()) * 100"></div>
-              </div>
-            </div>
+            <span class="route-text">
+              <span class="route-name" [attr.title]="route.name">{{ route.name }}</span>
+              <span class="route-meta">{{ formatKsh(route.revenue) }}</span>
+            </span>
+            <span class="admin-chip" [class]="deltaChip[route.delta.direction]">
+              @if (route.delta.direction === 'up') {
+                <span aria-hidden="true">&uarr;</span>
+              } @else if (route.delta.direction === 'down') {
+                <span aria-hidden="true">&darr;</span>
+              }
+              <span class="sr-only">{{ directionWord[route.delta.direction] }}</span>{{ route.delta.text }}
+            </span>
+            <span class="route-count">
+              <span class="route-count-num">{{ route.ticketCount }}</span>
+              <span class="route-count-label">{{ route.ticketCount === 1 ? 'ticket' : 'tickets' }}</span>
+            </span>
+          </li>
+        }
+        @for (route of idleRoutes(); track route.name) {
+          <li class="route-row route-row-idle">
+            <span class="route-badge" aria-hidden="true">{{ route.code }}</span>
+            <span class="route-text">
+              <span class="route-name" [attr.title]="route.name">{{ route.name }}</span>
+              <span class="route-meta">No sales</span>
+            </span>
+            <span class="route-count">
+              <span class="route-count-num">0</span>
+              <span class="route-count-label">tickets</span>
+            </span>
           </li>
         }
       </ol>
-      @if (routes().length < placeholders.length) {
-        <p class="admin-soft-empty">{{ routes().length === 1 ? 'Only this route' : 'Only these routes' }} sold tickets this week.</p>
-      }
     }
   </div>
-
-  @if (current.status === 'loading') {
-    <div class="admin-card-footer" aria-hidden="true"><span class="skeleton sk-no-sales"></span></div>
-  } @else if (current.status === 'ready') {
-    <div class="admin-card-footer">
-      @if (noSalesCount() > 0) {
-        <p class="no-sales-line" [attr.title]="noSalesAll()">
-          <strong>{{ noSalesCount() }} {{ noSalesCount() === 1 ? 'route' : 'routes' }}</strong> sold nothing this week:
-          {{ noSalesPreview() }}
-        </p>
-      } @else {
-        <p class="no-sales-line">{{ noSalesEmptyText() }}</p>
-      }
-    </div>
-  }
 </section>

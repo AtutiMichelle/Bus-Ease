@@ -8,7 +8,14 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: 20px;
+  padding: 14px 20px 20px;
+}
+
+/* Tighter header than the shared one, so the content sits closer to the
+   title in these compact middle-row cards. */
+.admin-card-header {
+  min-height: 32px;
+  margin-bottom: 6px;
 }
 
 /* Headline: the total is the number people look for first. */
@@ -21,32 +28,35 @@
 
 .total-amount {
   font-family: var(--admin-font-display);
-  font-size: 1.625rem;
+  font-size: 1.25rem;
   font-weight: 600;
-  line-height: 1.1;
+  line-height: 1.2;
   font-variant-numeric: tabular-nums;
   color: var(--admin-ink);
 }
 
 .total-label {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   color: var(--admin-secondary);
 }
 
-/* One bar split by method. A 2px gap of card surface keeps neighbouring
-   segments apart; the rounded ends belong to the bar, not each segment. */
+/* One bar split by method: a soft capsule with each method as its own
+   rounded pill inside, spaced apart so small shares still read. */
 .split-bar {
+  box-sizing: border-box;
   display: flex;
-  gap: 2px;
-  height: 14px;
-  margin-bottom: 12px;
-  border-radius: 5px;
-  overflow: hidden;
+  gap: 3px;
+  height: 16px;
+  margin-bottom: 14px;
+  padding: 3px;
+  border-radius: 999px;
+  background-color: var(--admin-track);
 }
 
 .split-segment {
   flex-basis: 0;
-  min-width: 4px;
+  min-width: 6px;
+  border-radius: 999px;
 }
 
 .legend {
@@ -71,9 +81,33 @@
 }
 
 .legend-dot {
+  box-sizing: border-box;
   width: 10px;
   height: 10px;
+  border: 1.5px solid transparent;
   border-radius: 3px;
+}
+
+/* "Not recorded" is striped in the bar and its key: money came in, but how
+   it was paid is unknown. */
+.split-segment.is-unknown,
+.legend-dot.is-unknown {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(255, 255, 255, 0.4) 0 2px,
+    transparent 2px 6px
+  );
+}
+
+/* A method that took nothing this week: outlined key, muted figures */
+.legend-row.is-zero .legend-label {
+  color: var(--admin-secondary);
+}
+
+.legend-row.is-zero .legend-amount,
+.legend-row.is-zero .legend-percent {
+  font-weight: 400;
+  color: var(--admin-muted);
 }
 
 .legend-label {
@@ -97,35 +131,6 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--admin-ink);
-}
-
-/* Empty state: a faint bar where the split will go, then one line saying
-   why it is empty */
-.empty {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-
-.split-ghost {
-  width: 100%;
-  background-color: var(--admin-track);
-}
-
-.empty-title {
-  margin: 0 0 4px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--admin-ink);
-}
-
-.empty-hint {
-  margin: 0;
-  font-size: 0.8125rem;
-  color: var(--admin-muted);
 }
 
 /* Loading placeholder pieces */

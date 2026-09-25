@@ -3,13 +3,13 @@
     <h1 class="greeting-title">{{ greeting() }}, {{ adminFirstName() }}</h1>
     <p class="greeting-meta">
       {{ greetingDate() }}
-      @if (ticketsThisWeek(); as tickets) {
+      @if (ticketsInPeriod(); as tickets) {
         <span aria-hidden="true">&middot;</span> {{ tickets }}
       }
     </p>
   </div>
   <div class="greeting-actions">
-    <div class="segmented" role="group" aria-label="Period for the key metrics">
+    <div class="segmented" role="group" aria-label="Period for the dashboard">
       @for (option of periods; track option.value) {
         <button type="button" [attr.aria-pressed]="period() === option.value" (click)="setPeriod(option.value)">
           {{ option.label }}

@@ -5,9 +5,11 @@ import { NAV_MAIN } from '../../admin-nav';
 import { WidgetError } from '../widget-error/widget-error';
 import { formatKsh } from '../../../utils/money';
 
-/** How many route names the no-sales line spells out before "and N more".
- * The full list is in the line's tooltip. */
-const NO_SALES_NAMED = 2;
+/** Badge code from "Origin → Destination", matching the service's codes. */
+function routeCode(name: string): string {
+  const destination = name.split('→').pop() ?? name;
+  return destination.replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase();
+}
 
 @Component({
   imports: [RouterLink, WidgetError],
@@ -19,7 +21,7 @@ export class TopRoutesCard {
   state = input<WidgetState<TopRoutesData>>({ status: 'loading' });
   retry = output<void>();
 
-  /** Placeholder rows shown while loading, and ghost bars when empty. */
+  /** Placeholder rows shown while loading, and how many rows the list fills. */
   readonly placeholders = [0, 1, 2];
 
   /** Where "All routes" goes. Comes from the sidebar, so the link turns on by
@@ -44,22 +46,12 @@ export class TopRoutesCard {
   });
 
   routes = computed(() => this.data()?.routes ?? []);
-  maxTickets = computed(() => Math.max(1, ...this.routes().map((route) => route.ticketCount)));
 
-  private noSalesNames = computed(() => this.data()?.noSalesRoutes ?? []);
-  noSalesCount = computed(() => this.noSalesNames().length);
-  noSalesAll = computed(() => this.noSalesNames().join(', '));
-
-  /** "Mombasa → Malindi, Nairobi → Kampala and 2 more" */
-  noSalesPreview = computed(() => {
-    const names = this.noSalesNames();
-    const named = names.slice(0, NO_SALES_NAMED).join(', ');
-    const rest = names.length - NO_SALES_NAMED;
-    return rest > 0 ? `${named} and ${rest} more` : named;
-  });
-
-  /** Said when there is nothing to list, and which reason it is. */
-  noSalesEmptyText = computed(() =>
-    this.routes().length > 0 ? 'Every route sold tickets this week.' : 'No routes are set up yet.',
+  /** Routes with no sales fill the ranking's empty slots as greyed-out rows,
+   * so a quiet week still reads as a ranking, not one row and a gap. */
+  idleRoutes = computed(() =>
+    (this.data()?.noSalesRoutes ?? [])
+      .slice(0, Math.max(0, this.placeholders.length - this.routes().length))
+      .map((name) => ({ name, code: routeCode(name) })),
   );
 }

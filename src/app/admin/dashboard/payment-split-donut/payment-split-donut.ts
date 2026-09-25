@@ -43,7 +43,9 @@ export class PaymentSplitDonut {
 
   totalFull = computed(() => formatKsh(this.totalCollected()));
 
-  legend = computed(() =>
+  /** Segments of the bar, one per method that took money. "Not recorded"
+   * is striped so it reads as unknown, not as a method of its own. */
+  segments = computed(() =>
     this.slices().map((slice) => ({
       label: slice.label,
       percent: slice.percent,
@@ -51,26 +53,31 @@ export class PaymentSplitDonut {
       share: slice.amount,
       amount: formatKsh(slice.amount),
       color: METHOD_COLORS[slice.label] ?? OTHER_COLOR,
+      unknown: slice.label === 'Not recorded',
+      zero: false,
     })),
   );
 
-  /** Explains a "Not recorded" share when there is one, otherwise names the
-   * method most customers use. */
-  footerText = computed(() => {
-    const slices = this.slices();
-    const unrecorded = slices.find((slice) => slice.label === 'Not recorded');
-    if (unrecorded && unrecorded.percent === 100) {
-      return 'The payment method is not saved on bookings yet';
-    }
-    if (unrecorded) {
-      return `${unrecorded.percent}% of revenue has no payment method saved`;
-    }
-    const top = slices.reduce((best, slice) => (slice.amount > best.amount ? slice : best), slices[0]);
-    return `Most revenue comes through ${top.label}`;
+  /** The segments, then any known method that took nothing in the period, so
+   * the list always shows every way customers can pay. */
+  legend = computed(() => {
+    const present = new Set(this.slices().map((slice) => slice.label));
+    const missing = Object.keys(METHOD_COLORS)
+      .filter((label) => !present.has(label))
+      .map((label) => ({
+        label,
+        percent: 0,
+        share: 0,
+        amount: formatKsh(0),
+        color: METHOD_COLORS[label],
+        unknown: false,
+        zero: true,
+      }));
+    return [...this.segments(), ...missing];
   });
 
   chartDescription = computed(() => {
     const parts = this.slices().map((slice) => `${slice.label} ${slice.percent}%`);
-    return `Revenue by payment method, ${formatKsh(this.totalCollected())} collected in the last 7 days: ${parts.join(', ')}`;
+    return `Revenue by payment method, ${formatKsh(this.totalCollected())} collected: ${parts.join(', ')}`;
   });
 }

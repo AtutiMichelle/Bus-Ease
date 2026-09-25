@@ -1,15 +1,14 @@
 <section class="summary-card admin-card" aria-labelledby="week-title">
   <div class="admin-card-header">
     <div class="admin-card-heading">
-      <h2 id="week-title" class="admin-card-title">This week</h2>
-      <p class="admin-card-subtitle">Last 7 days</p>
+      <h2 id="week-title" class="admin-card-title">Summary</h2>
     </div>
   </div>
 
   @let current = state();
   <div class="admin-card-body">
     @if (current.status === 'error') {
-      <app-widget-error message="Couldn't load this week's numbers." (retry)="retry.emit()" />
+      <app-widget-error message="Couldn't load the summary." (retry)="retry.emit()" />
     } @else if (current.status === 'loading') {
       <div class="week-list" aria-hidden="true">
         @for (slot of placeholders; track slot) {
@@ -33,17 +32,4 @@
       </dl>
     }
   </div>
-
-  @if (current.status === 'loading') {
-    <div class="admin-card-footer summary-footer" aria-hidden="true"><span class="skeleton sk-footer"></span></div>
-  } @else if (untrackedText()) {
-    <div class="admin-card-footer summary-footer">
-      <span>{{ untrackedText() }}</span>
-      @if (setupRoute) {
-        <a class="admin-card-link" [routerLink]="setupRoute">Set up</a>
-      } @else {
-        <span class="admin-card-link admin-card-link-static">Set up</span>
-      }
-    </div>
-  }
 </section>

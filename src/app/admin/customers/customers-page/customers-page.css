@@ -39,17 +39,124 @@
 
 .customer-cell {
   display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Each tone is a status chip pair from theme.css. The ring is the text
+   colour faded out, the same way the KPI icon ring is made. */
+.customer-avatar {
+  --avatar-bg: var(--admin-neutral-bg);
+  --avatar-ink: var(--admin-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 44px;
+  height: 44px;
+  border: 2px solid color-mix(in srgb, var(--avatar-ink) 24%, transparent);
+  border-radius: 50%;
+  background-color: var(--avatar-bg);
+  color: var(--avatar-ink);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.tone-info {
+  --avatar-bg: var(--color-soft-bg);
+  --avatar-ink: var(--admin-info-text);
+}
+
+.tone-pos {
+  --avatar-bg: var(--admin-pos-bg);
+  --avatar-ink: var(--admin-pos-text);
+}
+
+.tone-warn {
+  --avatar-bg: var(--admin-warn-bg);
+  --avatar-ink: var(--admin-warn-text);
+}
+
+.tone-neg {
+  --avatar-bg: var(--admin-neg-bg);
+  --avatar-ink: var(--admin-neg-text);
+}
+
+.tone-navy {
+  --avatar-bg: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));
+  --avatar-ink: var(--color-primary);
+}
+
+.customer-text {
+  display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
+}
+
+.customer-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .customer-name {
   font-weight: 600;
+  white-space: nowrap;
 }
 
+.customer-new-tag {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 10px;
+  background-color: var(--admin-pos-bg);
+  color: var(--admin-pos-text);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* The max-width lets a long email end in an ellipsis instead of widening
+   the column. */
 .customer-email {
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 0.8125rem;
   color: var(--admin-muted);
+}
+
+.bookings-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 14px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.bookings-chip-has {
+  background-color: var(--color-soft-bg);
+  color: var(--admin-info-text);
+  font-weight: 600;
+}
+
+.bookings-chip-has app-admin-icon {
+  width: 13px;
+  height: 13px;
+}
+
+.bookings-chip-none {
+  border: 1px dashed var(--color-border);
+  color: var(--admin-muted);
+  font-weight: 500;
 }
 
 .customers-skeleton {

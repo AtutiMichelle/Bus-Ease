@@ -50,16 +50,31 @@
         <tbody>
           @for (customer of pagedCustomers(); track customer.id) {
             <tr>
-              <td class="customer-cell">
-                <span class="customer-name">{{ customer.name }}</span>
-                <span class="customer-email">{{ customer.email }}</span>
+              <td>
+                <div class="customer-cell">
+                  <span class="customer-avatar" [class]="'tone-' + avatarTone(customer)" aria-hidden="true">{{ initials(customer.name) }}</span>
+                  <div class="customer-text">
+                    <div class="customer-name-row">
+                      <span class="customer-name">{{ customer.name }}</span>
+                      @if (isNew(customer)) {
+                        <span class="customer-new-tag">New</span>
+                      }
+                    </div>
+                    <span class="customer-email">{{ customer.email }}</span>
+                  </div>
+                </div>
               </td>
               <td>{{ customer.phone ?? '—' }}</td>
               <td>{{ formatDate(customer.joinedAt) }}</td>
               <td>
-                <span class="admin-chip" [class]="customer.totalBookings > 0 ? 'admin-chip-info' : 'admin-chip-neutral'">
-                  {{ customer.totalBookings }} {{ customer.totalBookings === 1 ? 'booking' : 'bookings' }}
-                </span>
+                @if (customer.totalBookings > 0) {
+                  <span class="bookings-chip bookings-chip-has">
+                    <app-admin-icon [paths]="icons.ticket" />
+                    {{ customer.totalBookings }} {{ customer.totalBookings === 1 ? 'booking' : 'bookings' }}
+                  </span>
+                } @else {
+                  <span class="bookings-chip bookings-chip-none">No bookings</span>
+                }
               </td>
               <td>{{ formatKsh(customer.totalSpent) }}</td>
               <td>{{ formatDate(customer.lastBookingAt) }}</td>

@@ -9,12 +9,17 @@ export type DashboardTone = 'red' | 'moss' | 'gold' | 'navy';
  * failed query only puts its own card into 'error'. */
 export type WidgetState<T> = { status: 'loading' } | { status: 'error' } | { status: 'ready'; data: T };
 
-/** "This week" summary numbers, rendered by summary-list. A null value means the
+/** Summary card numbers for the selected period, rendered by summary-list. A null value means the
  * database has nothing to measure it with yet (no refunds or ratings tables),
  * and the row shows "Not tracked yet" instead of a made-up number. */
 export interface WeekSummary {
   ticketsSold: number;
+  /** Tickets and total seats on buses that departed in the period. */
+  seatsSold: number;
+  seatsTotal: number;
   tripsCompleted: number;
+  /** Buses leaving in the next 7 days, whatever the period. */
+  tripsUpcoming: number;
   refundsIssued: number | null;
   seatsOpenToday: number;
   averageRating: number | null;
@@ -61,8 +66,8 @@ export interface TopRoute {
 
 export interface TopRoutesData {
   routes: TopRoute[];
-  /** Routes that ran this week but sold nothing, named in the card's muted
-   * footer rather than silently omitted. */
+  /** Routes that sold nothing in the period, shown as greyed-out rows
+   * in any slots the top routes leave empty. */
   noSalesRoutes: string[];
 }
 

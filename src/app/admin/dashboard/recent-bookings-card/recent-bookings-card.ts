@@ -1,5 +1,5 @@
 import { Component, computed, input, output } from '@angular/core';
-import { DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { BookingStatusTag, DASHBOARD_LIST_LIMIT, RecentBooking } from '../../../models/admin-dashboard.model';
 import { WidgetError } from '../widget-error/widget-error';
@@ -7,7 +7,7 @@ import { WidgetError } from '../widget-error/widget-error';
 /** The dashboard's latest-bookings preview: always at most 5 rows of a fixed
  * height. The Bookings page has its own full list (bookings-table). */
 @Component({
-  imports: [DecimalPipe, RouterLink, WidgetError],
+  imports: [DatePipe, DecimalPipe, RouterLink, WidgetError],
   selector: 'app-recent-bookings-card',
   styleUrl: './recent-bookings-card.css',
   templateUrl: './recent-bookings-card.html',

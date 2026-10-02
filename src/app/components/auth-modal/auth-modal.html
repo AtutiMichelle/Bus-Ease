@@ -108,7 +108,7 @@
         <p class="auth-eyebrow">Almost there</p>
         <h1>Confirm Your Email</h1>
         <p class="auth-subtitle">
-          We've sent a confirmation link to {{ signupEmail() }}. Click it to activate your account, then log in.
+          We've sent a confirmation link to {{ signupForm.controls.email.value }}. Click it to activate your account, then log in.
         </p>
         <button type="button" class="auth-cta modal-cta-link" (click)="switchMode('login')">
           Go to Log In
@@ -117,18 +117,21 @@
         <h1>Create Account</h1>
         <p class="auth-subtitle">Sign up to book faster and track your trips.</p>
 
-        <form class="auth-form" (ngSubmit)="signup()">
+        <form class="auth-form" [formGroup]="signupForm" (ngSubmit)="signup()">
           <div class="field">
             <label for="am-signup-name">Full Name</label>
             <input
               id="am-signup-name"
               type="text"
               placeholder="Jane Doe"
-              [ngModel]="signupFullName()"
-              (ngModelChange)="signupFullName.set($event)"
-              name="signupFullName"
+              formControlName="fullName"
+              [attr.aria-invalid]="showSignupError('fullName')"
+              [attr.aria-describedby]="showSignupError('fullName') ? 'am-signup-name-error' : null"
               required
             />
+            @if (showSignupError('fullName')) {
+              <p class="error" id="am-signup-name-error">Enter your full name.</p>
+            }
           </div>
 
           <div class="field">
@@ -137,11 +140,14 @@
               id="am-signup-email"
               type="email"
               placeholder="you@example.com"
-              [ngModel]="signupEmail()"
-              (ngModelChange)="signupEmail.set($event)"
-              name="signupEmail"
+              formControlName="email"
+              [attr.aria-invalid]="showSignupError('email')"
+              [attr.aria-describedby]="showSignupError('email') ? 'am-signup-email-error' : null"
               required
             />
+            @if (showSignupError('email')) {
+              <p class="error" id="am-signup-email-error">Enter a valid email.</p>
+            }
           </div>
 
           <div class="field">
@@ -150,14 +156,18 @@
               id="am-signup-password"
               type="password"
               placeholder="Create a password"
-              [ngModel]="signupPassword()"
-              (ngModelChange)="signupPassword.set($event)"
-              name="signupPassword"
+              formControlName="password"
+              [attr.aria-invalid]="showSignupError('password')"
+              [attr.aria-describedby]="
+                showSignupError('password') ? 'am-signup-password-hint am-signup-password-error' : 'am-signup-password-hint'
+              "
               required
             />
-            <p class="field-hint">At least 8 characters, with a letter and a number.</p>
-            @if (signupPasswordTooWeak) {
-              <p class="error">Password must be at least 8 characters and include a letter and a number.</p>
+            <p class="field-hint" id="am-signup-password-hint">At least 8 characters, with a letter and a number.</p>
+            @if (showSignupError('password')) {
+              <p class="error" id="am-signup-password-error">
+                Password must be at least 8 characters and include a letter and a number.
+              </p>
             }
           </div>
 
@@ -167,13 +177,13 @@
               id="am-signup-confirm"
               type="password"
               placeholder="Re-enter your password"
-              [ngModel]="signupConfirmPassword()"
-              (ngModelChange)="signupConfirmPassword.set($event)"
-              name="signupConfirmPassword"
+              formControlName="confirmPassword"
+              [attr.aria-invalid]="showSignupError('confirmPassword')"
+              [attr.aria-describedby]="showSignupError('confirmPassword') ? 'am-signup-confirm-error' : null"
               required
             />
-            @if (signupPasswordsMismatch) {
-              <p class="error">Passwords don't match.</p>
+            @if (showSignupError('confirmPassword')) {
+              <p class="error" id="am-signup-confirm-error">Passwords don't match.</p>
             }
           </div>
 
@@ -181,7 +191,7 @@
             <p class="error">{{ signupError() }}</p>
           }
 
-          <button type="submit" class="auth-cta" [disabled]="!signupCanSubmit">
+          <button type="submit" class="auth-cta" [disabled]="signupSubmitting()">
             {{ signupSubmitting() ? 'Creating Account…' : 'Create Account' }}
           </button>
         </form>

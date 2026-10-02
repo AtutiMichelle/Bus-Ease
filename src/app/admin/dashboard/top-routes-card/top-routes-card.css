@@ -8,9 +8,23 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  padding: 14px 20px 20px;
 }
 
-/* Ranked rows: three of 56px fill the card body exactly */
+/* Tighter header than the shared one, so the content sits closer to the
+   title in these compact middle-row cards. */
+.admin-card-header {
+  min-height: 32px;
+  margin-bottom: 6px;
+}
+
+.admin-card-link {
+  min-height: 32px;
+}
+
+/* Ranked rows: code badge, route and revenue, the change chip, then the
+   ticket count in its own right-hand column so the numbers line up. The
+   busiest route gets a filled badge; routes with no sales step back. */
 .route-list {
   margin: 0;
   padding: 0;
@@ -19,61 +33,107 @@
 
 .route-row {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 8px;
-  height: 56px;
-  box-sizing: border-box;
-}
-
-.route-line {
-  display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+  height: 60px;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--admin-divider);
 }
 
-.route-name {
+.route-row:last-child {
+  border-bottom: none;
+}
+
+.route-badge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background-color: var(--color-soft-bg);
+  color: var(--admin-info-text);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.route-row-lead .route-badge {
+  background-color: var(--color-primary);
+  color: var(--admin-on-navy);
+}
+
+.route-text {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.route-name,
+.route-meta {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.route-name {
   font-size: 0.9375rem;
   font-weight: 600;
   color: var(--admin-ink);
 }
 
+.route-meta {
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--admin-secondary);
+}
+
+.route-row .admin-chip {
+  flex-shrink: 0;
+}
+
 .route-count {
   flex-shrink: 0;
-  font-size: 0.9375rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 52px;
+  line-height: 1.15;
+}
+
+.route-count-num {
+  font-family: var(--admin-font-display);
+  font-size: 1.125rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--admin-ink);
 }
 
-.route-line .admin-chip {
-  flex-shrink: 0;
+.route-count-label {
+  font-size: 0.75rem;
+  color: var(--admin-muted);
 }
 
-.route-track {
-  height: 8px;
-  border-radius: 4px;
-  background-color: var(--admin-track);
-  overflow: hidden;
+.route-row-idle .route-badge {
+  background-color: var(--admin-neutral-bg);
+  color: var(--admin-muted);
 }
 
-.route-fill {
-  height: 100%;
-  border-radius: 4px;
-  background-color: var(--admin-ink);
+.route-row-idle .route-name {
+  font-weight: 500;
+  color: var(--admin-secondary);
 }
 
-.route-fill-top {
-  background-color: var(--admin-accent);
+.route-row-idle .route-meta,
+.route-row-idle .route-count-num {
+  color: var(--admin-muted);
 }
 
-/* Empty state: faint ghost bars where the ranking will go, then one line
-   saying why they are empty */
+/* Only when there are no routes at all. A quiet period still lists the
+   routes, greyed out with 0 tickets. */
 .empty {
   flex: 1;
   display: flex;
@@ -81,49 +141,6 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-}
-
-.ghost-rows {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
-  margin-bottom: var(--space-3);
-}
-
-.ghost-row {
-  display: flex;
-  gap: 12px;
-}
-
-.ghost-bar {
-  height: 8px;
-  border-radius: 4px;
-  background-color: var(--admin-track);
-}
-
-.ghost-row-0 .ghost-bar:first-child {
-  flex: 3;
-}
-
-.ghost-row-0 .ghost-bar:last-child {
-  flex: 1.2;
-}
-
-.ghost-row-1 .ghost-bar:first-child {
-  flex: 2.4;
-}
-
-.ghost-row-1 .ghost-bar:last-child {
-  flex: 1.6;
-}
-
-.ghost-row-2 .ghost-bar:first-child {
-  flex: 1.6;
-}
-
-.ghost-row-2 .ghost-bar:last-child {
-  flex: 2;
 }
 
 .empty-title {
@@ -139,57 +156,27 @@
   color: var(--admin-muted);
 }
 
-/* Routes that ran but sold nothing, pinned to the bottom of the card. The
-   minimum height is reserved so the card is the same size with or without
-   them. */
-.no-sales {
-  box-sizing: border-box;
-  min-height: 108px;
-  margin-top: auto;
-  padding-top: 12px;
-  border-top: 1px solid var(--admin-divider);
-}
-
-.no-sales-title {
-  margin: 0 0 8px;
-  font-size: 0.8125rem;
-  color: var(--admin-muted);
-}
-
-.no-sales-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.no-sales-list .admin-chip {
-  display: block;
-  max-width: calc(50% - 4px);
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.no-sales-empty {
-  margin: 0;
-  font-size: 0.875rem;
-  color: var(--admin-secondary);
-}
-
 /* Loading placeholder pieces */
+.sk-badge {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+}
+
 .sk-name {
   width: 60%;
   height: 14px;
+  margin-bottom: 4px;
 }
 
-.sk-bar {
-  width: 100%;
-  height: 8px;
+.sk-meta {
+  width: 35%;
+  height: 12px;
 }
 
-.sk-no-sales {
-  width: 70%;
-  height: 14px;
+.sk-count {
+  flex-shrink: 0;
+  width: 40px;
+  height: 28px;
 }

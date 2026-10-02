@@ -2,6 +2,7 @@
    styles.css. Only this card's own row layout lives here. */
 :host {
   display: flex;
+  container-type: inline-size;
 }
 
 .bookings-card {
@@ -11,20 +12,59 @@
   min-width: 0;
 }
 
-/* The amount column is a fixed width, so a long name or route can only ever
-   squeeze the customer column, never push the amount out of place. */
-.col-amount {
-  width: 84px;
+/* Rows are a grid so the columns keep fixed widths: a long name can only
+   squeeze the customer column, never push the amount or status out of
+   place. */
+.admin-list-table,
+.admin-list-table thead,
+.admin-list-table tbody {
+  display: block;
 }
 
-.amount-head {
-  text-align: right;
+.admin-list-table tr {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) 92px 84px;
+  column-gap: 12px;
+  align-items: center;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--admin-divider);
+}
+
+.admin-list-table thead tr {
+  height: 32px;
+}
+
+.admin-list-table tbody tr {
+  height: 60px;
+}
+
+.admin-list-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+/* The row carries the height and the divider, so the cells drop theirs. */
+.admin-list-table th,
+.admin-list-table td {
+  height: auto;
+  padding: 0;
+  border-bottom: none;
+}
+
+td.route-col {
+  font-size: 0.875rem;
+  color: var(--admin-secondary);
+}
+
+td.amount-col {
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 .customer {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .avatar {
@@ -32,24 +72,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background-color: var(--color-soft-bg);
   color: var(--admin-info-text);
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 600;
 }
 
 /* min-width: 0 lets the text column shrink below its content, which is what
-   makes the ellipsis on the name and route work. */
+   makes the ellipsis on the name work. */
 .customer-text {
   flex: 1;
   min-width: 0;
 }
 
 .customer-name,
-.customer-route {
+.customer-time {
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -62,28 +102,28 @@
   color: var(--admin-ink);
 }
 
-.customer-route {
-  font-size: 0.8125rem;
+.customer-time {
+  font-size: 0.75rem;
   color: var(--admin-muted);
 }
 
-.amount-cell {
-  text-align: right;
-}
+/* In a narrow card the route column goes, so the name keeps enough room.
+   The card's own width decides, not the screen's. */
+@container (max-width: 480px) {
+  .admin-list-table tr {
+    grid-template-columns: minmax(0, 1fr) 88px 80px;
+  }
 
-.amount {
-  margin: 0 0 4px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  color: var(--admin-ink);
+  .route-col {
+    display: none;
+  }
 }
 
 /* Loading placeholder pieces */
 .sk-avatar {
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
 }
 

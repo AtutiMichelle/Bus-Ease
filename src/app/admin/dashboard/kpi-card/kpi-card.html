@@ -1,8 +1,8 @@
 @if (card(); as data) {
   <article class="kpi-card admin-card" [class]="'tone-' + data.tone">
     <div class="kpi-head">
-      <p class="kpi-label">{{ data.label }}</p>
       <span class="kpi-icon" aria-hidden="true"><app-admin-icon [paths]="icons[data.icon]" /></span>
+      <p class="kpi-label">{{ data.label }}</p>
     </div>
 
     <p class="kpi-value">
@@ -12,25 +12,29 @@
       <span class="kpi-number">{{ data.value }}</span>
     </p>
 
-    <p class="kpi-delta">
-      <span class="admin-chip" [class]="chipClass[data.delta.direction]">
-        @if (data.delta.direction === 'up') {
-          <span aria-hidden="true">&uarr;</span>
-        } @else if (data.delta.direction === 'down') {
-          <span aria-hidden="true">&darr;</span>
+    <p class="kpi-delta" [class]="'delta-' + data.delta.direction">
+      @if (data.delta.direction === 'warning') {
+        <span class="kpi-change">{{ data.delta.note }}</span>
+      } @else {
+        <span class="kpi-change">
+          @if (data.delta.direction === 'up') {
+            <span aria-hidden="true">&uarr;</span>
+          } @else if (data.delta.direction === 'down') {
+            <span aria-hidden="true">&darr;</span>
+          }
+          <span class="sr-only">{{ directionWord[data.delta.direction] }}</span>{{ data.delta.text }}
+        </span>
+        @if (data.delta.note) {
+          <span class="kpi-note">{{ data.delta.note }}</span>
         }
-        <span class="sr-only">{{ directionWord[data.delta.direction] }}</span>{{ data.delta.text }}
-      </span>
-      @if (data.delta.note) {
-        <span class="kpi-note">{{ data.delta.note }}</span>
       }
     </p>
   </article>
 } @else if (loading()) {
   <div class="kpi-card admin-card kpi-skeleton" aria-hidden="true">
     <div class="kpi-head">
-      <span class="skeleton sk-label"></span>
       <span class="skeleton sk-icon"></span>
+      <span class="skeleton sk-label"></span>
     </div>
     <span class="skeleton sk-value"></span>
     <span class="skeleton sk-delta"></span>

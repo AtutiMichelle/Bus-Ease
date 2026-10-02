@@ -69,6 +69,14 @@
   --admin-info-text: #24468a;
   --admin-neutral-bg: #f1eee8;
 
+  /* Payment method colours, one per method (see payment-split-donut.ts).
+     Navy blue, a softened brand red and a light blue, checked for colour-blind
+     separation. Other/not recorded is a neutral gray. */
+  --admin-chart-mpesa: #2d56a8;
+  --admin-chart-card: #cf5a4f;
+  --admin-chart-wallet: #6d95e8;
+  --admin-chart-other: #9aa3b2;
+
   --admin-radius-card: 16px;
 
   /* Text on the navy sidebar */

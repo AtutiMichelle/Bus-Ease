@@ -63,11 +63,11 @@
 }
 
 .nav-section-label {
-  margin: var(--space-2) 0 var(--space-2);
+  margin: var(--space-2) 0 6px;
   padding: 0 var(--space-3);
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--admin-on-navy-muted);
 }
@@ -104,11 +104,12 @@ a.nav-link:hover {
   color: var(--admin-on-navy);
 }
 
-/* Current page: soft filled row. No outline, so it can't be mistaken for
-   keyboard focus. */
-.nav-link.active {
-  background-color: rgba(255, 255, 255, 0.14);
-  color: var(--admin-on-navy);
+/* Current page: a light pill with navy text. No outline, so it can't be
+   mistaken for keyboard focus. */
+.nav-link.active,
+a.nav-link.active:hover {
+  background-color: var(--color-bg);
+  color: var(--admin-ink);
   font-weight: 600;
 }
 
@@ -147,6 +148,14 @@ a.nav-link:focus:not(:focus-visible) {
 .nav-bottom {
   margin-top: auto;
   padding-top: var(--space-3);
+}
+
+.sidebar-footer {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.75rem;
+  color: var(--admin-on-navy-muted);
 }
 
 .sidebar-backdrop {
@@ -191,7 +200,7 @@ a.nav-link:focus:not(:focus-visible) {
   padding: 0 var(--space-3);
   box-sizing: border-box;
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: 999px;
   background-color: var(--color-bg);
   color: var(--admin-muted);
 }
@@ -232,7 +241,7 @@ a.nav-link:focus:not(:focus-visible) {
   width: 44px;
   height: 44px;
   padding: 0;
-  border-radius: 50%;
+  border-radius: 12px;
   border: 1px solid var(--color-border);
   background-color: var(--color-surface);
   color: var(--admin-secondary);
@@ -250,8 +259,8 @@ a.nav-link:focus:not(:focus-visible) {
 
 .icon-btn-badge {
   position: absolute;
-  top: 9px;
-  right: 10px;
+  top: 10px;
+  right: 11px;
   width: 9px;
   height: 9px;
   border-radius: 50%;
@@ -269,43 +278,100 @@ a.nav-link:focus:not(:focus-visible) {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 0;
+  min-height: 44px;
+  padding: 0 8px 0 0;
   border: none;
+  border-radius: 999px;
   background: none;
   font-family: inherit;
   text-align: left;
   cursor: pointer;
 }
 
-.identity-toggle:focus-visible {
-  outline: 2px solid var(--color-primary-light);
-  outline-offset: 4px;
-  border-radius: 24px;
+.identity-toggle:hover .identity-caret {
+  color: var(--admin-ink);
 }
 
-.identity-caret {
-  width: 16px;
-  height: 16px;
-  color: var(--admin-muted);
+.identity-toggle:focus-visible {
+  outline: 2px solid var(--color-primary-light);
+  outline-offset: 2px;
 }
 
 .topbar-identity-text {
+  display: flex;
+  flex-direction: column;
   line-height: 1.25;
 }
 
 .topbar-name {
-  display: block;
-  margin: 0;
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--admin-ink);
 }
 
 .topbar-role {
-  display: block;
-  margin: 0;
   font-size: 0.75rem;
   color: var(--admin-muted);
+}
+
+.identity-caret {
+  width: 16px;
+  height: 16px;
+  color: var(--admin-muted);
+  transition: transform 0.15s;
+}
+
+.identity-toggle[aria-expanded='true'] .identity-caret {
+  transform: rotate(180deg);
+}
+
+.profile-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 180px;
+  padding: 6px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background-color: var(--color-surface);
+  box-shadow: 0 12px 32px rgba(20, 33, 61, 0.12);
+}
+
+.profile-menu a,
+.profile-menu button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--admin-ink);
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.profile-menu app-admin-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--admin-muted);
+}
+
+.profile-menu a:hover,
+.profile-menu button:hover {
+  background-color: var(--color-bg);
+}
+
+.profile-menu a:focus-visible,
+.profile-menu button:focus-visible {
+  outline: 2px solid var(--color-primary-light);
+  outline-offset: -2px;
 }
 
 .avatar-badge {
@@ -401,7 +467,7 @@ a.nav-link:focus:not(:focus-visible) {
   width: 100%;
   /* Caps the page width and centres it, so wide screens get even margins on
      both sides instead of a blank strip on the right. */
-  max-width: 1500px;
+  max-width: 1800px;
   margin: 0 auto;
   box-sizing: border-box;
   padding: 20px var(--space-5) var(--space-5);
@@ -435,8 +501,13 @@ a.nav-link:focus:not(:focus-visible) {
     display: inline-flex;
   }
 
-  .topbar-identity-text {
+  .topbar-identity-text,
+  .identity-caret {
     display: none;
+  }
+
+  .identity-toggle {
+    padding: 0;
   }
 }
 
@@ -466,7 +537,8 @@ a.nav-link:focus:not(:focus-visible) {
 
 @media (prefers-reduced-motion: reduce) {
   .admin-sidebar,
-  .nav-link {
+  .nav-link,
+  .identity-caret {
     transition: none;
   }
 }

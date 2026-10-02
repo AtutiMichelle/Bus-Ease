@@ -1,16 +1,19 @@
 import { Component, DestroyRef, HostListener, computed, effect, inject, signal, untracked } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService, LoginLockedError } from '../../services/auth.service';
 import { AuthModalService } from '../../services/auth-modal.service';
 import { StaffService } from '../../services/staff.service';
+import { matchFields, notBlank, passwordStrength } from '../../utils/validators';
+
+type SignupField = 'fullName' | 'email' | 'password' | 'confirmPassword';
 
 /** How long the resend button stays held after a reset email goes out. */
 const RESEND_SECONDS = 60;
 
 @Component({
   selector: 'app-auth-modal',
-  imports: [FormsModule],
+  imports: [FormsModule, ReactiveFormsModule],
   styleUrl: './auth-modal.css',
   templateUrl: './auth-modal.html',
 })
@@ -50,10 +53,18 @@ export class AuthModal {
   });
   private resendTimer: ReturnType<typeof setInterval> | null = null;
 
-  signupFullName = signal('');
-  signupEmail = signal('');
-  signupPassword = signal('');
-  signupConfirmPassword = signal('');
+  signupForm = inject(NonNullableFormBuilder).group(
+    {
+      fullName: ['', [Validators.required, notBlank]],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, passwordStrength]],
+      confirmPassword: ['', Validators.required],
+    },
+    { validators: matchFields('password', 'confirmPassword') },
+  );
+  /** Set on the first submit click, so every field's error shows from then on
+   * even if it was never touched. */
+  signupSubmitted = signal(false);
   signupSubmitting = signal(false);
   signupError = signal('');
   needsEmailConfirmation = signal(false);
@@ -77,33 +88,16 @@ export class AuthModal {
     return this.forgotEmail().trim().length > 0 && !this.forgotSubmitting() && this.resendSecondsLeft() === 0;
   }
 
-  get signupPasswordsMismatch(): boolean {
-    return (
-      this.signupConfirmPassword().trim().length > 0 && this.signupPassword() !== this.signupConfirmPassword()
-    );
-  }
-
-  /** Mirrors the strength rule enforced on the account page's change-password
-   * form, checked here too so a weak password is caught before signup rather
-   * than only at Supabase's own (lower, dashboard-configured) minimum. */
-  get signupPasswordTooWeak(): boolean {
-    const password = this.signupPassword();
-    if (password.length === 0) {
-      return false;
-    }
-    return password.length < 8 || !/[a-zA-Z]/.test(password) || !/[0-9]/.test(password);
-  }
-
-  get signupCanSubmit(): boolean {
-    return (
-      this.signupFullName().trim().length > 0 &&
-      this.signupEmail().trim().length > 0 &&
-      this.signupPassword().trim().length > 0 &&
-      this.signupConfirmPassword().trim().length > 0 &&
-      !this.signupPasswordTooWeak &&
-      !this.signupPasswordsMismatch &&
-      !this.signupSubmitting()
-    );
+  /** Whether a signup field's error should show: it has one, and the user has
+   * either left the field or tried to submit. The password strength rule
+   * catches a weak password before signup rather than only at Supabase's own
+   * (lower, dashboard-configured) minimum. The confirm field also counts the
+   * group's mismatch error as its own. */
+  showSignupError(field: SignupField): boolean {
+    const control = this.signupForm.controls[field];
+    const invalid =
+      control.invalid || (field === 'confirmPassword' && this.signupForm.hasError('mismatch'));
+    return invalid && (control.touched || this.signupSubmitted());
   }
 
   constructor() {
@@ -316,17 +310,19 @@ export class AuthModal {
   }
 
   async signup(): Promise<void> {
-    if (!this.signupCanSubmit) {
+    if (this.signupSubmitting()) {
       return;
     }
+    this.signupSubmitted.set(true);
+    if (this.signupForm.invalid) {
+      this.signupForm.markAllAsTouched();
+      return;
+    }
+    const { fullName, email, password } = this.signupForm.getRawValue();
     this.signupError.set('');
     this.signupSubmitting.set(true);
     try {
-      const { needsEmailConfirmation } = await this.authService.signUp(
-        this.signupEmail().trim(),
-        this.signupPassword(),
-        this.signupFullName().trim(),
-      );
+      const { needsEmailConfirmation } = await this.authService.signUp(email.trim(), password, fullName.trim());
       if (needsEmailConfirmation) {
         this.needsEmailConfirmation.set(true);
       } else {

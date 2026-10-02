@@ -5,8 +5,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SearchBar } from '../../components/search-bar/search-bar';
 import { SeatPanel } from '../../components/seat-panel/seat-panel';
 import { FilterPanel } from '../../components/filter-panel/filter-panel';
-import { TravlerApiService } from '../../travler/travler-api.service';
-import { travlerErrorMessage } from '../../travler/travler-errors';
+import { TRIP_PROVIDER } from '../../trips/trip-provider.token';
+import { tripErrorMessage } from '../../trips/trip-errors';
 import { Trip } from '../../models/trip.model';
 import { todayDateString } from '../../utils/date';
 import { FilterState, emptyFilterState, matchesFilters } from '../../utils/bus-filters';
@@ -28,7 +28,7 @@ interface ResolvedRoute {
 export class Results {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private travler = inject(TravlerApiService);
+  private tripProvider = inject(TRIP_PROVIDER);
 
   private queryParamMap = toSignal(this.route.queryParamMap, { initialValue: this.route.snapshot.queryParamMap });
 
@@ -106,11 +106,11 @@ export class Results {
       return { fromCityId: originId, toCityId: destinationId };
     }
     const byName = (name: string) => (city: { name: string }) => city.name.toLowerCase() === name.trim().toLowerCase();
-    const from = originId || (await this.travler.getCities()).find(byName(origin))?.id;
+    const from = originId || (await this.tripProvider.getCities()).find(byName(origin))?.id;
     if (!from) {
       return null;
     }
-    const to = destinationId || (await this.travler.getCities(from)).find(byName(destination))?.id;
+    const to = destinationId || (await this.tripProvider.getCities(from)).find(byName(destination))?.id;
     return to ? { fromCityId: from, toCityId: to } : null;
   }
 
@@ -129,14 +129,14 @@ export class Results {
         this.routeNotServed.set(true);
         return;
       }
-      const trips = await this.travler.searchTrips({ ...resolved, from: origin, to: destination, date: journeyDate });
+      const trips = await this.tripProvider.searchTrips({ ...resolved, from: origin, to: destination, date: journeyDate });
       if (token !== this.loadToken) {
         return;
       }
       this.trips.set(trips);
     } catch (error) {
       if (token === this.loadToken) {
-        this.errorMessage.set(travlerErrorMessage(error, 'Could not load trips for this route. Please try again.'));
+        this.errorMessage.set(tripErrorMessage(error, 'Could not load trips for this route. Please try again.'));
       }
     } finally {
       if (token === this.loadToken) {

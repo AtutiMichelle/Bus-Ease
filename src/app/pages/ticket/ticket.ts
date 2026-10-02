@@ -2,7 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
 import { BookingDraftService } from '../../services/booking-draft.service';
-import { TravlerApiService } from '../../travler/travler-api.service';
+import { TRIP_PROVIDER } from '../../trips/trip-provider.token';
 
 @Component({
   imports: [RouterLink, DecimalPipe],
@@ -16,7 +16,7 @@ export class Ticket {
 
   private route = inject(ActivatedRoute);
   private bookingDraft = inject(BookingDraftService);
-  private travler = inject(TravlerApiService);
+  private tripProvider = inject(TRIP_PROVIDER);
 
   ticketNumber = signal('');
   reference = signal('');
@@ -61,7 +61,7 @@ export class Ticket {
     this.printing.set(true);
     this.printFallback.set(false);
     try {
-      const { url } = await this.travler.getPrintableTicket(ticketNumber);
+      const { url } = await this.tripProvider.getPrintableTicket(ticketNumber);
       if (!/^https?:\/\//i.test(url)) {
         throw new Error('No printable URL');
       }

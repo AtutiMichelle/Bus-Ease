@@ -4,9 +4,8 @@ import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BookingDraftService } from '../../services/booking-draft.service';
 import { AuthService } from '../../services/auth.service';
-import { TravlerApiService } from '../../travler/travler-api.service';
-import { travlerErrorMessage } from '../../travler/travler-errors';
-import { BOOKING_HOLD_MINUTES } from '../../travler/travler.adapters';
+import { TRIP_PROVIDER } from '../../trips/trip-provider.token';
+import { tripErrorMessage } from '../../trips/trip-errors';
 import { TripPassenger } from '../../models/booking.model';
 import { TripSummary } from '../../components/trip-summary/trip-summary';
 import { isValidEmail, isValidIdNumber, normalizeKenyanPhone } from '../../utils/validation';
@@ -22,11 +21,11 @@ type PassengerField = 'fullName' | 'idNumber';
 export class Confirmation {
   readonly steps = ['Search', 'Seats', 'Details', 'Payment', 'Confirmation'];
   readonly currentStepIndex = 2;
-  readonly holdMinutes = BOOKING_HOLD_MINUTES;
 
   private bookingDraft = inject(BookingDraftService);
   private authService = inject(AuthService);
-  private travler = inject(TravlerApiService);
+  private tripProvider = inject(TRIP_PROVIDER);
+  readonly holdMinutes = this.tripProvider.holdMinutes;
   private router = inject(Router);
 
   draft = this.bookingDraft.current;
@@ -157,7 +156,7 @@ export class Confirmation {
     this.errorMessage.set('');
     this.submitting.set(true);
     try {
-      const hold = await this.travler.createBooking({
+      const hold = await this.tripProvider.createBooking({
         trip: draft.trip,
         boardingPointId: draft.boarding.id,
         droppingPointId: draft.dropping.id,
@@ -170,7 +169,7 @@ export class Confirmation {
         queryParams: { busId: draft.trip.id, seats: draft.seats.map((s) => s.name).join(',') },
       });
     } catch (error) {
-      this.errorMessage.set(travlerErrorMessage(error, "We couldn't reserve your seats. Please try again."));
+      this.errorMessage.set(tripErrorMessage(error, "We couldn't reserve your seats. Please try again."));
     } finally {
       this.submitting.set(false);
     }

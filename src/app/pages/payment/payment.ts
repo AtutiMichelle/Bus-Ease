@@ -3,9 +3,8 @@ import { Router, RouterLink } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BookingDraftService } from '../../services/booking-draft.service';
-import { TravlerApiService } from '../../travler/travler-api.service';
-import { TravlerApiError, travlerErrorMessage } from '../../travler/travler-errors';
-import { BOOKING_HOLD_MINUTES } from '../../travler/travler.adapters';
+import { TRIP_PROVIDER } from '../../trips/trip-provider.token';
+import { TripApiError, tripErrorMessage } from '../../trips/trip-errors';
 import { TripSummary } from '../../components/trip-summary/trip-summary';
 import { environment } from '../../../environment';
 import { normalizeKenyanPhone } from '../../utils/validation';
@@ -25,11 +24,11 @@ const POLL_TIMEOUT_MS = 90_000;
 export class Payment {
   readonly steps = ['Search', 'Seats', 'Details', 'Payment', 'Confirmation'];
   readonly currentStepIndex = 3;
-  readonly holdMinutes = BOOKING_HOLD_MINUTES;
   readonly mpesaLogo = environment.assets.paymentLogos.mpesa;
 
   private bookingDraft = inject(BookingDraftService);
-  private travler = inject(TravlerApiService);
+  private tripProvider = inject(TRIP_PROVIDER);
+  readonly holdMinutes = this.tripProvider.holdMinutes;
   private router = inject(Router);
 
   draft = this.bookingDraft.current;
@@ -170,7 +169,7 @@ export class Payment {
     this.errorMessage.set('');
     this.phase.set('starting');
     try {
-      const payment = await this.travler.startMpesaPayment(hold.reference, phone, hold.totalAmount);
+      const payment = await this.tripProvider.startMpesaPayment(hold.reference, phone, hold.totalAmount);
       if (attempt !== this.attempt || this.destroyed) {
         return;
       }
@@ -191,12 +190,12 @@ export class Payment {
 
   private async poll(attempt: number, reference: string, deadline: number): Promise<void> {
     try {
-      const status = await this.travler.checkMpesaPayment(reference);
+      const status = await this.tripProvider.checkMpesaPayment(reference);
       if (attempt !== this.attempt || this.destroyed) {
         return;
       }
       if (status.state === 'success') {
-        this.succeed(status.ticketNumber ?? '', reference);
+        this.succeed(status.ticketNumber ?? '', reference, status.bookingReference);
         return;
       }
       if (status.state === 'rejected') {
@@ -210,7 +209,7 @@ export class Payment {
       }
       // A clear answer from the API ends the wait; a dropped connection
       // doesn't, the next check may well get through.
-      if (error instanceof TravlerApiError && error.code) {
+      if (error instanceof TripApiError && error.code) {
         this.failWith(error, "We couldn't confirm your payment.");
         return;
       }
@@ -224,18 +223,23 @@ export class Payment {
   }
 
   private failWith(error: unknown, fallback: string): void {
-    this.errorMessage.set(travlerErrorMessage(error, fallback));
-    const rejected = error instanceof TravlerApiError && error.code === 'PAYMENT_REJECTED';
+    this.errorMessage.set(tripErrorMessage(error, fallback));
+    const rejected = error instanceof TripApiError && error.code === 'PAYMENT_REJECTED';
     this.phase.set(rejected ? 'rejected' : 'error');
     if (this.remainingSeconds() <= 0) {
       this.phase.set('expired');
     }
   }
 
-  private succeed(ticketNumber: string, paymentReference: string): void {
+  private succeed(ticketNumber: string, paymentReference: string, bookingReference?: string): void {
     this.stopCountdown();
     this.stopPolling();
-    this.bookingDraft.update({ ticketNumber, paymentReference });
+    const hold = this.hold();
+    this.bookingDraft.update({
+      ticketNumber,
+      paymentReference,
+      hold: hold && bookingReference ? { ...hold, reference: bookingReference } : hold,
+    });
     this.router.navigate(['/ticket'], { queryParams: this.ticketQueryParams() });
   }
 

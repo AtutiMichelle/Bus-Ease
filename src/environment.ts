@@ -5,6 +5,10 @@ export const environment = {
     key: 'sb_publishable_Phvs7ujtgXXCmHpWoWDNUg_Y3SLqBDz'
   },
 
+  /** Where trips, seats and bookings come from: 'travler' (the booking API
+   * at travlerApiUrl) or 'supabase' (BusEase's own buses tables). */
+  tripProvider: 'travler' as 'travler' | 'supabase',
+
   /** Travler booking API. In development this is the local mock server
    * (run it separately with `npm start` in the mock project). */
   travlerApiUrl: 'http://localhost:4010/globalApi',

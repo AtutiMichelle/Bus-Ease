@@ -41,15 +41,16 @@ export class BookingService {
    * held by `heldBy` and hasn't expired, then creates the booking and
    * passenger rows, marks the seats booked, and decrements the bus's
    * available_seats — all atomically, server-side. Works for both a
-   * logged-in booking and a guest one (pass a null user/email for guests). */
-  async confirmBooking(bus: Bus, passengers: PassengerInput[], heldBy: string): Promise<string> {
+   * logged-in booking and a guest one. `contactEmail` is used when there's
+   * no logged-in user, so guest bookings keep a way to reach them. */
+  async confirmBooking(bus: Bus, passengers: PassengerInput[], heldBy: string, contactEmail?: string): Promise<string> {
     const user = this.authService.user();
     const { data, error } = await this.client.rpc('confirm_booking', {
       p_bus_id: bus.id,
       p_seat_numbers: passengers.map((p) => p.seatNumber),
       p_held_by: heldBy,
       p_user_id: user?.id ?? null,
-      p_contact_email: user?.email ?? null,
+      p_contact_email: user?.email ?? contactEmail ?? null,
       p_passengers: passengers.map((p) => ({
         seat_number: p.seatNumber,
         full_name: p.fullName,

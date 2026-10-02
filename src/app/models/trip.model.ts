@@ -4,6 +4,15 @@ import { BusClassOption } from './bus.model';
  * booking API sends still works, it just shows without a class colour. */
 export type SeatClassName = BusClassOption['className'];
 
+/** What a trip search is for. City ids are whatever the live provider uses. */
+export interface TripSearchContext {
+  fromCityId: string;
+  toCityId: string;
+  from: string;
+  to: string;
+  date: string;
+}
+
 export interface City {
   id: string;
   name: string;
@@ -96,6 +105,9 @@ export interface PaymentStatus {
   reference: string;
   state: PaymentState;
   ticketNumber?: string;
+  /** The final booking reference, for sources that only assign it once
+   * payment succeeds. When set it replaces the hold's reference. */
+  bookingReference?: string;
 }
 
 export interface PrintableTicket {

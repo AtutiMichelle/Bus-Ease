@@ -5,6 +5,10 @@ export const environment = {
     key: 'sb_publishable_Phvs7ujtgXXCmHpWoWDNUg_Y3SLqBDz'
   },
 
+  /** Where trips, seats and bookings come from: 'travler' (the booking API
+   * at travlerApiUrl) or 'supabase' (BusEase's own buses tables). */
+  tripProvider: 'travler' as 'travler' | 'supabase',
+
   /** PLACEHOLDER: the real production Travler API URL is not known yet.
    * Replace this before deploying, or every booking request will fail. */
   travlerApiUrl: 'https://TRAVLER-PRODUCTION-URL-NOT-SET.invalid/globalApi',

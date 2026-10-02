@@ -18,8 +18,8 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { AuthModalService } from '../../services/auth-modal.service';
 import { BookingDraftService } from '../../services/booking-draft.service';
-import { TravlerApiService } from '../../travler/travler-api.service';
-import { travlerErrorMessage } from '../../travler/travler-errors';
+import { TRIP_PROVIDER } from '../../trips/trip-provider.token';
+import { tripErrorMessage } from '../../trips/trip-errors';
 import { BoardingDroppingPoints, LayoutSeat, SeatClassName, SeatLayout, Trip } from '../../models/trip.model';
 import { SelectedSeat } from '../../models/booking.model';
 
@@ -56,7 +56,7 @@ export class SeatPanel {
   trip = input.required<Trip>();
   closed = output<void>();
 
-  private travler = inject(TravlerApiService);
+  private tripProvider = inject(TRIP_PROVIDER);
   private router = inject(Router);
   private authService = inject(AuthService);
   private authModal = inject(AuthModalService);
@@ -196,8 +196,8 @@ export class SeatPanel {
     this.layout.set(undefined);
     try {
       const [layout, points] = await Promise.all([
-        this.travler.getSeatLayout(trip),
-        this.travler.getBoardingDroppingPoints(trip),
+        this.tripProvider.getSeatLayout(trip),
+        this.tripProvider.getBoardingDroppingPoints(trip),
       ]);
       this.layout.set(layout);
       this.points.set(points);
@@ -208,7 +208,7 @@ export class SeatPanel {
         this.errorMessage.set("This bus doesn't have a seat map yet.");
       }
     } catch (error) {
-      this.errorMessage.set(travlerErrorMessage(error, 'Could not load the seat map. Please try again.'));
+      this.errorMessage.set(tripErrorMessage(error, 'Could not load the seat map. Please try again.'));
     } finally {
       this.loading.set(false);
     }

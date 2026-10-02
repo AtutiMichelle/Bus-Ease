@@ -11,10 +11,11 @@ import {
   PrintableTicket,
   SeatLayout,
   Trip,
-} from '../models/trip.model';
-import { BookingContact, TripPassenger } from '../models/booking.model';
-import {
   TripSearchContext,
+} from '../models/trip.model';
+import { BookingRequest, TripProvider } from '../trips/trip-provider';
+import {
+  BOOKING_HOLD_MINUTES,
   adaptBooking,
   adaptCity,
   adaptPaymentStart,
@@ -45,21 +46,13 @@ import {
   TravlerTrip,
 } from './travler.types';
 
-export interface BookingRequest {
-  trip: Trip;
-  boardingPointId: string;
-  droppingPointId: string;
-  passengers: TripPassenger[];
-  contact: BookingContact;
-  totalAmount: number;
-}
-
 /** The only place that talks to the Travler API. Each method maps to one
  * endpoint (paths are case sensitive and deliberately inconsistent, they
  * match the API as-is), turns failures into TravlerApiError with a friendly
  * message, and returns clean BusEase models. */
 @Injectable({ providedIn: 'root' })
-export class TravlerApiService {
+export class TravlerApiService implements TripProvider {
+  readonly holdMinutes = BOOKING_HOLD_MINUTES;
   private http = inject(HttpClient);
   private baseUrl = environment.travlerApiUrl.replace(/\/+$/, '');
   private cityCache = new Map<string, Promise<City[]>>();

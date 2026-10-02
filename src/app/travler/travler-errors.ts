@@ -1,19 +1,12 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import { TripApiError } from '../trips/trip-errors';
 import { TravlerErrorBody } from './travler.types';
 
 /** Thrown by TravlerApiService for any failed call. `message` is always safe
  * to show to a customer; `apiMessage` and `code` keep the raw detail for
  * logs and for branching (e.g. code === 'PAYMENT_REJECTED'). */
-export class TravlerApiError extends Error {
-  constructor(
-    message: string,
-    readonly code: string | null,
-    readonly status: number | null,
-    readonly apiMessage: string | null,
-  ) {
-    super(message);
-    this.name = 'TravlerApiError';
-  }
+export class TravlerApiError extends TripApiError {
+  override name = 'TravlerApiError';
 }
 
 /** Friendly text per known API error code. */
@@ -69,9 +62,4 @@ export function toTravlerError(error: unknown, fallback: string): TravlerApiErro
     return new TravlerApiError(friendlyMessage(code, error.status, fallback), code, error.status, parsed.msg ?? null);
   }
   return new TravlerApiError(fallback, null, null, error instanceof Error ? error.message : null);
-}
-
-/** The message to show for any error a page catches from the API layer. */
-export function travlerErrorMessage(error: unknown, fallback: string): string {
-  return error instanceof TravlerApiError ? error.message : fallback;
 }

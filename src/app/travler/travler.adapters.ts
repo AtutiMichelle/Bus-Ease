@@ -12,6 +12,7 @@ import {
   SeatLayout,
   StopPoint,
   Trip,
+  TripSearchContext,
 } from '../models/trip.model';
 import {
   TravlerBooking,
@@ -93,14 +94,6 @@ const CLASS_RANK: Record<string, number> = { VIP: 0, Business: 1, Normal: 2 };
 
 export function adaptCity(raw: TravlerCity): City {
   return { id: toId(raw.city_id), name: raw.city_name.trim() };
-}
-
-export interface TripSearchContext {
-  fromCityId: string;
-  toCityId: string;
-  from: string;
-  to: string;
-  date: string;
 }
 
 export function adaptTrip(raw: TravlerTrip, context: TripSearchContext): Trip {

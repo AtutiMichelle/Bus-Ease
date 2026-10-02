@@ -12,7 +12,7 @@
       @if (ticketNumber()) {
         <p class="confirmation-ref">Ticket: <strong>{{ ticketNumber() }}</strong></p>
       }
-      @if (reference()) {
+      @if (reference() && reference() !== ticketNumber()) {
         <p class="confirmation-ref">Booking reference: <strong>{{ reference() }}</strong></p>
       }
 

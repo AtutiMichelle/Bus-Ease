@@ -2,8 +2,8 @@ import { Component, ElementRef, computed, effect, inject, input, signal, untrack
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { todayDateString } from '../../utils/date';
-import { TravlerApiService } from '../../travler/travler-api.service';
-import { travlerErrorMessage } from '../../travler/travler-errors';
+import { TRIP_PROVIDER } from '../../trips/trip-provider.token';
+import { tripErrorMessage } from '../../trips/trip-errors';
 import { City } from '../../models/trip.model';
 
 /** How many city suggestions to show at once. */
@@ -29,7 +29,7 @@ export class SearchBar {
   originId = input('', { alias: 'originId' });
   destinationId = input('', { alias: 'destinationId' });
 
-  private travler = inject(TravlerApiService);
+  private tripProvider = inject(TRIP_PROVIDER);
 
   /** What the user sees and types: city names. */
   originValue = signal('');
@@ -138,7 +138,7 @@ export class SearchBar {
   private async loadSourceCities(): Promise<void> {
     this.citiesError.set('');
     try {
-      const cities = await this.travler.getCities();
+      const cities = await this.tripProvider.getCities();
       this.sourceCities.set(cities);
       // A name that arrived without an id (e.g. a Popular Route link) still
       // resolves once the list is in.
@@ -146,14 +146,14 @@ export class SearchBar {
         this.onOriginInput(this.originValue());
       }
     } catch (error) {
-      this.citiesError.set(travlerErrorMessage(error, "We couldn't load the list of cities."));
+      this.citiesError.set(tripErrorMessage(error, "We couldn't load the list of cities."));
     }
   }
 
   private async loadDestinations(sourceId: string): Promise<void> {
     this.loadingDestinations.set(true);
     try {
-      const cities = await this.travler.getCities(sourceId);
+      const cities = await this.tripProvider.getCities(sourceId);
       if (this.originCityId() !== sourceId) {
         return;
       }
@@ -166,7 +166,7 @@ export class SearchBar {
         this.onDestinationInput(this.destinationValue());
       }
     } catch (error) {
-      this.citiesError.set(travlerErrorMessage(error, "We couldn't load destinations for that city."));
+      this.citiesError.set(tripErrorMessage(error, "We couldn't load destinations for that city."));
     } finally {
       if (this.originCityId() === sourceId) {
         this.loadingDestinations.set(false);

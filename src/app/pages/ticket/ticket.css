@@ -211,6 +211,64 @@
   text-decoration: underline;
 }
 
+.print-cta:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.print-fallback {
+  display: flex;
+  gap: var(--space-2, 8px);
+  margin: 0 0 var(--space-3, 16px);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm, 4px);
+  background-color: var(--color-soft-bg, #e8f1fc);
+  color: var(--color-primary, #12294d);
+  font-size: 0.92rem;
+}
+
+.passenger-heading {
+  margin-top: var(--space-3, 16px);
+}
+
+.passenger-list {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+}
+
+.passenger-list li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  padding: 8px 0;
+  border-top: 1px solid var(--color-border, #e4dfd6);
+  color: var(--color-text, #3a3a3a);
+}
+
+.passenger-seat {
+  font-weight: 700;
+  color: var(--color-primary, #12294d);
+}
+
+.passenger-id {
+  color: var(--color-text-muted, #6b6b6b);
+}
+
+.ticket-note {
+  margin: var(--space-3, 16px) 0 var(--space-2, 8px);
+  color: var(--color-text-muted, #6b6b6b);
+  font-size: 0.92rem;
+}
+
+@media print {
+  .stepper,
+  .ticket-actions,
+  .print-fallback {
+    display: none;
+  }
+}
+
 .not-found {
   padding: var(--space-6, 48px) 0;
   text-align: center;

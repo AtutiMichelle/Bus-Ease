@@ -41,23 +41,25 @@
     </div>
   </section>
 
-  <section class="filter-section">
-    <p class="filter-section-label">Amenities</p>
-    <div class="tile-grid">
-      @for (zone of amenityZones; track zone.amenity) {
-        <button
-          type="button"
-          class="filter-tile"
-          [class.active]="selectedAmenities().has(zone.amenity)"
-          [attr.aria-pressed]="selectedAmenities().has(zone.amenity)"
-          (click)="toggleAmenity(zone.amenity)"
-        >
-          <i class="fa-solid {{ zone.icon }}" aria-hidden="true"></i>
-          <span>{{ zone.label }}</span>
-        </button>
-      }
-    </div>
-  </section>
+  @if (hasAmenities()) {
+    <section class="filter-section">
+      <p class="filter-section-label">Amenities</p>
+      <div class="tile-grid">
+        @for (zone of amenityZones; track zone.amenity) {
+          <button
+            type="button"
+            class="filter-tile"
+            [class.active]="selectedAmenities().has(zone.amenity)"
+            [attr.aria-pressed]="selectedAmenities().has(zone.amenity)"
+            (click)="toggleAmenity(zone.amenity)"
+          >
+            <i class="fa-solid {{ zone.icon }}" aria-hidden="true"></i>
+            <span>{{ zone.label }}</span>
+          </button>
+        }
+      </div>
+    </section>
+  }
 
   <section class="filter-section">
     <p class="filter-section-label">Bus type</p>

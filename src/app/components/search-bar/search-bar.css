@@ -67,6 +67,11 @@
   box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.1);
 }
 
+.field input:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 #sb-date {
   padding-right: 40px;
 }

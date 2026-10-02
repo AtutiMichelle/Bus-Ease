@@ -1,147 +1,167 @@
-@switch (phase()) {
-  @case ('missing') {
+@if (draft(); as d) {
+  @if (d.ticketNumber) {
     <section class="not-found">
       <div class="section-container">
-        <p>We couldn't find your booking details. Please <a routerLink="/">start again from home</a>.</p>
+        <p>
+          This booking is already paid.
+          <a routerLink="/ticket" [queryParams]="ticketQueryParams()">
+            View your ticket
+          </a>.
+        </p>
       </div>
     </section>
-  }
+  } @else if (hold(); as h) {
+    <section class="payment-hero">
+      <div class="section-container">
+        <h1>Payment</h1>
 
-  @default {
-    @if (bus(); as b) {
-      <section class="payment-hero">
-        <div class="section-container">
-          <h1>Payment</h1>
+        <div class="hero-row">
+          <a class="hero-back-link" routerLink="/confirmation" [queryParams]="backQueryParams()">
+            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back to passenger details
+          </a>
 
-          <div class="hero-row">
-            <a class="hero-back-link" routerLink="/confirmation" [queryParams]="backQueryParams()">
-              <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back to passenger details
-            </a>
-
-            <ol class="stepper">
-              @for (step of steps; track step; let i = $index) {
-                <li
-                  class="stepper-step"
-                  [class.completed]="i < currentStepIndex"
-                  [class.current]="i === currentStepIndex"
-                  [class.line-filled]="i > 0 && i <= currentStepIndex"
-                >
-                  <span class="stepper-dot">
-                    @if (i < currentStepIndex) {
-                      <i class="fa-solid fa-check" aria-hidden="true"></i>
-                    } @else {
-                      {{ i + 1 }}
-                    }
-                  </span>
-                  <span class="stepper-label">{{ step }}</span>
-                </li>
-              }
-            </ol>
-          </div>
+          <ol class="stepper">
+            @for (step of steps; track step; let i = $index) {
+              <li
+                class="stepper-step"
+                [class.completed]="i < currentStepIndex"
+                [class.current]="i === currentStepIndex"
+                [class.line-filled]="i > 0 && i <= currentStepIndex"
+              >
+                <span class="stepper-dot">
+                  @if (i < currentStepIndex) {
+                    <i class="fa-solid fa-check" aria-hidden="true"></i>
+                  } @else {
+                    {{ i + 1 }}
+                  }
+                </span>
+                <span class="stepper-label">{{ step }}</span>
+              </li>
+            }
+          </ol>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <section class="payment-section">
-        <div class="section-container">
-          @if (phase() === 'reserving') {
-            <div class="method-card">
-              <p class="method-sublabel">Holding your seats…</p>
+    <section class="payment-section">
+      <div class="section-container">
+        <div class="payment-layout">
+          <div class="method-card">
+            <h2 class="method-heading">Pay with M-Pesa</h2>
+            <p class="method-sublabel">Booking reference <strong>{{ h.reference }}</strong></p>
+
+            @if (phase() !== 'expired') {
+              <p class="hold-timer" [class.hold-timer-low]="remainingSeconds() < 120" role="timer" aria-live="off">
+                <i class="fa-solid fa-clock" aria-hidden="true"></i>
+                Seats held for {{ remainingLabel() }}
+              </p>
+            }
+
+            <div class="method-toggle">
+              <div class="method-chip active">
+                <span class="method-icon">
+                  <img [src]="mpesaLogo" alt="" />
+                </span>
+                <span class="method-name">M-Pesa</span>
+                <span class="method-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+              </div>
             </div>
-          } @else {
-          <div class="payment-layout">
-            <div class="method-card">
-              <h2 class="method-heading">Choose Payment Method</h2>
-              <p class="method-sublabel">Select how you'd like to pay for this booking</p>
 
-              @if (phase() === 'ready' || phase() === 'processing') {
-                <p class="hold-timer" [class.hold-timer-low]="remainingSeconds() < 120">
-                  <i class="fa-solid fa-clock" aria-hidden="true"></i>
-                  Seats held for {{ remainingLabel() }}
+            @if (phase() === 'awaiting' || phase() === 'starting') {
+              <div class="stk-panel" role="status" aria-live="polite">
+                <i class="fa-solid fa-mobile-screen-button stk-icon" aria-hidden="true"></i>
+                @if (phase() === 'starting') {
+                  <p class="stk-title">Sending the payment request…</p>
+                } @else {
+                  <p class="stk-title">Check your phone to enter your M-Pesa PIN</p>
+                  <p class="stk-sub">
+                    We sent a request for KES {{ totalPrice() | number }} to {{ phone() }}.
+                    This page updates on its own once you've paid.
+                  </p>
+                }
+              </div>
+            } @else {
+              <form class="field" novalidate (ngSubmit)="pay()">
+                <label for="phone">M-Pesa number</label>
+                <input
+                  id="phone"
+                  type="tel"
+                  inputmode="tel"
+                  autocomplete="tel"
+                  placeholder="0712 345 678"
+                  [class.invalid]="triedPay() && phoneError()"
+                  [ngModel]="phone()"
+                  (ngModelChange)="phone.set($event)"
+                  [disabled]="phase() === 'expired'"
+                  name="phone"
+                />
+                @if (triedPay() && phoneError()) {
+                  <p class="field-error">{{ phoneError() }}</p>
+                }
+                <p class="method-note">
+                  <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                  You'll get a prompt on your phone to enter your PIN and confirm KES {{ totalPrice() | number }}.
                 </p>
+              </form>
+
+              @if (phase() === 'rejected' || phase() === 'error') {
+                <p class="error" role="alert">{{ errorMessage() }}</p>
               }
 
-              <div class="method-toggle">
-                <button type="button" class="method-chip" [class.active]="method() === 'mpesa'" [disabled]="phase() === 'expired'" (click)="selectMethod('mpesa')">
-                  <span class="method-icon">
-                    <img [src]="paymentLogos.mpesa" alt="" />
-                  </span>
-                  <span class="method-name">M-Pesa</span>
-                  @if (method() === 'mpesa') {
-                    <span class="method-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
-                  }
-                </button>
-                <button type="button" class="method-chip method-chip-airtel" [class.active]="method() === 'airtel'" [disabled]="phase() === 'expired'" (click)="selectMethod('airtel')">
-                  <span class="method-icon">
-                    <img [src]="paymentLogos.airtelMoney" alt="" />
-                  </span>
-                  <span class="method-name">Airtel Money</span>
-                  @if (method() === 'airtel') {
-                    <span class="method-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
-                  }
-                </button>
-                <button type="button" class="method-chip" [class.active]="method() === 'wallet'" [disabled]="phase() === 'expired'" (click)="selectMethod('wallet')">
-                  <span class="method-icon">
-                    <i class="fa-solid fa-wallet" aria-hidden="true"></i>
-                  </span>
-                  <span class="method-name">Wallet</span>
-                  @if (method() === 'wallet') {
-                    <span class="method-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
-                  }
-                </button>
-              </div>
-
-              @if (method() === 'mpesa' || method() === 'airtel') {
-                <div class="field">
-                  <label for="phone">{{ method() === 'mpesa' ? 'M-Pesa' : 'Airtel Money' }} number</label>
-                  <div class="phone-input">
-                    <span class="phone-prefix">+254</span>
-                    <input
-                      id="phone"
-                      type="tel"
-                      placeholder="7xx xxx xxx"
-                      [ngModel]="phone()"
-                      (ngModelChange)="phone.set($event)"
-                      [disabled]="phase() === 'expired'"
-                      name="phone"
-                    />
-                  </div>
-                  <p class="method-note">
-                    <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
-                    You'll get a prompt on your phone to enter your PIN and confirm KSh {{ totalPrice() | number }}.
+              @if (phase() === 'timeout') {
+                <div class="stk-panel stk-panel-warn" role="alert">
+                  <p class="stk-title">We didn't get a confirmation from M-Pesa</p>
+                  <p class="stk-sub">
+                    If you entered your PIN, check again before paying a second time.
+                    <button type="button" class="retry-link" (click)="checkAgain()">Check again</button>
                   </p>
                 </div>
               }
 
-              @if (errorMessage()) {
-                <p class="error">
-                  {{ errorMessage() }}
-                  <button type="button" class="retry-link" (click)="retry()">Retry</button>
-                </p>
-              }
-
-              <button type="button" class="pay-cta" [disabled]="phase() === 'expired' || !canPay() || phase() !== 'ready'" (click)="pay()">
-                {{ phase() === 'processing' ? 'Processing…' : 'Pay · KSh ' + (totalPrice() | number) }}
+              <button type="button" class="pay-cta" [disabled]="phase() === 'expired'" (click)="pay()">
+                @switch (phase()) {
+                  @case ('rejected') { Try again · KES {{ totalPrice() | number }} }
+                  @case ('error') { Try again · KES {{ totalPrice() | number }} }
+                  @case ('timeout') { Send a new request · KES {{ totalPrice() | number }} }
+                  @default { Pay · KES {{ totalPrice() | number }} }
+                }
               </button>
+            }
 
-              <p class="secure-note"><i class="fa-solid fa-lock" aria-hidden="true"></i> Payments are encrypted and securely processed.</p>
-            </div>
-
-            <app-trip-summary [bus]="b" [passengers]="passengers()" [boardingPoint]="boardingPoint()" [dropoffPoint]="dropoffPoint()" />
+            <p class="secure-note"><i class="fa-solid fa-lock" aria-hidden="true"></i> Payments are encrypted and securely processed.</p>
           </div>
-          }
-        </div>
-      </section>
 
-      @if (phase() === 'expired') {
-        <div class="modal-backdrop">
-          <div class="modal-card">
-            <i class="fa-solid fa-clock-rotate-left modal-icon" aria-hidden="true"></i>
-            <h3>Your seat hold has expired</h3>
-            <p>We can only hold seats for {{ holdMinutes }} minutes. Please select your seats again to continue.</p>
-            <button type="button" class="pay-cta" (click)="backToSeatSelection()">Select seats again</button>
-          </div>
+          <app-trip-summary
+            [trip]="d.trip"
+            [seats]="d.seats"
+            [boardingPoint]="d.boarding.name"
+            [dropoffPoint]="d.dropping.name"
+          />
         </div>
-      }
+      </div>
+    </section>
+
+    @if (phase() === 'expired') {
+      <div class="modal-backdrop">
+        <div class="modal-card" role="alertdialog" aria-labelledby="expired-title">
+          <i class="fa-solid fa-clock-rotate-left modal-icon" aria-hidden="true"></i>
+          <h3 id="expired-title">Your booking has expired</h3>
+          <p>We can only hold seats for {{ holdMinutes }} minutes before payment. Please reselect your seats to continue.</p>
+          <button type="button" class="pay-cta" (click)="backToSeatSelection()">Reselect seats</button>
+        </div>
+      </div>
     }
+  } @else {
+    <section class="not-found">
+      <div class="section-container">
+        <p>Your seats aren't reserved yet. <a routerLink="/confirmation" [queryParams]="backQueryParams()">Go back to passenger details</a>.</p>
+      </div>
+    </section>
   }
+} @else {
+  <section class="not-found">
+    <div class="section-container">
+      <p>We couldn't find your booking details. Please <a routerLink="/">start again from home</a>.</p>
+    </div>
+  </section>
 }

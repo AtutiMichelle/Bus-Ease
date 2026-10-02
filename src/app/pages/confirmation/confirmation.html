@@ -1,259 +1,188 @@
-@switch (phase()) {
-  @case ('loading') {
-    <section class="not-found">
-      <div class="section-container">
-        <p>Loading your trip…</p>
+@if (draft(); as d) {
+  <section class="confirmation-hero details-hero">
+    <div class="section-container">
+      <h1>Passenger Details</h1>
+
+      <div class="hero-row">
+        <a class="hero-back-link" routerLink="/results" [queryParams]="backQueryParams()">
+          <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back to seat selection
+        </a>
+
+        <ol class="stepper">
+          @for (step of steps; track step; let i = $index) {
+            <li
+              class="stepper-step"
+              [class.completed]="i < currentStepIndex"
+              [class.current]="i === currentStepIndex"
+              [class.line-filled]="i > 0 && i <= currentStepIndex"
+            >
+              <span class="stepper-dot">
+                @if (i < currentStepIndex) {
+                  <i class="fa-solid fa-check" aria-hidden="true"></i>
+                } @else {
+                  {{ i + 1 }}
+                }
+              </span>
+              <span class="stepper-label">{{ step }}</span>
+            </li>
+          }
+        </ol>
       </div>
-    </section>
-  }
+    </div>
+  </section>
 
-  @case ('error') {
-    <section class="not-found">
-      <div class="section-container">
-        <p>{{ errorMessage() }} <a routerLink="/">Go back home</a>.</p>
-      </div>
-    </section>
-  }
+  <section class="ticket-section">
+    <div class="section-container">
+      <form class="booking-layout" novalidate (ngSubmit)="confirmBooking()">
+        <div class="details-column">
+          <div class="passenger-accordion">
+            <div class="accordion-summary">
+              {{ passengers().length }} passenger{{ passengers().length === 1 ? '' : 's' }} ·
+              {{ completedCount() }} of {{ passengers().length }} completed
+            </div>
 
-  @default {
-    @if (bus(); as b) {
-      <section class="confirmation-hero details-hero">
-        <div class="section-container">
-          <h1>Passenger Details</h1>
-
-          <div class="hero-row">
-            <a class="hero-back-link" routerLink="/results" [queryParams]="backQueryParams()">
-              <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back to seat selection
-            </a>
-
-            <ol class="stepper">
-              @for (step of steps; track step; let i = $index) {
-                <li
-                  class="stepper-step"
-                  [class.completed]="i < currentStepIndex"
-                  [class.current]="i === currentStepIndex"
-                  [class.line-filled]="i > 0 && i <= currentStepIndex"
+            @for (passenger of passengers(); track passenger.seatName; let i = $index) {
+              <div class="accordion-row" [class.expanded]="expandedRows().has(i)">
+                <button
+                  type="button"
+                  class="accordion-row-header"
+                  [attr.aria-expanded]="expandedRows().has(i)"
+                  (click)="toggleExpand(i)"
                 >
-                  <span class="stepper-dot">
-                    @if (i < currentStepIndex) {
+                  <span class="status-circle" [class.complete]="isPassengerComplete(passenger)">
+                    @if (isPassengerComplete(passenger)) {
                       <i class="fa-solid fa-check" aria-hidden="true"></i>
                     } @else {
                       {{ i + 1 }}
                     }
                   </span>
-                  <span class="stepper-label">{{ step }}</span>
-                </li>
-              }
-            </ol>
-          </div>
-        </div>
-      </section>
+                  <span class="seat-badge">{{ passenger.seatName }}</span>
+                  <span class="row-name" [class.placeholder]="!passenger.fullName">
+                    {{ passenger.fullName || 'Not filled in yet' }}
+                  </span>
+                  <i class="fa-solid fa-chevron-down accordion-chevron" aria-hidden="true"></i>
+                </button>
 
-      <section class="ticket-section">
-        <div class="section-container">
-          <div class="booking-layout">
-            <div class="details-column">
-              <div class="passenger-accordion">
-                <div class="accordion-summary">
-                  {{ passengers().length }} passenger{{ passengers().length === 1 ? '' : 's' }} ·
-                  {{ completedCount() }} of {{ passengers().length }} completed
-                </div>
-
-                @for (passenger of passengers(); track passenger.seatNumber; let i = $index) {
-                  <div class="accordion-row" [class.expanded]="expandedRows().has(i)">
-                    <button
-                      type="button"
-                      class="accordion-row-header"
-                      [attr.aria-expanded]="expandedRows().has(i)"
-                      (click)="toggleExpand(i)"
-                    >
-                      <span class="status-circle" [class.complete]="isPassengerComplete(passenger)">
-                        @if (isPassengerComplete(passenger)) {
-                          <i class="fa-solid fa-check" aria-hidden="true"></i>
-                        } @else {
-                          {{ i + 1 }}
+                @if (expandedRows().has(i)) {
+                  <div class="accordion-row-body">
+                    <div class="passenger-fields">
+                      <div class="field">
+                        <label [for]="'name-' + i">Full name <span class="required-mark">*</span></label>
+                        <input
+                          [id]="'name-' + i"
+                          type="text"
+                          placeholder="Jane Doe"
+                          autocomplete="name"
+                          [class.invalid]="submitted() && nameError(passenger)"
+                          [ngModel]="passenger.fullName"
+                          (ngModelChange)="updatePassenger(i, 'fullName', $event)"
+                          [name]="'name-' + i"
+                          required
+                        />
+                        @if (submitted() && nameError(passenger)) {
+                          <p class="field-error">{{ nameError(passenger) }}</p>
                         }
-                      </span>
-                      <span class="seat-badge">{{ passenger.seatNumber }}</span>
-                      <span class="row-name" [class.placeholder]="!passenger.fullName">
-                        {{ passenger.fullName || 'Not filled in yet' }}
-                      </span>
-                      <i class="fa-solid fa-chevron-down accordion-chevron" aria-hidden="true"></i>
-                    </button>
-
-                    @if (expandedRows().has(i)) {
-                      <div class="accordion-row-body">
-                        <div class="passenger-fields">
-                          <div class="field">
-                            <label [for]="'name-' + i">Full Name <span class="required-mark">*</span></label>
-                            <input
-                              [id]="'name-' + i"
-                              type="text"
-                              placeholder="Jane Doe"
-                              [ngModel]="passenger.fullName"
-                              (ngModelChange)="updatePassenger(i, 'fullName', $event)"
-                              [name]="'name-' + i"
-                              required
-                            />
-                          </div>
-
-                          <div class="field">
-                            <label [for]="'mobile-' + i">Mobile <span class="required-mark">*</span></label>
-                            <input
-                              [id]="'mobile-' + i"
-                              type="tel"
-                              placeholder="07xx xxx xxx"
-                              [ngModel]="passenger.mobile"
-                              (ngModelChange)="updatePassenger(i, 'mobile', $event)"
-                              [name]="'mobile-' + i"
-                              required
-                            />
-                          </div>
-
-                          <div class="field field-small">
-                            <label [for]="'age-' + i">Age (optional)</label>
-                            <input
-                              [id]="'age-' + i"
-                              type="number"
-                              min="0"
-                              max="120"
-                              [ngModel]="passenger.age"
-                              (ngModelChange)="updatePassengerAge(i, $event)"
-                              [name]="'age-' + i"
-                            />
-                          </div>
-
-                          <div class="field field-small">
-                            <label [for]="'gender-' + i">Gender (optional)</label>
-                            <select
-                              [id]="'gender-' + i"
-                              [ngModel]="passenger.gender"
-                              (ngModelChange)="updatePassenger(i, 'gender', $event)"
-                              [name]="'gender-' + i"
-                            >
-                              <option value="">Prefer not to say</option>
-                              <option value="female">Female</option>
-                              <option value="male">Male</option>
-                              <option value="other">Other</option>
-                            </select>
-                          </div>
-                        </div>
                       </div>
-                    }
+
+                      <div class="field">
+                        <label [for]="'id-' + i">ID / passport number <span class="required-mark">*</span></label>
+                        <input
+                          [id]="'id-' + i"
+                          type="text"
+                          placeholder="12345678"
+                          autocomplete="off"
+                          [class.invalid]="submitted() && idError(passenger)"
+                          [ngModel]="passenger.idNumber"
+                          (ngModelChange)="updatePassenger(i, 'idNumber', $event)"
+                          [name]="'id-' + i"
+                          required
+                        />
+                        @if (submitted() && idError(passenger)) {
+                          <p class="field-error">{{ idError(passenger) }}</p>
+                        }
+                      </div>
+                    </div>
                   </div>
                 }
               </div>
+            }
+          </div>
 
-              <div class="delivery-card">
-                <h3 class="delivery-heading">Ticket Delivery</h3>
+          <div class="delivery-card">
+            <h3 class="delivery-heading">Contact Details</h3>
+            <p class="delivery-note">We'll send the ticket and any trip updates here.</p>
 
-                <p class="delivery-label">Send tickets to</p>
-                @if (passengers().length > 1) {
-                  <div class="delivery-mode-group">
-                    <button
-                      type="button"
-                      class="delivery-mode-btn"
-                      [class.active]="deliveryMode() === 'all'"
-                      (click)="setDeliveryMode('all')"
-                    >
-                      All passengers
-                    </button>
-                    <button
-                      type="button"
-                      class="delivery-mode-btn"
-                      [class.active]="deliveryMode() === 'select'"
-                      (click)="setDeliveryMode('select')"
-                    >
-                      Select passengers
-                    </button>
-                  </div>
+            <div class="passenger-fields">
+              <div class="field">
+                <label for="contact-email">Email <span class="required-mark">*</span></label>
+                <input
+                  id="contact-email"
+                  type="email"
+                  placeholder="you@example.com"
+                  autocomplete="email"
+                  [class.invalid]="submitted() && emailError()"
+                  [ngModel]="contactEmail()"
+                  (ngModelChange)="contactEmail.set($event)"
+                  name="contactEmail"
+                  required
+                />
+                @if (submitted() && emailError()) {
+                  <p class="field-error">{{ emailError() }}</p>
                 }
+              </div>
 
-                @if (deliveryMode() === 'select' && passengers().length > 1) {
-                  <ul class="delivery-checklist">
-                    @for (passenger of passengers(); track passenger.seatNumber; let i = $index) {
-                      <li>
-                        <label class="delivery-checklist-row">
-                          <input
-                            type="checkbox"
-                            [checked]="deliverySelectedSeats().has(passenger.seatNumber)"
-                            (change)="toggleDeliverySeat(passenger.seatNumber)"
-                          />
-                          <span class="seat-badge">{{ passenger.seatNumber }}</span>
-                          <span>{{ passenger.fullName || 'Passenger ' + (i + 1) }}</span>
-                        </label>
-                      </li>
-                    }
-                  </ul>
-                } @else {
-                  <ul class="delivery-checklist">
-                    @for (passenger of passengers(); track passenger.seatNumber; let i = $index) {
-                      <li class="delivery-checklist-row">
-                        <span class="seat-badge">{{ passenger.seatNumber }}</span>
-                        <span>{{ passenger.fullName || 'Passenger ' + (i + 1) }}</span>
-                      </li>
-                    }
-                  </ul>
+              <div class="field">
+                <label for="contact-phone">Phone <span class="required-mark">*</span></label>
+                <input
+                  id="contact-phone"
+                  type="tel"
+                  placeholder="0712 345 678"
+                  autocomplete="tel"
+                  [class.invalid]="submitted() && phoneError()"
+                  [ngModel]="contactPhone()"
+                  (ngModelChange)="contactPhone.set($event)"
+                  name="contactPhone"
+                  required
+                />
+                @if (submitted() && phoneError()) {
+                  <p class="field-error">{{ phoneError() }}</p>
                 }
-
-                <p class="delivery-label">Delivery method</p>
-                <div class="delivery-method-group">
-                  <button
-                    type="button"
-                    class="delivery-method-btn"
-                    [class.active]="deliveryMethod() === 'whatsapp'"
-                    (click)="setDeliveryMethod('whatsapp')"
-                  >
-                    <i class="fa-brands fa-whatsapp" aria-hidden="true"></i> WhatsApp
-                  </button>
-                  <button
-                    type="button"
-                    class="delivery-method-btn"
-                    [class.active]="deliveryMethod() === 'sms'"
-                    (click)="setDeliveryMethod('sms')"
-                  >
-                    <i class="fa-solid fa-comment-sms" aria-hidden="true"></i> SMS
-                  </button>
-                  <button
-                    type="button"
-                    class="delivery-method-btn"
-                    [class.active]="deliveryMethod() === 'email'"
-                    (click)="setDeliveryMethod('email')"
-                  >
-                    <i class="fa-solid fa-envelope" aria-hidden="true"></i> Email
-                  </button>
-                </div>
-
-                <p class="delivery-note">{{ deliveryNote() }}</p>
-
-                <div class="delivery-confirm">
-                  @if (errorMessage()) {
-                    <p class="error">{{ errorMessage() }}</p>
-                  }
-
-                  <p class="consent-line">
-                    By confirming, you agree to BusEase's <a href="#">Cancellation Policy</a> and
-                    <a href="#">Terms of Service</a>
-                  </p>
-
-                  <div class="ticket-actions">
-                    <button type="button" class="print-cta" [disabled]="!canSubmit" (click)="confirmBooking()">
-                      Confirm Booking · KSh {{ totalPrice() | number }}
-                    </button>
-                  </div>
-                </div>
               </div>
             </div>
 
-            <app-trip-summary
-              [bus]="b"
-              [passengers]="passengers()"
-              [boardingPoint]="boardingPoint()"
-              [dropoffPoint]="dropoffPoint()"
-            />
+            <div class="delivery-confirm">
+              @if (errorMessage()) {
+                <p class="error" role="alert">{{ errorMessage() }}</p>
+              }
+
+              <p class="consent-line">
+                Your seats are held for {{ holdMinutes }} minutes once you confirm, so you can pay.
+                By confirming, you agree to BusEase's <a href="#">Cancellation Policy</a> and
+                <a href="#">Terms of Service</a>
+              </p>
+
+              <div class="ticket-actions">
+                <button type="submit" class="print-cta" [disabled]="submitting()">
+                  {{ submitting() ? 'Reserving your seats…' : 'Confirm Booking · KES ' + (totalPrice() | number) }}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </section>
-    }
-  }
+
+        <app-trip-summary
+          [trip]="d.trip"
+          [seats]="d.seats"
+          [boardingPoint]="d.boarding.name"
+          [dropoffPoint]="d.dropping.name"
+        />
+      </form>
+    </div>
+  </section>
+} @else {
+  <section class="not-found">
+    <div class="section-container">
+      <p>We couldn't find your seat selection. Please <a routerLink="/">start a new search</a>.</p>
+    </div>
+  </section>
 }

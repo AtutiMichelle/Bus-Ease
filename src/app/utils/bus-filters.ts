@@ -1,4 +1,14 @@
-import { Bus } from '../models/bus.model';
+import { BusClassOption } from '../models/bus.model';
+
+/** The fields filtering needs; both the old Bus model and the Travler Trip
+ * model satisfy it. */
+export interface FilterableTrip {
+  operator: string;
+  busType: string;
+  departureHour: number;
+  amenities: string[];
+  classes: BusClassOption[];
+}
 
 export type DeparturePeriod = 'Morning' | 'Afternoon' | 'Evening' | 'Night';
 
@@ -7,12 +17,12 @@ export interface FilterState {
   departureTimes: Set<DeparturePeriod>;
   amenities: Set<string>;
   operator: string | null;
-  busTypes: Set<Bus['busType']>;
+  busTypes: Set<string>;
 }
 
 export interface FilterOptions {
   operators: string[];
-  busTypes: Bus['busType'][];
+  busTypes: string[];
 }
 
 export function emptyFilterState(): FilterState {
@@ -54,7 +64,7 @@ export const AMENITY_ZONES: { label: string; icon: string; amenity: string }[] =
   { label: 'Water', icon: 'fa-droplet', amenity: 'Water' },
 ];
 
-export function matchesFilters(bus: Bus, filters: FilterState): boolean {
+export function matchesFilters(bus: FilterableTrip, filters: FilterState): boolean {
   if (filters.seatTypes.size > 0 && !bus.classes.some((cls) => filters.seatTypes.has(cls.className))) {
     return false;
   }
@@ -84,7 +94,7 @@ function uniqueSorted<T extends string>(values: T[]): T[] {
   return [...new Set(values)].sort();
 }
 
-export function filterOptions(buses: Bus[]): FilterOptions {
+export function filterOptions(buses: FilterableTrip[]): FilterOptions {
   return {
     operators: uniqueSorted(buses.map((bus) => bus.operator)),
     busTypes: uniqueSorted(buses.map((bus) => bus.busType)),

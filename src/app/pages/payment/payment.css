@@ -167,13 +167,6 @@
   font-size: 1rem;
   font-weight: 600;
   text-align: left;
-  cursor: pointer;
-  transition: border-color 0.2s, color 0.2s, background-color 0.2s, transform 0.2s;
-}
-
-.method-chip:hover {
-  border-color: var(--color-primary, #12294d);
-  transform: translateY(-2px);
 }
 
 .method-icon {
@@ -187,7 +180,6 @@
   background-color: var(--color-soft-bg, #e8f1fc);
   color: var(--color-primary, #12294d);
   font-size: 1.1rem;
-  transition: background-color 0.2s, color 0.2s;
 }
 
 .method-icon img {
@@ -225,22 +217,6 @@
 .method-chip.active .method-icon {
   background-color: var(--color-success, #2fa88a);
   color: white;
-}
-
-/* Airtel's brand color is red, not the shared teal "selected" tint. */
-.method-chip-airtel.active {
-  border-color: var(--color-accent, #eb1f1a);
-  color: var(--color-accent, #eb1f1a);
-  background-color: color-mix(in srgb, var(--color-accent, #eb1f1a) 10%, white);
-}
-
-.method-chip-airtel.active .method-icon {
-  background-color: var(--color-accent, #eb1f1a);
-  color: white;
-}
-
-.method-chip-airtel.active .method-check {
-  background-color: var(--color-accent, #eb1f1a);
 }
 
 .field {
@@ -281,25 +257,63 @@
   font-style: italic;
 }
 
-.phone-input {
-  display: flex;
-  align-items: stretch;
+.field input.invalid {
+  border-color: var(--color-danger, #d64545);
 }
 
-.phone-prefix {
+.field-error {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: var(--color-danger, #d64545);
+}
+
+.field .method-note {
+  margin-top: var(--space-2, 8px);
+}
+
+.stk-panel {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  padding: 0 12px;
-  border: 2px solid var(--color-border, #e4dfd6);
-  border-right: none;
-  border-radius: 6px 0 0 6px;
+  gap: 6px;
+  margin-bottom: var(--space-3, 16px);
+  padding: var(--space-4, 24px) var(--space-3, 16px);
+  border-radius: var(--radius-md, 8px);
   background-color: var(--color-soft-bg, #e8f1fc);
-  color: var(--color-primary, #12294d);
-  font-weight: 700;
+  text-align: center;
 }
 
-.phone-input input {
-  border-radius: 0 6px 6px 0;
+.stk-panel-warn {
+  background-color: color-mix(in srgb, var(--color-danger, #d64545) 8%, white);
+}
+
+.stk-icon {
+  font-size: 2rem;
+  color: var(--color-primary, #12294d);
+  animation: stk-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes stk-pulse {
+  50% { transform: scale(1.08); opacity: 0.7; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stk-icon {
+    animation: none;
+  }
+}
+
+.stk-title {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--color-primary, #12294d);
+}
+
+.stk-sub {
+  margin: 0;
+  color: var(--color-text-muted, #6b6b6b);
+  font-size: 0.92rem;
 }
 
 .method-note {

@@ -255,47 +255,37 @@
   background-color: #14a35a;
 }
 
+.legend-swatch.class-other {
+  background-color: var(--color-primary-light, #1e88e5);
+}
+
 
 .bus-shell {
-  --seat-size: clamp(34px, 4.4vh, 46px);
-  --aisle-size: clamp(38px, 4.9vh, 50px);
-  --seat-gap: clamp(4px, 0.6vh, 8px);
-  --row-number-width: clamp(18px, 2.3vh, 26px);
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
+  flex: none;
   border: 2px solid var(--color-border, #e4dfd6);
   border-radius: 16px;
-  padding: 10px 10px 8px;
-  /* The seat sizes above shrink with viewport height, but their clamp()
-     floor can still be taller than what's left in short/crowded panels
-     (e.g. a 10-row bus) — scroll inside the border then, instead of the
-     bottom rows rendering past it. */
-  overflow-y: auto;
+  padding: 10px 12px 14px;
 }
 
 .bus-shell-front {
-  flex: none;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: var(--seat-gap);
-  margin-bottom: clamp(6px, 0.9vh, 12px);
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--color-border, #e4dfd6);
 }
 
-.row-number-spacer {
-  width: var(--row-number-width);
-  flex: none;
-}
-
-.front-marker,
-.front-marker-spacer {
-  width: var(--seat-size);
-  flex: none;
+.front-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted, #6b6b6b);
 }
 
 .front-marker {
+  width: clamp(34px, 4.4vh, 44px);
   height: clamp(26px, 3.4vh, 36px);
   border-radius: 999px;
   display: flex;
@@ -318,66 +308,26 @@
   height: clamp(20px, 2.6vh, 28px);
 }
 
-.seat-rows {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: clamp(3px, 0.6vh, 8px);
-   align-items: stretch;
-}
-
-.seat-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--seat-gap);
-}
-
-.row-number {
-  width: var(--row-number-width);
-  flex: none;
-  text-align: right;
-  font-size: clamp(0.7rem, 1.4vh, 0.9rem);
-  font-weight: 600;
-  color: var(--color-text-muted, #6b6b6b);
-}
-
-.seat-pair {
-  display: flex;
-  gap: var(--seat-gap);
-}
-
-
-.aisle {
-  width: var(--aisle-size);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* Seats are placed from the layout's own left/top positions, scaled in
+   the component to this box's width. */
+.seat-map {
+  position: relative;
+  width: 100%;
 }
 
 .seat {
-  width: var(--seat-size);
-  height: var(--seat-size);
+  position: absolute;
+  box-sizing: border-box;
+  padding: 0;
   border-radius: 7px;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0;
-  font-size: clamp(0.8rem, 1.7vh, 1.05rem);
-  font-weight: 600;
+  font-size: inherit;
+  font-weight: 700;
+  line-height: 1;
   cursor: pointer;
   transition: transform 0.15s, box-shadow 0.15s;
-}
-
-.seat i {
-  font-size: clamp(0.8rem, 1.7vh, 1.05rem);
-}
-
-.seat-number {
-  font-size: clamp(0.56rem, 1.2vh, 0.75rem);
 }
 
 .seat.available {
@@ -389,6 +339,11 @@
 .seat.available:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(26, 58, 107, 0.2);
+}
+
+.seat:focus-visible {
+  outline: 2px solid var(--color-primary, #12294d);
+  outline-offset: 2px;
 }
 
 .seat.selected {
@@ -513,13 +468,26 @@
   color: var(--color-text-muted, #6b6b6b);
 }
 
-.panel-status .panel-close {
-  background-color: var(--color-soft-bg, #e8f1fc);
-  color: var(--color-primary-light, #1e88e5);
+.retry-link {
+  margin-left: 6px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-accent, #eb1f1a);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
-.panel-status .panel-close:hover {
-  background-color: var(--color-border, #e4dfd6);
+.field-error {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+  color: var(--color-danger, #d64545);
+}
+
+.field select.invalid {
+  border-color: var(--color-danger, #d64545);
 }
 
 @media (max-width: 600px) {
@@ -547,12 +515,5 @@
 
   .field select {
     padding: clamp(6px, 0.8vh, 9px) clamp(9px, 1.1vh, 11px);
-  }
-
-  .bus-shell {
-    --seat-size: clamp(30px, 4.4vh, 44px);
-    --aisle-size: clamp(34px, 4.9vh, 48px);
-    --seat-gap: clamp(4px, 0.6vh, 8px);
-    --row-number-width: clamp(16px, 2.2vh, 24px);
   }
 }

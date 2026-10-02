@@ -1,5 +1,5 @@
 export const environment = {
-  production: false,
+  production: true,
   supabase: {
     url: 'https://ienhcalrkdjfdamzqgaq.supabase.co',
     key: 'sb_publishable_Phvs7ujtgXXCmHpWoWDNUg_Y3SLqBDz'
@@ -9,9 +9,9 @@ export const environment = {
    * at travlerApiUrl) or 'supabase' (BusEase's own buses tables). */
   tripProvider: 'travler' as 'travler' | 'supabase',
 
-  /** Travler booking API. In development this is the local mock server
-   * (run it separately with `npm start` in the mock project). */
-  travlerApiUrl: 'http://localhost:4010/globalApi',
+  /** PLACEHOLDER: the real production Travler API URL is not known yet.
+   * Replace this before deploying, or every booking request will fail. */
+  travlerApiUrl: 'https://TRAVLER-PRODUCTION-URL-NOT-SET.invalid/globalApi',
 
   assets: {
     paymentLogos: {

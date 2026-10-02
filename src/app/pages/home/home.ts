@@ -1,21 +1,13 @@
 import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { SearchBar } from '../../components/search-bar/search-bar';
-import { BusService } from '../../services/bus.service';
 import { todayDateString } from '../../utils/date';
 
-interface RoutePair {
+interface TopRoute {
   from: string;
   to: string;
-  /** Editorial tagline, not something the database has an equivalent for. */
+  /** Editorial tagline, not something the booking API has an equivalent for. */
   character: string;
-}
-
-interface TopRoute extends RoutePair {
-  /** Typical facts from any bus on this route, when one exists — the route
-   * itself always shows regardless, so these are optional. */
-  duration?: string;
-  busType?: string;
 }
 
 @Component({
@@ -26,18 +18,16 @@ interface TopRoute extends RoutePair {
 })
 export class Home implements OnInit, OnDestroy {
   /** The routes to feature is an editorial choice, always shown regardless
-   * of whether a bus is actually running right now; the duration/bus type
-   * facts shown for each come from that route's buses when any exist,
-   * fetched live below — not hardcoded. */
-  private readonly routePairs: RoutePair[] = [
+   * of whether a bus is actually running right now. Clicking one searches
+   * by city name; the results page matches the names to the booking API's
+   * city ids. */
+  readonly topRoutes: TopRoute[] = [
     { from: 'Nairobi', to: 'Mombasa', character: 'Coastal route' },
     { from: 'Nairobi', to: 'Kisumu', character: 'Lakeside route' },
     { from: 'Nairobi', to: 'Eldoret', character: 'Highland route' },
     { from: 'Mombasa', to: 'Malindi', character: 'Beach route' },
     { from: 'Nairobi', to: 'Kampala', character: 'Cross-border route' },
   ];
-
-  topRoutes = signal<TopRoute[]>([]);
 
   /** Real photos of the actual cities on offer, not stock imagery. */
   private cityPhotos: Record<string, string> = {
@@ -125,12 +115,7 @@ export class Home implements OnInit, OnDestroy {
   private departureTimer?: ReturnType<typeof setInterval>;
   private departureFadeTimeout?: ReturnType<typeof setTimeout>;
 
-  constructor(
-    private router: Router,
-    private busService: BusService,
-  ) {
-    this.loadTopRoutes();
-  }
+  constructor(private router: Router) {}
 
   ngOnInit(): void {
     this.departureTimer = setInterval(() => this.cycleDepartureBoard(), 4500);
@@ -147,36 +132,6 @@ export class Home implements OnInit, OnDestroy {
       this.departureIndex.set((this.departureIndex() + 1) % this.departureBoard.length);
       this.departureFading.set(false);
     }, 400);
-  }
-
-  private loadTopRoutes(): void {
-    // This is a marketing preview of routes we run, not a live "book today"
-    // list — every featured route shows whether or not it has a bus running
-    // right now, and shows immediately since the cards themselves need no
-    // network data. Duration/class are a network-fetched bonus per route,
-    // patched in as each lookup resolves instead of blocking the cards.
-    this.topRoutes.set(this.routePairs.map((pair) => ({ ...pair })));
-
-    for (const pair of this.routePairs) {
-      this.busService
-        .search(pair.from, pair.to, '')
-        .then((buses) => {
-          const bus = buses[0];
-          if (!bus) {
-            return;
-          }
-          this.topRoutes.update((routes) =>
-            routes.map((route) =>
-              route.from === pair.from && route.to === pair.to
-                ? { ...route, duration: bus.duration, busType: bus.busType }
-                : route,
-            ),
-          );
-        })
-        .catch(() => {
-          // No bus data for this route right now; the card already shows.
-        });
-    }
   }
 
   selectRoute(route: TopRoute): void {

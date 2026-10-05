@@ -93,6 +93,13 @@
               @if (trip.busType) {
                 <span class="bus-seater">{{ trip.busType }}</span>
               }
+              @if (cardAmenities(trip).length > 0) {
+                <span class="bus-amenity-icons">
+                  @for (amenity of cardAmenities(trip); track amenity) {
+                    <i class="fa-solid {{ amenityIcon(amenity) }}" [attr.aria-label]="amenity" [title]="amenity"></i>
+                  }
+                </span>
+              }
             </div>
 
             <div class="bus-info-right">
@@ -138,10 +145,17 @@
           }
 
           <div class="class-price-list">
-            <div class="class-price-row">
-              <span class="class-chip">From</span>
-              <span class="class-price"><span class="price-currency">KES</span>{{ trip.fromPrice | number }}</span>
-            </div>
+            @for (cls of trip.classes; track cls.className) {
+              <div class="class-price-row">
+                <span class="class-chip">{{ cls.className }}</span>
+                <span class="class-price"><span class="price-currency">KES</span>{{ cls.price | number }}</span>
+              </div>
+            } @empty {
+              <div class="class-price-row">
+                <span class="class-chip">From</span>
+                <span class="class-price"><span class="price-currency">KES</span>{{ trip.fromPrice | number }}</span>
+              </div>
+            }
           </div>
 
           <button

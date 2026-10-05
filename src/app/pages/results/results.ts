@@ -10,6 +10,7 @@ import { tripErrorMessage } from '../../trips/trip-errors';
 import { Trip } from '../../models/trip.model';
 import { todayDateString } from '../../utils/date';
 import { FilterState, emptyFilterState, matchesFilters } from '../../utils/bus-filters';
+import { amenityIcon } from '../../utils/amenity-icons';
 
 /** Shown in place of an operator logo that's missing or fails to load. */
 const FALLBACK_LOGO = 'logos/operator-fallback.svg';
@@ -55,6 +56,13 @@ export class Results {
 
   /** Trip ids whose logo failed to load, so they fall back to the default. */
   private brokenLogos = signal<Set<string>>(new Set());
+
+  amenityIcon = amenityIcon;
+
+  /** Shown inline on each result card; kept to the first 4 amenities so the row stays compact. */
+  cardAmenities(trip: Trip): string[] {
+    return trip.amenities.slice(0, 4);
+  }
 
   logoFor(trip: Trip): string {
     return trip.operatorLogo && !this.brokenLogos().has(trip.id) ? trip.operatorLogo : FALLBACK_LOGO;

@@ -122,7 +122,8 @@
                 [title]="seatLabel(placed)"
                 (click)="toggleSeat(placed)"
               >
-                {{ placed.seat.name }}
+                <i class="fa-solid fa-couch" aria-hidden="true"></i>
+                <span class="seat-number">{{ placed.seat.name }}</span>
               </button>
             }
           </div>

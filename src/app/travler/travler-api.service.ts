@@ -55,13 +55,19 @@ export class TravlerApiService implements TripProvider {
   readonly holdMinutes = BOOKING_HOLD_MINUTES;
   private http = inject(HttpClient);
   private baseUrl = environment.travlerApiUrl.replace(/\/+$/, '');
+  /** When travlerApiUrl points at the Supabase `travler` edge function
+   * (production), Supabase needs its project key on every call. The local
+   * mock doesn't, so nothing extra is sent there. */
+  private requestOptions = this.baseUrl.startsWith(environment.supabase.url)
+    ? { headers: { apikey: environment.supabase.key, Authorization: `Bearer ${environment.supabase.key}` } }
+    : {};
   private cityCache = new Map<string, Promise<City[]>>();
 
   /** POST and unwrap: throws on non-2xx, and on any body with isSuccess: false. */
   private async post<T extends { isSuccess?: boolean }>(path: string, body: object, fallback: string): Promise<T> {
     let response: T;
     try {
-      response = await firstValueFrom(this.http.post<T>(`${this.baseUrl}${path}`, body));
+      response = await firstValueFrom(this.http.post<T>(`${this.baseUrl}${path}`, body, this.requestOptions));
     } catch (error) {
       throw toTravlerError(error, fallback);
     }

@@ -9,9 +9,10 @@ export const environment = {
    * at travlerApiUrl) or 'supabase' (BusEase's own buses tables). */
   tripProvider: 'travler' as 'travler' | 'supabase',
 
-  /** PLACEHOLDER: the real production Travler API URL is not known yet.
-   * Replace this before deploying, or every booking request will fail. */
-  travlerApiUrl: 'https://TRAVLER-PRODUCTION-URL-NOT-SET.invalid/globalApi',
+  /** The `travler` edge function, which forwards to the real Travler API.
+   * The real API address and key are Supabase secrets (TRAVLER_API_URL,
+   * TRAVLER_API_KEY), see supabase/functions/travler/index.ts. */
+  travlerApiUrl: 'https://ienhcalrkdjfdamzqgaq.supabase.co/functions/v1/travler',
 
   assets: {
     paymentLogos: {

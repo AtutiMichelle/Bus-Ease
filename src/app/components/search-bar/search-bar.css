@@ -295,11 +295,24 @@
   box-shadow: none;
   background: transparent;
   padding: 0;
-  align-items: flex-end;
+  align-items: flex-start;
 }
 
 :host(.compact) .field {
   min-width: 120px;
+}
+
+/* Fields line up from the top so an error under one of them doesn't push it
+   out of line. The button skips the label row to sit level with the inputs. */
+:host(.compact) .field label,
+:host(.ticket) .field label {
+  line-height: 1.25;
+}
+
+:host(.compact) .search-cta,
+:host(.ticket) .search-cta {
+  align-self: flex-start;
+  margin-top: calc(0.875rem * 1.25 + 6px);
 }
 
 @media (max-width: 480px) {
@@ -315,6 +328,7 @@
 
   :host(.compact) .search-cta {
     width: 100%;
+    margin-top: 0;
   }
 }
 
@@ -327,7 +341,7 @@
   background: transparent;
   padding: 0;
   flex-wrap: nowrap;
-  align-items: flex-end;
+  align-items: flex-start;
 }
 
 :host(.ticket) .field {
@@ -393,5 +407,6 @@
 
   :host(.ticket) .search-cta {
     width: 100%;
+    margin-top: 0;
   }
 }

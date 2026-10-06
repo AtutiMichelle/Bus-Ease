@@ -130,6 +130,10 @@ export class SearchBar {
         this.dateError.set(null);
         if (originId) {
           this.loadDestinations(originId);
+        } else if (this.sourceCities().length > 0) {
+          // The city list is already in, so loadSourceCities won't resolve
+          // this name for us.
+          this.onOriginInput(origin);
         }
       });
     });

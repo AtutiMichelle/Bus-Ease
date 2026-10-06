@@ -21,9 +21,9 @@ export class BookingService {
   /** Places a temporary hold (default 15 min) on the given seats, atomically
    * — either every seat is claimed or none are. Returns when the hold
    * expires, so the payment page can count it down. `heldBy` is the
-   * logged-in user's id, or a per-browser token for guests, so the same
-   * caller reloading or retrying refreshes their own hold instead of
-   * failing against it. */
+   * per-browser guest token. The database takes a signed-in holder from the
+   * session instead, so the same caller reloading or retrying refreshes
+   * their own hold instead of failing against it. */
   async reserveSeats(busId: string, seatNumbers: string[], heldBy: string, holdMinutes = 15): Promise<string> {
     const { data, error } = await this.client.rpc('reserve_seats', {
       p_bus_id: busId,
@@ -49,6 +49,7 @@ export class BookingService {
       p_bus_id: bus.id,
       p_seat_numbers: passengers.map((p) => p.seatNumber),
       p_held_by: heldBy,
+      // Ignored by the database, which reads the booker from the session.
       p_user_id: user?.id ?? null,
       p_contact_email: user?.email ?? contactEmail ?? null,
       p_passengers: passengers.map((p) => ({

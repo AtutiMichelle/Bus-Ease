@@ -10,28 +10,31 @@ export interface Seat {
   price?: number;
 }
 
+/** One row from get_seats(). The server never sends who holds a seat, only
+ * whether the caller does. */
 export interface SeatRow {
   id: string;
   seat_number: string;
   status: string;
   reserved_until: string | null;
-  held_by: string | null;
-  bus_classes: { class_name: string; price: string | number } | null;
+  held_by_me: boolean;
+  class_name: string | null;
+  price: string | number | null;
 }
 
-/** `heldBy` is the current viewer's own guest token or user id — a seat they
- * themselves are holding should never read as unavailable to them, even
- * mid-hold, so a failed payment doesn't lock them out of reselecting it. */
-export function mapSeatRow(row: SeatRow, heldBy?: string): Seat {
+/** A seat the viewer is holding themselves should never read as unavailable
+ * to them, even mid-hold, so a failed payment doesn't lock them out of
+ * reselecting it. */
+export function mapSeatRow(row: SeatRow): Seat {
   const holdExpired = row.status === 'pending' && (!row.reserved_until || new Date(row.reserved_until).getTime() <= Date.now());
-  const heldByViewer = row.status === 'pending' && !!heldBy && row.held_by === heldBy;
+  const heldByViewer = row.status === 'pending' && row.held_by_me;
   const isAvailable = row.status === 'available' || holdExpired || heldByViewer;
   return {
     id: row.id,
     number: row.seat_number,
     status: (isAvailable ? 'available' : 'booked') as Seat['status'],
-    className: row.bus_classes ? (row.bus_classes.class_name as Seat['className']) : undefined,
-    price: row.bus_classes ? Number(row.bus_classes.price) : undefined,
+    className: row.class_name ? (row.class_name as Seat['className']) : undefined,
+    price: row.class_name && row.price !== null ? Number(row.price) : undefined,
   };
 }
 
@@ -169,18 +172,20 @@ export class BusService {
     return bus;
   }
 
-  async getSeats(busId: string, heldBy?: string): Promise<Seat[]> {
-    const { data, error } = await this.client
-      .from('seats')
-      .select('id, seat_number, status, reserved_until, held_by, bus_classes(class_name, price)')
-      .eq('bus_id', busId);
+  /** `guestToken` lets the server recognise a guest's own hold; a signed-in
+   * viewer is recognised from their session. */
+  async getSeats(busId: string, guestToken?: string): Promise<Seat[]> {
+    const { data, error } = await this.client.rpc('get_seats', {
+      p_bus_id: busId,
+      p_held_by: guestToken ?? null,
+    });
 
     if (error) {
       throw error;
     }
 
-    return ((data ?? []) as unknown as SeatRow[])
-      .map((row) => mapSeatRow(row, heldBy))
+    return ((data ?? []) as SeatRow[])
+      .map((row) => mapSeatRow(row))
       .sort((a, b) => {
         const [rowA, colA] = seatSortKey(a.number);
         const [rowB, colB] = seatSortKey(b.number);

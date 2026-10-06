@@ -65,14 +65,15 @@ describe('mapBusRow classes', () => {
 });
 
 describe('mapSeatRow', () => {
-  it('maps a seat with a class embed to className and price', () => {
+  it('maps a seat with a class to className and price', () => {
     const row: SeatRow = {
       id: 's1',
       seat_number: '3B',
       status: 'available',
       reserved_until: null,
-      held_by: null,
-      bus_classes: { class_name: 'VIP', price: '4200' },
+      held_by_me: false,
+      class_name: 'VIP',
+      price: '4200',
     };
 
     expect(mapSeatRow(row)).toEqual({
@@ -90,25 +91,69 @@ describe('mapSeatRow', () => {
       seat_number: '1A',
       status: 'booked',
       reserved_until: null,
-      held_by: null,
-      bus_classes: { class_name: 'Normal', price: '1800' },
+      held_by_me: false,
+      class_name: 'Normal',
+      price: '1800',
     };
 
     expect(mapSeatRow(row).status).toBe('booked');
   });
 
-  it('leaves className and price undefined when a seat has no class embed', () => {
+  it('leaves className and price undefined when a seat has no class', () => {
     const row: SeatRow = {
       id: 's3',
       seat_number: '5A',
       status: 'available',
       reserved_until: null,
-      held_by: null,
-      bus_classes: null,
+      held_by_me: false,
+      class_name: null,
+      price: null,
     };
 
     const seat = mapSeatRow(row);
     expect(seat.className).toBeUndefined();
     expect(seat.price).toBeUndefined();
+  });
+
+  it("shows another person's unexpired hold as booked", () => {
+    const row: SeatRow = {
+      id: 's4',
+      seat_number: '2C',
+      status: 'pending',
+      reserved_until: new Date(Date.now() + 60_000).toISOString(),
+      held_by_me: false,
+      class_name: null,
+      price: null,
+    };
+
+    expect(mapSeatRow(row).status).toBe('booked');
+  });
+
+  it("shows the viewer's own hold as available", () => {
+    const row: SeatRow = {
+      id: 's5',
+      seat_number: '2D',
+      status: 'pending',
+      reserved_until: new Date(Date.now() + 60_000).toISOString(),
+      held_by_me: true,
+      class_name: null,
+      price: null,
+    };
+
+    expect(mapSeatRow(row).status).toBe('available');
+  });
+
+  it('shows an expired hold as available', () => {
+    const row: SeatRow = {
+      id: 's6',
+      seat_number: '4A',
+      status: 'pending',
+      reserved_until: new Date(Date.now() - 60_000).toISOString(),
+      held_by_me: false,
+      class_name: null,
+      price: null,
+    };
+
+    expect(mapSeatRow(row).status).toBe('available');
   });
 });

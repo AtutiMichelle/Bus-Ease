@@ -1,6 +1,5 @@
 import { Injectable, inject } from '@angular/core';
 import { Supabase } from '../services/supabase';
-import { AuthService } from '../services/auth.service';
 import { BusService } from '../services/bus.service';
 import { BookingService } from '../services/booking.service';
 import {
@@ -82,13 +81,15 @@ export class SupabaseTripProvider implements TripProvider {
   readonly holdMinutes = HOLD_MINUTES;
 
   private client = inject(Supabase).getClient();
-  private authService = inject(AuthService);
   private busService = inject(BusService);
   private bookingService = inject(BookingService);
   private cityCache = new Map<string, Promise<City[]>>();
 
+  /** Only identifies a guest. The database works out a signed-in holder from
+   * the session, and uses this token just to carry over a hold made before
+   * they signed in. */
   private heldBy(): string {
-    return this.authService.user()?.id ?? getGuestToken();
+    return getGuestToken();
   }
 
   /** Cities are just the town names on the routes table, so a city's id is its name. */

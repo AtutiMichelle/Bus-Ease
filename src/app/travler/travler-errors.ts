@@ -21,7 +21,23 @@ const MESSAGES_BY_CODE: Record<string, string> = {
   VALIDATION_ERROR: 'Some booking details look wrong. Please check them and try again.',
 };
 
-function friendlyMessage(code: string | null, status: number | null, fallback: string): string {
+/** "Too many attempts" with how long to wait, when the API says. */
+function rateLimitedMessage(retryAfter: unknown): string {
+  const seconds = Number(retryAfter);
+  if (!Number.isFinite(seconds) || seconds <= 0) {
+    return 'Too many attempts. Please wait a few minutes and try again.';
+  }
+  if (seconds <= 60) {
+    return 'Too many attempts. Please wait a minute and try again.';
+  }
+  const minutes = Math.ceil(seconds / 60);
+  return `Too many attempts. Please try again in ${minutes} minutes.`;
+}
+
+function friendlyMessage(code: string | null, status: number | null, fallback: string, retryAfter?: unknown): string {
+  if (code === 'RATE_LIMITED') {
+    return rateLimitedMessage(retryAfter);
+  }
   if (code && MESSAGES_BY_CODE[code]) {
     return MESSAGES_BY_CODE[code];
   }
@@ -48,7 +64,7 @@ function readBody(body: unknown): ErrorLikeBody {
 export function errorFromBody(body: unknown, fallback: string): TravlerApiError {
   const parsed = readBody(body);
   const code = parsed.error?.code ?? null;
-  return new TravlerApiError(friendlyMessage(code, null, fallback), code, null, parsed.msg ?? null);
+  return new TravlerApiError(friendlyMessage(code, null, fallback, parsed.error?.retryAfter), code, null, parsed.msg ?? null);
 }
 
 /** For anything thrown while making the call: non-2xx, network, or already a TravlerApiError. */
@@ -59,7 +75,12 @@ export function toTravlerError(error: unknown, fallback: string): TravlerApiErro
   if (error instanceof HttpErrorResponse) {
     const parsed = readBody(error.error);
     const code = parsed.error?.code ?? null;
-    return new TravlerApiError(friendlyMessage(code, error.status, fallback), code, error.status, parsed.msg ?? null);
+    return new TravlerApiError(
+      friendlyMessage(code, error.status, fallback, parsed.error?.retryAfter),
+      code,
+      error.status,
+      parsed.msg ?? null,
+    );
   }
   return new TravlerApiError(fallback, null, null, error instanceof Error ? error.message : null);
 }

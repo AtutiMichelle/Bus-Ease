@@ -5,6 +5,8 @@
 export interface TravlerErrorBody {
   code?: string;
   message?: string;
+  /** Seconds to wait, sent with code RATE_LIMITED by the `travler` edge function. */
+  retryAfter?: number;
 }
 
 /** The usual wrapper around every response except the seat layout. */

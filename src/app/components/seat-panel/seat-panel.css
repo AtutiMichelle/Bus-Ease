@@ -383,6 +383,20 @@
   color: #0f7a43;
 }
 
+/* Zero-height row just above the footer. The voice mic hangs up from it, so
+   it sits over the bottom corner of the seat map and never over the total
+   or the Continue button, however tall the footer gets. */
+.voice-slot {
+  position: relative;
+  flex: none;
+  height: 0;
+}
+
+/* Lets the last row of seats scroll clear of the mic. */
+.panel-body.has-voice-mic {
+  padding-bottom: 82px;
+}
+
 .panel-footer {
   flex: none;
   border-top: 1px solid var(--color-border, #e4dfd6);

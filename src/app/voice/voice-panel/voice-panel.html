@@ -1,0 +1,93 @@
+<section [class]="'panel mode-' + voice.mode()" role="dialog" aria-label="BusEase Assistant">
+  <header class="panel-head">
+    <span class="head-logo" aria-hidden="true"><i class="fa-solid fa-bus"></i></span>
+
+    <div class="head-text">
+      <p class="head-title">BusEase Assistant</p>
+      <p class="status">
+        <span class="status-dot" aria-hidden="true"></span>
+        {{ statusLabel() }}
+        @if (voice.mode() === 'listening') {
+          <span class="waveform" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+        }
+      </p>
+    </div>
+
+    <button type="button" class="close" aria-label="Close assistant" (click)="voice.closePanel()">
+      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+    </button>
+  </header>
+
+  <div class="messages" #list aria-live="polite">
+    @for (message of voice.messages(); track message.id) {
+      <div class="message" [class.from-user]="message.from === 'user'">
+        <span class="avatar" aria-hidden="true">
+          <i class="fa-solid" [class.fa-bus]="message.from === 'bot'" [class.fa-user]="message.from === 'user'"></i>
+        </span>
+
+        <div class="message-body">
+          <p class="bubble" [class.draft]="message.draft">
+            <span class="sr-only">{{ message.from === 'bot' ? 'BusEase:' : 'You:' }}</span>
+            {{ message.text }}
+            @if (message.draft) {
+              <span class="caret" aria-hidden="true"></span>
+            }
+          </p>
+
+          @if (message.id === latestBotId()) {
+            @if (message.chips?.length) {
+              <ul class="chips" aria-label="Quick replies">
+                @for (chip of message.chips; track chip) {
+                  <li>
+                    <button type="button" class="chip">{{ chip }}</button>
+                  </li>
+                }
+              </ul>
+            }
+
+            @if (message.actions?.length) {
+              <div class="actions">
+                @for (action of message.actions; track action.label) {
+                  <button type="button" class="action" [class.action-primary]="action.primary">
+                    {{ action.label }}
+                  </button>
+                }
+              </div>
+            }
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <form class="input-bar" (submit)="send($event)">
+    <input
+      #field
+      type="text"
+      class="input-field"
+      placeholder="Type or tap the mic"
+      aria-label="Message"
+      autocomplete="off"
+      enterkeyhint="send"
+      [value]="text()"
+      (input)="text.set(field.value)"
+    />
+    <button
+      type="button"
+      class="bar-btn bar-mic"
+      [class.listening]="voice.mode() === 'listening'"
+      [attr.aria-label]="voice.mode() === 'listening' ? 'Stop listening' : 'Speak'"
+      [attr.aria-pressed]="voice.mode() === 'listening'"
+      (click)="voice.toggleListening()"
+    >
+      <i class="fa-solid fa-microphone" aria-hidden="true"></i>
+    </button>
+    <button type="submit" class="bar-btn bar-send" aria-label="Send" [disabled]="!canSend()">
+      <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+    </button>
+  </form>
+
+  @if (voice.mode() === 'listening') {
+    <p class="hint">Say “cancel” to stop</p>
+  }
+</section>

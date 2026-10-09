@@ -1,0 +1,47 @@
+.demo {
+  position: fixed;
+  /* Sits in the empty middle of the site header, clear of the page under review. */
+  left: 50%;
+  top: 12px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px 6px 6px;
+  border: 1px dashed var(--color-primary, #12294d);
+  border-radius: 999px;
+  background-color: var(--color-surface, #fff);
+  box-shadow: var(--shadow-card, 0 2px 8px rgba(26, 58, 107, 0.08));
+  font-family: var(--font-family-ui, sans-serif);
+  font-size: 0.75rem;
+  color: var(--color-text, #3a3a3a);
+}
+
+.demo-next {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 999px;
+  background-color: var(--color-primary, #12294d);
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.demo-next:focus-visible {
+  outline: 2px solid var(--color-primary-light, #1e88e5);
+  outline-offset: 2px;
+}
+
+@media (max-width: 700px) {
+  .demo {
+    padding: 4px;
+  }
+
+  .demo-label {
+    display: none;
+  }
+}

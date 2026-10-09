@@ -1,0 +1,11 @@
+<button
+  type="button"
+  class="fab"
+  [class.listening]="voice.listening()"
+  aria-label="Book by voice"
+  title="Book by voice"
+  [attr.aria-expanded]="voice.open()"
+  (click)="voice.togglePanel()"
+>
+  <i class="fa-solid fa-microphone" aria-hidden="true"></i>
+</button>

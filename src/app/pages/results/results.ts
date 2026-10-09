@@ -11,6 +11,7 @@ import { Trip } from '../../models/trip.model';
 import { todayDateString } from '../../utils/date';
 import { FilterState, emptyFilterState, matchesFilters } from '../../utils/bus-filters';
 import { amenityIcon } from '../../utils/amenity-icons';
+import { VoiceStateService } from '../../voice/voice-state.service';
 
 /** Shown in place of an operator logo that's missing or fails to load. */
 const FALLBACK_LOGO = 'logos/operator-fallback.svg';
@@ -30,6 +31,7 @@ export class Results {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private tripProvider = inject(TRIP_PROVIDER);
+  voice = inject(VoiceStateService);
 
   private queryParamMap = toSignal(this.route.queryParamMap, { initialValue: this.route.snapshot.queryParamMap });
 

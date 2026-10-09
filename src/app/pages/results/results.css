@@ -69,6 +69,9 @@
   display: flex;
   align-items: flex-start;
   gap: var(--space-4, 24px);
+  /* --voice-lane keeps the floating voice mic off the Select Seats buttons
+     and fares on screens where it can't fit in the page margin (see app.css). */
+  padding-right: calc(var(--space-4, 24px) + var(--voice-lane, 0px));
 }
 
 .results-sidebar {
@@ -195,6 +198,63 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+}
+
+.bus-top-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Number to say out loud to pick this bus by voice. */
+.voice-number {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-color: var(--color-primary, #12294d);
+  color: #fff;
+  font-family: 'IBM Plex Mono', 'Courier New', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: default;
+  transition: background-color 0.2s;
+}
+
+/* While the mic is live, the numbers pulse gently to show what can be said. */
+.voice-number-pulse {
+  animation: voice-number-pulse 1.8s ease-out infinite;
+}
+
+@keyframes voice-number-pulse {
+  from {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary, #12294d) 45%, transparent);
+  }
+  to {
+    box-shadow: 0 0 0 9px transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .voice-number-pulse {
+    animation: none;
+  }
+}
+
+/* The bus picked by voice. */
+.bus-card.voice-selected {
+  border-color: var(--color-accent, #eb1f1a);
+  box-shadow:
+    0 0 0 1px var(--color-accent, #eb1f1a),
+    0 4px 14px rgba(26, 58, 107, 0.07);
+}
+
+.bus-card.voice-selected .voice-number {
+  background-color: var(--color-accent, #eb1f1a);
 }
 
 .promo-badge {

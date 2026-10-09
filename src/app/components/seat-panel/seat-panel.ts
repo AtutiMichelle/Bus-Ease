@@ -22,6 +22,8 @@ import { TRIP_PROVIDER } from '../../trips/trip-provider.token';
 import { tripErrorMessage } from '../../trips/trip-errors';
 import { BoardingDroppingPoints, LayoutSeat, SeatClassName, SeatLayout, Trip } from '../../models/trip.model';
 import { SelectedSeat } from '../../models/booking.model';
+import { VoiceStateService } from '../../voice/voice-state.service';
+import { VoiceDock } from '../../voice/voice-dock/voice-dock';
 
 /** No one, logged in or not, can select more than this many seats in one booking. */
 const MAX_SEATS_PER_BOOKING = 6;
@@ -50,13 +52,14 @@ interface LegendEntry {
   selector: 'app-seat-panel',
   styleUrl: './seat-panel.css',
   templateUrl: './seat-panel.html',
-  imports: [FormsModule, DecimalPipe],
+  imports: [FormsModule, DecimalPipe, VoiceDock],
 })
 export class SeatPanel {
   trip = input.required<Trip>();
   closed = output<void>();
 
   private tripProvider = inject(TRIP_PROVIDER);
+  voice = inject(VoiceStateService);
   private router = inject(Router);
   private authService = inject(AuthService);
   private authModal = inject(AuthModalService);

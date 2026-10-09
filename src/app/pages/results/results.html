@@ -54,14 +54,19 @@
     }
 
     @for (trip of filteredTrips(); track trip.id) {
-      <article class="bus-card">
+      <article class="bus-card" [class.voice-selected]="voice.selectedCard() === $index + 1">
         <div class="bus-main">
           <div class="bus-top-row">
-            @if (trip.isPromotional) {
-              <span class="promo-badge">Promotional fare</span>
-            } @else {
-              <span></span>
-            }
+            <span class="bus-top-left">
+              @if (voice.supported()) {
+                <span class="voice-number" [class.voice-number-pulse]="voice.listening()" [title]="'Say number ' + ($index + 1)">
+                  <span class="sr-only">Say number</span> {{ $index + 1 }}
+                </span>
+              }
+              @if (trip.isPromotional) {
+                <span class="promo-badge">Promotional fare</span>
+              }
+            </span>
             <!-- Demo-only; no cancellation-policy content/route to link to yet. -->
             <button type="button" class="cancellation-link">Cancellation policy</button>
           </div>

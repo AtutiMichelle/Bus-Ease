@@ -1,7 +1,7 @@
 <form class="search-form" (ngSubmit)="search()">
   <div class="field">
     <label for="sb-origin">From</label>
-    <div class="input-wrap">
+    <div class="input-wrap" [class.voice-filled]="voice.filledFields().includes('origin')">
       <i class="field-icon fa-solid fa-location-dot" aria-hidden="true"></i>
       <input
         id="sb-origin"
@@ -36,7 +36,7 @@
 
   <div class="field">
     <label for="sb-destination">To</label>
-    <div class="input-wrap">
+    <div class="input-wrap" [class.voice-filled]="voice.filledFields().includes('destination')">
       <i class="field-icon fa-solid fa-location-dot" aria-hidden="true"></i>
       <input
         id="sb-destination"
@@ -74,7 +74,7 @@
 
   <div class="field">
     <label for="sb-date">Date</label>
-    <div class="input-wrap" #dateField>
+    <div class="input-wrap date-wrap" #dateField [class.voice-filled]="voice.filledFields().includes('date')">
       <i class="field-icon fa-solid fa-calendar-days" aria-hidden="true"></i>
       <input
         id="sb-date"
@@ -147,6 +147,10 @@
       <p class="error">{{ dateError() }}</p>
     }
   </div>
+
+  @if (showVoiceMic()) {
+    <app-voice-mic-button />
+  }
 
   <button type="submit" class="search-cta" [disabled]="!canSearch">
     Search Buses

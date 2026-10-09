@@ -1,5 +1,6 @@
 @if (!isAdminRoute()) {
   <app-header />
+  <app-voice-scrim class="header-voice-scrim" [visible]="voiceDimsHeader()" />
 }
 
 <main [class.no-header-offset]="isAdminRoute()">
@@ -8,6 +9,14 @@
 
 @if (!isAdminRoute()) {
   <app-footer />
+}
+
+@if (voiceDockVisible()) {
+  <app-voice-dock />
+}
+
+@if (voiceDemo) {
+  <app-voice-demo />
 }
 
 @if (authModal.mode()) {

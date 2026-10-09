@@ -31,7 +31,7 @@
         </p>
       </div>
     } @else {
-      <div class="panel-body">
+      <div class="panel-body" [class.has-voice-mic]="voice.supported()">
         <div class="stops-row">
           <div class="field field-boarding">
             <label for="boarding-point"><span class="dot dot-boarding" aria-hidden="true"></span> Boarding point</label>
@@ -129,6 +129,12 @@
           </div>
         </div>
       </div>
+
+      @if (voice.supported()) {
+        <div class="voice-slot">
+          <app-voice-dock anchor="slot" />
+        </div>
+      }
 
       <footer class="panel-footer">
         @if (selectionNotice()) {

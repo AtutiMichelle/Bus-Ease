@@ -1,0 +1,23 @@
+/* A plain tint, no blur: backdrop-filter is heavy on low-end phones. */
+:host {
+  position: fixed;
+  inset: 0;
+  background-color: color-mix(in srgb, var(--color-primary, #12294d) 50%, transparent);
+  opacity: 0;
+  visibility: hidden;
+  /* Hidden only once the fade out has finished. */
+  transition: opacity 0.15s ease-out, visibility 0s 0.15s;
+}
+
+:host(.visible) {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.15s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host,
+  :host(.visible) {
+    transition: none;
+  }
+}

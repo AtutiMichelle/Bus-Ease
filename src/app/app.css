@@ -13,3 +13,28 @@ main {
 main.no-header-offset {
   padding-top: 0;
 }
+
+/* The header's share of Home's voice overlay: just the header's own box,
+   one step above it (the header is z-index 100, 64px tall). */
+.header-voice-scrim {
+  bottom: auto;
+  height: 64px;
+  z-index: 101;
+}
+
+/* Room for the floating voice mic (see VoiceDock), so it never sits on top
+   of a page's buttons or prices. Pages read these two properties:
+   --voice-lane is extra space to keep free on the right of their content,
+   for screens where the mic would not fit in the page margin.
+   On phones the mic sits in a bar across the bottom instead, and the page
+   ends that much lower so the footer can scroll clear of it. */
+:host(.has-voice-dock) {
+  --voice-lane: min(70px, max(0px, 1388px - 100vw));
+}
+
+@media (max-width: 700px) {
+  :host(.has-voice-dock) {
+    --voice-lane: 0px;
+    padding-bottom: 74px;
+  }
+}

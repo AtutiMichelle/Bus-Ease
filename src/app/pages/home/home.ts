@@ -1,7 +1,10 @@
-import { Component, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, effect, inject, signal, viewChild } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { SearchBar } from '../../components/search-bar/search-bar';
 import { todayDateString } from '../../utils/date';
+import { VoiceStateService } from '../../voice/voice-state.service';
+import { VoicePanel } from '../../voice/voice-panel/voice-panel';
+import { VoiceScrim } from '../../voice/voice-scrim/voice-scrim';
 
 interface TopRoute {
   from: string;
@@ -11,12 +14,14 @@ interface TopRoute {
 }
 
 @Component({
-  imports: [RouterModule, SearchBar],
+  imports: [RouterModule, SearchBar, VoicePanel, VoiceScrim],
   selector: 'app-home',
   styleUrl: './home.css',
   templateUrl: './home.html',
 })
 export class Home implements OnInit, OnDestroy {
+  voice = inject(VoiceStateService);
+
   /** The routes to feature is an editorial choice, always shown regardless
    * of whether a bus is actually running right now. Clicking one searches
    * by city name; the results page matches the names to the booking API's
@@ -115,7 +120,22 @@ export class Home implements OnInit, OnDestroy {
   private departureTimer?: ReturnType<typeof setInterval>;
   private departureFadeTimeout?: ReturnType<typeof setTimeout>;
 
-  constructor(private router: Router) {}
+  private searchCard = viewChild<ElementRef<HTMLElement>>('searchCard');
+
+  constructor(private router: Router) {
+    // Opening the voice panel brings the search card back on screen if part
+    // of it is scrolled out of view. 'nearest' leaves it alone otherwise.
+    effect(() => {
+      if (!this.voice.open()) {
+        return;
+      }
+      const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+      this.searchCard()?.nativeElement.scrollIntoView?.({
+        behavior: reducedMotion ? 'instant' : 'smooth',
+        block: 'nearest',
+      });
+    });
+  }
 
   ngOnInit(): void {
     this.departureTimer = setInterval(() => this.cycleDepartureBoard(), 4500);

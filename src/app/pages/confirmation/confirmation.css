@@ -14,6 +14,12 @@
   background-color: var(--color-bg, #faf8f5);
 }
 
+/* --voice-lane keeps the floating voice mic off the form and the booking
+   summary on screens where it can't fit in the page margin (see app.css). */
+.ticket-section .section-container {
+  padding-right: calc(var(--space-4, 24px) + var(--voice-lane, 0px));
+}
+
 .booking-layout {
   display: grid;
   grid-template-columns: minmax(0, 700px) 370px;

@@ -1,16 +1,18 @@
-import { Component, ElementRef, computed, effect, inject, input, signal, untracked, viewChild } from '@angular/core';
+import { Component, ElementRef, computed, effect, inject, input, isDevMode, signal, untracked, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { todayDateString } from '../../utils/date';
 import { TRIP_PROVIDER } from '../../trips/trip-provider.token';
 import { tripErrorMessage } from '../../trips/trip-errors';
 import { City } from '../../models/trip.model';
+import { VoiceStateService } from '../../voice/voice-state.service';
+import { VoiceMicButton } from '../../voice/voice-mic-button/voice-mic-button';
 
 /** How many city suggestions to show at once. */
 const MAX_SUGGESTIONS = 8;
 
 @Component({
-  imports: [FormsModule],
+  imports: [FormsModule, VoiceMicButton],
   selector: 'app-search-bar',
   styleUrl: './search-bar.css',
   templateUrl: './search-bar.html',
@@ -30,6 +32,11 @@ export class SearchBar {
   destinationId = input('', { alias: 'destinationId' });
 
   private tripProvider = inject(TRIP_PROVIDER);
+  voice = inject(VoiceStateService);
+
+  /** The mic sits in the Home search card only. The Results toolbar leaves
+   * voice to the floating mic. */
+  showVoiceMic = computed(() => this.variant() !== 'compact' && this.voice.supported());
 
   /** What the user sees and types: city names. */
   originValue = signal('');
@@ -134,6 +141,23 @@ export class SearchBar {
           // The city list is already in, so loadSourceCities won't resolve
           // this name for us.
           this.onOriginInput(origin);
+        }
+      });
+    });
+
+    // Text the voice demo wants shown in the fields, so its highlighted
+    // fields are not empty. Dev builds only, like the demo itself.
+    effect(() => {
+      if (!isDevMode()) {
+        return;
+      }
+      const { origin, destination } = this.voice.fieldText();
+      untracked(() => {
+        if (origin && origin !== this.originValue()) {
+          this.onOriginInput(origin);
+        }
+        if (destination && destination !== this.destinationValue()) {
+          this.onDestinationInput(destination);
         }
       });
     });

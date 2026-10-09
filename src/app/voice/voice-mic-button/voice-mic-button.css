@@ -1,0 +1,75 @@
+:host {
+  display: block;
+  flex: none;
+  width: var(--voice-mic-width, 48px);
+}
+
+.mic {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 48px;
+  padding: 0;
+  box-sizing: border-box;
+  border: 2px solid var(--color-primary, #12294d);
+  border-radius: 6px;
+  background-color: var(--color-surface, #fff);
+  color: var(--color-primary, #12294d);
+  font-family: inherit;
+  font-size: 1.05rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.mic-label {
+  display: var(--voice-mic-label, none);
+}
+
+.mic:hover {
+  background-color: var(--color-soft-bg, #e8f1fc);
+}
+
+.mic:focus-visible {
+  outline: 3px solid var(--color-primary-light, #1e88e5);
+  outline-offset: 2px;
+}
+
+.mic.listening {
+  border-color: var(--color-accent, #eb1f1a);
+  background-color: var(--color-accent, #eb1f1a);
+  color: #fff;
+}
+
+/* Soft ring that swells out from the button while the mic is live. */
+.mic.listening::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 6px;
+  animation: mic-ring 1.6s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes mic-ring {
+  from {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent, #eb1f1a) 45%, transparent);
+  }
+  to {
+    box-shadow: 0 0 0 10px transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mic {
+    transition: none;
+  }
+
+  .mic.listening::after {
+    animation: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent, #eb1f1a) 28%, transparent);
+  }
+}

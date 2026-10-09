@@ -1,0 +1,12 @@
+<button
+  type="button"
+  class="mic"
+  [class.listening]="voice.listening()"
+  aria-label="Search by voice"
+  title="Search by voice"
+  [attr.aria-expanded]="voice.open()"
+  (click)="voice.togglePanel()"
+>
+  <i class="fa-solid fa-microphone" aria-hidden="true"></i>
+  <span class="mic-label">Search by voice</span>
+</button>

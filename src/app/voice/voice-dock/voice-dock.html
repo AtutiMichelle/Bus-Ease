@@ -1,0 +1,8 @@
+@if (voice.open()) {
+  <app-voice-panel [sheet]="anchor() === 'viewport'" />
+}
+
+<div class="dock-bar">
+  <p class="dock-hint">Tap the mic to book by voice</p>
+  <app-voice-fab />
+</div>

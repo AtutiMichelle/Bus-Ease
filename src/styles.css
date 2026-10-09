@@ -37,6 +37,39 @@ body {
   border: 0;
 }
 
+/* Marks a field that was filled in by voice: teal border, light teal
+   background and a small VOICE tag on the right. Put it on the element that
+   wraps the input (an input cannot hold the tag itself), which must be
+   position: relative. Global so any form can use it. The !important flags
+   are needed to win over each form's own, more specific, input rules.
+   Set --voice-tag-right on the wrapper to move the tag clear of anything
+   else that sits at the right end of the input. */
+.voice-filled input {
+  border-color: var(--color-success, #2fa88a) !important;
+  background-color: color-mix(in srgb, var(--color-success, #2fa88a) 10%, #fff) !important;
+  padding-right: calc(var(--voice-tag-right, 8px) + 50px) !important;
+}
+
+.voice-filled::after {
+  content: 'VOICE';
+  position: absolute;
+  top: 50%;
+  right: var(--voice-tag-right, 8px);
+  transform: translateY(-50%);
+  padding: 2px 5px;
+  border: 1px solid var(--color-success, #2fa88a);
+  border-radius: 3px;
+  background-color: var(--color-surface, #fff);
+  /* Darkened teal: the plain token is too pale for text this small. */
+  color: color-mix(in srgb, var(--color-success, #2fa88a) 62%, #000);
+  font-family: var(--font-family-ui, sans-serif);
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  pointer-events: none;
+}
+
 /* Loading placeholder shared by the admin dashboard widgets. Global for the
    same reason as .sr-only: it is used across several unrelated components.
    Pulses opacity only (cheap to animate) and holds still for users who ask

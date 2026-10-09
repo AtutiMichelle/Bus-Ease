@@ -287,6 +287,17 @@
   cursor: not-allowed;
 }
 
+/* Voice mic, directly left of the search button and level with it. */
+app-voice-mic-button {
+  align-self: flex-end;
+}
+
+/* The calendar button already sits on the right of the date input, so the
+   VOICE tag moves in beside it. */
+.date-wrap {
+  --voice-tag-right: 38px;
+}
+
 /* Compact variant: fields sit flush inside the Results page's own toolbar band, not a floating card. */
 :host(.compact) .search-form {
   max-width: none;
@@ -310,7 +321,8 @@
 }
 
 :host(.compact) .search-cta,
-:host(.ticket) .search-cta {
+:host(.ticket) .search-cta,
+:host(.ticket) app-voice-mic-button {
   align-self: flex-start;
   margin-top: calc(0.875rem * 1.25 + 6px);
 }
@@ -407,6 +419,13 @@
 
   :host(.ticket) .search-cta {
     width: 100%;
+    margin-top: 0;
+  }
+
+  /* Stacked form: the mic goes full width and shows its text label. */
+  :host(.ticket) app-voice-mic-button {
+    --voice-mic-width: 100%;
+    --voice-mic-label: inline;
     margin-top: 0;
   }
 }

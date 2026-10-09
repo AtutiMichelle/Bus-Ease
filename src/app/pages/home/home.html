@@ -30,7 +30,9 @@
       </p>
     </div>
 
-    <div class="hero-search-card">
+    <app-voice-scrim class="hero-voice-scrim" [visible]="voice.open()" />
+
+    <div class="hero-search-card" #searchCard>
       <app-search-bar variant="ticket" />
 
       <div class="how-it-works-compact">
@@ -45,6 +47,12 @@
         }
       </div>
     </div>
+
+    @if (voice.open()) {
+      <div class="hero-voice-anchor">
+        <app-voice-panel />
+      </div>
+    }
   </div>
 </section>
 

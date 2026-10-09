@@ -136,15 +136,43 @@
   font-weight: 700;
 }
 
+/* Dims the page while the voice panel is open. Inside the hero's content
+   layer it sits above the headline and everything after the hero, and below
+   the search card and the voice panel. The site header is above the hero, so
+   it gets a matching overlay of its own (see app.html). */
+.hero-voice-scrim {
+  z-index: 1;
+}
+
 .hero-search-card {
   position: relative;
   z-index: 2;
+  /* Clears the fixed header when the card is scrolled into view. */
+  scroll-margin-top: 80px;
   margin: var(--space-4) auto 0;
   padding: var(--space-4) var(--space-5) var(--space-2);
   background-color: var(--color-surface);
   border-radius: var(--radius-md);
   /*border-top: 5px solid var(--color-accent);*/
   box-shadow: 0 24px 48px rgba(18, 41, 77, 0.22);
+}
+
+/* Voice panel: hangs centered just below the search card, over whatever
+   follows, so opening it never shifts the page. */
+.hero-voice-anchor {
+  position: relative;
+  z-index: 3;
+  height: 0;
+}
+
+/* Below this width the panel is a bottom sheet and places itself. */
+@media (min-width: 761px) {
+  .hero-voice-anchor app-voice-panel {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
 }
 
 .trust-line {

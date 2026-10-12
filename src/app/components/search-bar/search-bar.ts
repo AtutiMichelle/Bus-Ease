@@ -1,4 +1,4 @@
-import { Component, ElementRef, computed, effect, inject, input, isDevMode, signal, untracked, viewChild } from '@angular/core';
+import { Component, ElementRef, computed, effect, inject, input, signal, untracked, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { todayDateString } from '../../utils/date';
@@ -145,19 +145,19 @@ export class SearchBar {
       });
     });
 
-    // Text the voice demo wants shown in the fields, so its highlighted
-    // fields are not empty. Dev builds only, like the demo itself.
+    // What the voice assistant heard goes into the fields, the same as if
+    // it had been typed or picked.
     effect(() => {
-      if (!isDevMode()) {
-        return;
-      }
-      const { origin, destination } = this.voice.fieldText();
+      const { origin, destination, date } = this.voice.fieldText();
       untracked(() => {
         if (origin && origin !== this.originValue()) {
           this.onOriginInput(origin);
         }
         if (destination && destination !== this.destinationValue()) {
           this.onDestinationInput(destination);
+        }
+        if (date && date !== this.dateValue()) {
+          this.selectDate(date);
         }
       });
     });

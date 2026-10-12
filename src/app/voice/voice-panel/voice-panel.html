@@ -39,7 +39,7 @@
               <ul class="chips" aria-label="Quick replies">
                 @for (chip of message.chips; track chip) {
                   <li>
-                    <button type="button" class="chip">{{ chip }}</button>
+                    <button type="button" class="chip" (click)="voice.tapReply(chip)">{{ chip }}</button>
                   </li>
                 }
               </ul>
@@ -48,7 +48,7 @@
             @if (message.actions?.length) {
               <div class="actions">
                 @for (action of message.actions; track action.label) {
-                  <button type="button" class="action" [class.action-primary]="action.primary">
+                  <button type="button" class="action" [class.action-primary]="action.primary" (click)="voice.tapReply(action.label)">
                     {{ action.label }}
                   </button>
                 }

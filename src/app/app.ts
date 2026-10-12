@@ -9,6 +9,7 @@ import { AuthModal } from './components/auth-modal/auth-modal';
 import { AuthModalService } from './services/auth-modal.service';
 import { recoverFromStaleChunkLoad } from './utils/stale-chunk-recovery';
 import { VoiceStateService } from './voice/voice-state.service';
+import { VoiceAssistantService } from './voice/voice-assistant.service';
 import { VoiceDock } from './voice/voice-dock/voice-dock';
 import { VoiceScrim } from './voice/voice-scrim/voice-scrim';
 import { VoiceDemo, voiceDemoEnabled } from './voice/voice-demo/voice-demo';
@@ -54,6 +55,12 @@ export class App {
     // Keep anchor scrolls (e.g. #about) from landing under the fixed header.
     inject(ViewportScroller).setOffset([0, 80]);
     recoverFromStaleChunkLoad();
+
+    // The demo only shows sample looks, so the real assistant (and the mic)
+    // stays off while it runs.
+    if (!this.voiceDemo) {
+      inject(VoiceAssistantService);
+    }
 
     this.router.events
       .pipe(

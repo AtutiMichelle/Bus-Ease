@@ -30,6 +30,31 @@
   z-index: 2;
 }
 
+/* Wide screens: the open chat and its mic move out to the left of the side
+   panel (480px wide, see seat-panel.css), over the dimmed page behind it. */
+@media (min-width: 900px) {
+  :host(.in-slot.open) {
+    position: fixed;
+    right: calc(480px + 16px);
+    bottom: var(--space-4, 24px);
+    width: 360px;
+  }
+}
+
+/* Narrow screens: the open chat is a strip in the slot, in the normal flow
+   of the side panel. Its own mic and close buttons do for the floating mic. */
+@media (max-width: 899px) {
+  :host(.in-slot.open) {
+    position: static;
+    display: block;
+    width: auto;
+  }
+
+  :host(.in-slot.open) .dock-bar {
+    display: none;
+  }
+}
+
 @media (max-width: 700px) {
   :host(:not(.in-slot)) {
     --voice-sheet-lift: 74px;

@@ -24,6 +24,8 @@ import { BoardingDroppingPoints, LayoutSeat, SeatClassName, SeatLayout, Trip } f
 import { SelectedSeat } from '../../models/booking.model';
 import { VoiceStateService } from '../../voice/voice-state.service';
 import { VoiceDock } from '../../voice/voice-dock/voice-dock';
+import { VoiceStepsService } from '../../voice/voice-steps.service';
+import { SeatsVoiceStep } from '../../voice/steps/seats-step';
 
 /** No one, logged in or not, can select more than this many seats in one booking. */
 const MAX_SEATS_PER_BOOKING = 6;
@@ -158,8 +160,34 @@ export class SeatPanel {
 
   constructor() {
     document.body.style.overflow = 'hidden';
+    // Lets the voice assistant pick seats and stops on this seat map.
+    const leaveVoiceStep = inject(VoiceStepsService).enter(
+      new SeatsVoiceStep({
+        trip: () => this.trip(),
+        loading: () => this.loading(),
+        errorMessage: () => this.errorMessage(),
+        seats: () => this.layout()?.seats ?? [],
+        selectedSeats: () => this.selectedSeats(),
+        totalPrice: () => this.totalPrice(),
+        maxSeats: this.maxSeats,
+        isGuest: () => this.isGuest(),
+        boardingPoints: () => this.points().boarding,
+        droppingPoints: () => this.points().dropping,
+        boarding: () => this.points().boarding.find((point) => point.id === this.boardingId()),
+        dropping: () => this.points().dropping.find((point) => point.id === this.droppingId()),
+        setSelected: (seatIds) => {
+          this.selectionNotice.set('');
+          this.selectedIds.set(seatIds);
+        },
+        setBoarding: (id) => this.boardingId.set(id),
+        setDropping: (id) => this.droppingId.set(id),
+        continue: () => this.continue(),
+        close: () => this.close(),
+      }),
+    );
     inject(DestroyRef).onDestroy(() => {
       document.body.style.overflow = '';
+      leaveVoiceStep();
     });
 
     effect(() => {

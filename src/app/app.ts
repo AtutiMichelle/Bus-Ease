@@ -16,7 +16,7 @@ import { VoiceDemo, voiceDemoEnabled } from './voice/voice-demo/voice-demo';
 
 /** Booking pages that get the floating voice mic. Home has its own mic in
  * the search card instead. */
-const VOICE_DOCK_PATHS = ['/results', '/confirmation'];
+const VOICE_DOCK_PATHS = ['/results', '/confirmation', '/payment', '/ticket'];
 
 @Component({
   selector: 'app-root',
@@ -44,11 +44,13 @@ export class App {
    * dimmed: people need to see the buses, seats and form to answer. */
   voiceDimsHeader = computed(() => this.voice.open() && this.url().split(/[?#]/)[0] === '/');
 
-  /** The seat panel covers the page and carries its own mic, so the page's
-   * floating one steps aside while a bus is open (busId in the URL). */
+  /** The seat panel covers the results page and carries its own mic, so the
+   * page's floating one steps aside while a bus is open there (busId in the
+   * URL). The later pages keep busId in their URL too, with no seat panel. */
   voiceDockVisible = computed(() => {
-    const [path, query = ''] = this.url().split('?');
-    return this.voice.supported() && VOICE_DOCK_PATHS.includes(path) && !new URLSearchParams(query).has('busId');
+    const [path, query = ''] = this.url().split(/[?#]/);
+    const seatPanelOpen = path === '/results' && new URLSearchParams(query).has('busId');
+    return this.voice.supported() && VOICE_DOCK_PATHS.includes(path) && !seatPanelOpen;
   });
 
   constructor() {
@@ -69,9 +71,10 @@ export class App {
       )
       .subscribe((event) => {
         this.isAdminRoute.set(event.urlAfterRedirects.startsWith('/admin'));
-        // Each page is its own step in the conversation.
+        // Each page is its own step in the conversation. The assistant
+        // starts each step itself, so only the demo needs clearing here.
         const path = (url: string) => url.split(/[?#]/)[0];
-        if (path(event.urlAfterRedirects) !== path(this.url())) {
+        if (this.voiceDemo && path(event.urlAfterRedirects) !== path(this.url())) {
           this.voice.clearMessages();
         }
         this.url.set(event.urlAfterRedirects);

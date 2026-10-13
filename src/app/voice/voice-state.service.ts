@@ -1,9 +1,10 @@
 import { Injectable, computed, signal } from '@angular/core';
+import { speechRecognitionSupported } from './speech.service';
 
 export type VoiceMode = 'idle' | 'listening' | 'speaking' | 'confirm';
 
-/** How the user gave their last answer. Later the app will only speak back
- * when the user spoke. */
+/** How the user gave their last answer. The assistant only speaks back when
+ * the user spoke. */
 export type VoiceInputMode = 'voice' | 'text';
 
 /** Search fields a voice turn can fill. */
@@ -33,7 +34,7 @@ export interface VoiceState {
   inputMode: VoiceInputMode;
   /** Search fields to mark as filled by voice. */
   filledFields: VoiceField[];
-  /** Text to show in a search field. Only the demo sets this for now. */
+  /** What to put in a search field: a city name, or a yyyy-mm-dd date. */
   fieldText: Partial<Record<VoiceField, string>>;
   /** Number of the result card picked by voice (1-based), if any. */
   selectedCard: number | null;
@@ -52,8 +53,8 @@ export const EMPTY_VOICE_STATE: VoiceState = {
   selectedCard: null,
 };
 
-/** State for the voice booking UI. Holds what to show only: there is no
- * speech recognition, speech synthesis or parsing behind it yet. */
+/** State for the voice booking UI. Holds what to show only. The listening,
+ * speaking and understanding live in VoiceAssistantService. */
 @Injectable({ providedIn: 'root' })
 export class VoiceStateService {
   private state = signal<VoiceState>(EMPTY_VOICE_STATE);
@@ -67,9 +68,11 @@ export class VoiceStateService {
   fieldText = computed(() => this.state().fieldText);
   selectedCard = computed(() => this.state().selectedCard);
 
-  /** Whether this browser can do voice at all. Hardcoded until the real
-   * speech check exists. */
-  supported = signal(true);
+  /** Whether this browser can do voice at all. */
+  supported = signal(speechRecognitionSupported());
+
+  /** Whoever answers what the user types or taps. */
+  private userTextHandler?: (text: string) => void;
 
   /** True while the mic is live, used by the mic buttons for their red look. */
   listening = computed(() => this.open() && this.mode() === 'listening');
@@ -100,17 +103,33 @@ export class VoiceStateService {
     }
   }
 
-  /** Adds what the user typed to the conversation. Nothing answers it yet. */
+  /** Adds what the user typed to the conversation and passes it on to be
+   * answered. */
   sendText(text: string): void {
+    this.addUserText(text, 'text');
+  }
+
+  /** A tapped quick reply or action button. It counts as an answer in
+   * whichever way the user was already answering. */
+  tapReply(text: string): void {
+    this.addUserText(text, this.inputMode());
+  }
+
+  onUserText(handler: (text: string) => void): void {
+    this.userTextHandler = handler;
+  }
+
+  private addUserText(text: string, inputMode: VoiceInputMode): void {
     const trimmed = text.trim();
     if (!trimmed) {
       return;
     }
     this.setState({
       mode: 'idle',
-      inputMode: 'text',
+      inputMode,
       messages: [...this.messages(), { id: this.nextId(), from: 'user', text: trimmed }],
     });
+    this.userTextHandler?.(trimmed);
   }
 
   /** Each page is its own step: moving to another page drops the messages

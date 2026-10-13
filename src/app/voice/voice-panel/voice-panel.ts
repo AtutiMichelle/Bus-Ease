@@ -16,6 +16,7 @@ const STATUS_LABELS: Record<VoiceMode, string> = {
   templateUrl: './voice-panel.html',
   host: {
     '[class.sheet]': 'sheet()',
+    '[class.compact]': 'compact()',
     '(document:keydown.escape)': 'voice.closePanel()',
   },
 })
@@ -24,6 +25,10 @@ export class VoicePanel {
 
   /** Whether the panel turns into a bottom sheet on narrow screens. */
   sheet = input(true);
+
+  /** Whether the panel shrinks to a short strip on narrow screens, for a
+   * place where it shares the height with something that must stay in view. */
+  compact = input(false);
 
   statusLabel = computed(() => STATUS_LABELS[this.voice.mode()]);
 

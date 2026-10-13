@@ -31,7 +31,7 @@
         </p>
       </div>
     } @else {
-      <div class="panel-body" [class.has-voice-mic]="voice.supported()">
+      <div class="panel-body" [class.has-voice-mic]="voice.supported() && !voice.open()">
         <div class="stops-row">
           <div class="field field-boarding">
             <label for="boarding-point"><span class="dot dot-boarding" aria-hidden="true"></span> Boarding point</label>
@@ -44,7 +44,7 @@
             >
               <option value="" disabled>Choose where you board</option>
               @for (point of points().boarding; track point.id) {
-                <option [value]="point.id">{{ point.name }}{{ point.time ? ' · ' + point.time : '' }}</option>
+                <option [value]="point.id">{{ point.name }}</option>
               }
             </select>
             @if (triedContinue() && !boardingId()) {
@@ -63,7 +63,7 @@
             >
               <option value="" disabled>Choose where you get off</option>
               @for (point of points().dropping; track point.id) {
-                <option [value]="point.id">{{ point.name }}{{ point.time ? ' · ' + point.time : '' }}</option>
+                <option [value]="point.id">{{ point.name }}</option>
               }
             </select>
             @if (triedContinue() && !droppingId()) {
@@ -76,7 +76,7 @@
           @for (entry of legend(); track entry.label) {
             <span class="legend-pill">
               <span [class]="'legend-swatch ' + (entry.className ? 'class-' + entry.className.toLowerCase() : 'class-other')"></span>
-              {{ entry.label }} · KES {{ entry.price | number }}
+              {{ entry.label }}
             </span>
           }
           <span class="legend-pill"><span class="legend-swatch booked"></span> Taken</span>
@@ -131,7 +131,7 @@
       </div>
 
       @if (voice.supported()) {
-        <div class="voice-slot">
+        <div class="voice-slot" [class.voice-open]="voice.open()">
           <app-voice-dock anchor="slot" />
         </div>
       }

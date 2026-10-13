@@ -5,7 +5,9 @@
 // browser bundle.
 //
 // The app calls <supabase-url>/functions/v1/assistant with
-// { today: 'yyyy-mm-dd', messages: [...] }, the conversation so far. This
+// { today: 'yyyy-mm-dd', messages: [...], step, context }: the conversation
+// so far, which step of the booking it is on ('search', 'buses' or 'seats')
+// and, past the search, what is on that page. This
 // function adds the standing instructions and the tool list from rules.ts,
 // asks the model, and answers { isSuccess: true, message } where message is
 // either the model's words ({ content }) or the tools it wants the app to
@@ -29,7 +31,7 @@
 //   ASSISTANT_API_URL           defaults to Groq's chat completions endpoint
 //   ASSISTANT_REASONING_EFFORT  defaults to low; set to "none" to leave it out
 
-import { LIMITS, TOOLS, cleanReply, systemPrompt, validateBody } from './rules.ts';
+import { LIMITS, cleanReply, systemPrompt, toolsFor, validateBody } from './rules.ts';
 
 const UPSTREAM_TIMEOUT_MS = 20_000;
 const LIMITER_TIMEOUT_MS = 3_000;
@@ -182,8 +184,8 @@ Deno.serve(async (req) => {
   const reasoningEffort = Deno.env.get('ASSISTANT_REASONING_EFFORT') ?? 'low';
   const request: Record<string, unknown> = {
     model: Deno.env.get('ASSISTANT_MODEL') ?? DEFAULT_MODEL,
-    messages: [{ role: 'system', content: systemPrompt(checked.today) }, ...checked.messages],
-    tools: TOOLS,
+    messages: [{ role: 'system', content: systemPrompt(checked.today, checked.step, checked.context) }, ...checked.messages],
+    tools: toolsFor(checked.step),
     tool_choice: 'auto',
     temperature: 0.3,
     max_completion_tokens: MAX_REPLY_TOKENS,
@@ -227,7 +229,7 @@ Deno.serve(async (req) => {
   let message: ReturnType<typeof cleanReply> = null;
   try {
     const answer = await upstream.json();
-    message = cleanReply(answer?.choices?.[0]?.message);
+    message = cleanReply(answer?.choices?.[0]?.message, checked.step);
   } catch {
     // Handled below with every other unusable answer.
   }
@@ -236,7 +238,8 @@ Deno.serve(async (req) => {
     return fail('The assistant gave an unexpected answer', 'UPSTREAM_BAD_RESPONSE', 502, headers);
   }
 
-  return new Response(JSON.stringify({ isSuccess: true, message }), {
+  // The step is sent back so the app can tell this function knows it.
+  return new Response(JSON.stringify({ isSuccess: true, message, step: checked.step }), {
     status: 200,
     headers: { ...headers, 'Content-Type': 'application/json' },
   });

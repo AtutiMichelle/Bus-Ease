@@ -467,6 +467,41 @@
   }
 }
 
+/* ---- Short strip on narrow screens ---- */
+
+@media (max-width: 899px) {
+  :host(.compact) {
+    width: auto;
+  }
+
+  :host(.compact) .panel {
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    animation: none;
+  }
+
+  :host(.compact) .panel-head {
+    padding: 4px 8px 4px 14px;
+  }
+
+  :host(.compact) .head-logo,
+  :host(.compact) .head-title,
+  :host(.compact) .hint {
+    display: none;
+  }
+
+  /* Room for the newest reply and its buttons. Older ones scroll. */
+  :host(.compact) .messages {
+    max-height: min(132px, 22vh);
+    padding: 8px 14px;
+  }
+
+  :host(.compact) .input-bar {
+    padding: 6px 12px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .panel,
   .mode-listening .status-dot,

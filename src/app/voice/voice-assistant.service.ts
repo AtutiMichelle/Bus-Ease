@@ -6,8 +6,9 @@ import { tripErrorMessage } from '../trips/trip-errors';
 import { todayDateString } from '../utils/date';
 import { ListenProblem, SpeechService } from './speech.service';
 import { findCities, isoPlusDays, parseDate, saysCancel, saysHello, saysNo, saysYes, spokenDate, weekdayName } from './voice-parse';
-import { ChatMessage, ToolCall, VoiceModelService } from './voice-model.service';
+import { ChatMessage, ModelStep, ToolCall, VoiceModelService } from './voice-model.service';
 import { VoiceAction, VoiceField, VoiceStateService } from './voice-state.service';
+import { VoiceReply, VoiceStep, VoiceStepModel, VoiceStepsService, VoiceToolResult } from './voice-steps.service';
 
 /** What the user has asked for so far. */
 interface TripRequest {
@@ -20,12 +21,17 @@ interface TripRequest {
   date?: string;
 }
 
-interface Reply {
-  text: string;
-  chips?: string[];
-  actions?: VoiceAction[];
-  /** The reply asks the user to confirm the search. */
-  confirm?: boolean;
+type Reply = VoiceReply;
+
+/** The model's words in the plain form the rest of the app uses, so they
+ * read and sound the same: "3,520" for an amount it wrote with a space,
+ * and ordinary hyphens and quotes. */
+export function tidyWords(text: string): string {
+  return text
+    .replace(/(\d)[\u00a0\u2009\u202f ](?=\d{3}(?!\d))/g, '$1,')
+    .replace(/[\u2010\u2011]/g, '-')
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u00a0\u2009\u202f]/g, ' ');
 }
 
 /** How many cities to offer as quick replies. */
@@ -43,6 +49,15 @@ const MAX_TOOL_CITIES = 30;
 const MAX_TOOL_BUSES = 6;
 /** After the model fails, the built-in replies take over for this long. */
 const MODEL_REST_MS = 60_000;
+/** How much of a page the model is sent. */
+const MAX_CONTEXT_CHARS = 2400;
+/** On a booking page, an answer this short is plain enough for the fixed
+ * rules, which reply at once. Longer ones go to the model. */
+const QUICK_WORDS = 4;
+/** Words that make something said on Home a question for the model rather
+ * than a plain "from, to, date" for the fixed rules. */
+const ASKS_SOMETHING =
+  /\?|\b(what|which|how|when|why|who|is there|are there|can|could|do|does|price|prices|fare|fares|cost|cheap\w*|time|times|seats?|operators?|companies|buses)\b/i;
 
 const CHANGE_REPLY = 'What would you like to change? Tell me the route or the date.';
 
@@ -58,14 +73,17 @@ const MIC_PROBLEMS: Record<Exclude<ListenProblem, 'silence'>, string> = {
 };
 
 /** The voice assistant itself: it listens while the panel says it is
- * listening, works out what the user wants, fills the search fields and
- * answers. For now it handles the Home search only: where from, where to
- * and when.
+ * listening, works out what the user wants and answers.
  *
- * An AI model writes the replies and decides what to look up. It can only
- * ask for the tools in runTool, which read the live trip source, so cities,
- * times and prices are never made up. When the model can't be reached, the
- * built-in replies in ruleReply carry the same conversation on. */
+ * On Home it handles the search: where from, where to and when. An AI model
+ * writes those replies and decides what to look up. It can only ask for the
+ * tools in runTool, which read the live trip source, so cities, times and
+ * prices are never made up. When the model can't be reached, the built-in
+ * replies in ruleReply carry the same conversation on.
+ *
+ * From the results page on, each booking page has its own step (see
+ * voice/steps) that reads what is on that page and answers by fixed rules,
+ * so seats, names and payment never depend on the model. */
 @Injectable({ providedIn: 'root' })
 export class VoiceAssistantService {
   private voice = inject(VoiceStateService);
@@ -73,6 +91,12 @@ export class VoiceAssistantService {
   private trips = inject(TRIP_PROVIDER);
   private router = inject(Router);
   private model = inject(VoiceModelService);
+  private steps = inject(VoiceStepsService);
+
+  /** The booking step the conversation is on, if any. */
+  private step: VoiceStep | null = null;
+  /** The step's stage when it last spoke for itself, or null if it has not. */
+  private introducedAt: string | null = null;
 
   private trip: TripRequest = {};
   /** The conversation as the model sees it. */
@@ -99,9 +123,49 @@ export class VoiceAssistantService {
           this.chat = [];
           this.turn++;
           this.speech.stopSpeech();
+          this.step?.reset();
+          this.introducedAt = null;
         });
       }
     });
+
+    // Each booking page speaks first: on arriving, once it has loaded, and
+    // again whenever it moves on by itself.
+    effect(() => {
+      const step = this.steps.active();
+      const open = this.voice.open();
+      const stage = step?.ready() ? (step.stage?.() ?? '') : null;
+      untracked(() => this.followStep(step, open, stage));
+    });
+  }
+
+  /** `stage` is null while the step's page is still loading. */
+  private followStep(step: VoiceStep | null, open: boolean, stage: string | null): void {
+    if (step !== this.step) {
+      this.step = step;
+      this.introducedAt = null;
+      // The model starts each page fresh, with that page in front of it.
+      this.chat = [];
+      if (open) {
+        // Each page is its own step, so the last one's messages go.
+        this.turn++;
+        this.speech.stopSpeech();
+        this.voice.clearMessages();
+      }
+    }
+    if (stage === null) {
+      this.introducedAt = null;
+      return;
+    }
+    if (!step || !open || stage === this.introducedAt) {
+      return;
+    }
+    const first = this.introducedAt === null;
+    this.introducedAt = stage;
+    const reply = step.intro();
+    if (reply) {
+      void this.show(reply, ++this.turn, first);
+    }
   }
 
   /** Opens or closes the mic to match what the panel shows. */
@@ -109,15 +173,18 @@ export class VoiceAssistantService {
     const wanted = this.voice.listening();
     if (wanted && !this.speech.listening) {
       this.speech.stopSpeech();
-      this.speech.listen({
-        onDraft: (text) => this.showHeard(text, true),
-        onFinal: (text) => {
-          this.showHeard(text, false);
-          this.voice.setState({ mode: 'idle' });
-          void this.answer(text);
+      this.speech.listen(
+        {
+          onDraft: (text) => this.showHeard(text, true),
+          onFinal: (text) => {
+            this.showHeard(text, false);
+            this.voice.setState({ mode: 'idle' });
+            void this.answer(text);
+          },
+          onProblem: (problem) => this.micStopped(problem),
         },
-        onProblem: (problem) => this.micStopped(problem),
-      });
+        { patient: this.step?.patient?.() ?? false },
+      );
     } else if (!wanted) {
       this.speech.stopListening();
       if (this.draftId !== null) {
@@ -168,11 +235,12 @@ export class VoiceAssistantService {
     }
 
     const turn = ++this.turn;
-    let reply: Reply | 'search';
+    const step = this.step;
+    let reply: Reply | 'search' | null;
     try {
       reply = await this.reply(text);
     } catch (error) {
-      reply = { text: tripErrorMessage(error, "I couldn't load the list of cities.") };
+      reply = { text: tripErrorMessage(error, step ? 'Something went wrong. Please try again.' : "I couldn't load the list of cities.") };
     }
     if (turn !== this.turn || !this.voice.open()) {
       return;
@@ -180,40 +248,52 @@ export class VoiceAssistantService {
 
     if (reply === 'search') {
       this.search();
-      return;
+    } else if (reply) {
+      await this.show(reply, turn);
     }
+  }
 
+  /** Adds the assistant's reply to the conversation and, when the user is
+   * speaking rather than typing, reads it aloud and listens again. `fresh`
+   * starts the conversation over with this reply. */
+  private async show(reply: Reply, turn: number, fresh = false): Promise<void> {
     const spoken = this.voice.inputMode() === 'voice';
     const restMode = reply.confirm ? 'confirm' : 'idle';
     this.voice.setState({
       mode: spoken ? 'speaking' : restMode,
       messages: [
-        ...this.voice.messages(),
+        ...(fresh ? [] : this.voice.messages()),
         { id: this.voice.nextId(), from: 'bot', text: reply.text, chips: reply.chips, actions: reply.actions },
       ],
-      ...this.searchFields(),
+      ...(this.step ? {} : this.searchFields()),
     });
+    this.syncMic();
     if (!spoken) {
       return;
     }
 
-    await this.speech.speak(reply.text);
+    await this.speech.speak(reply.say ?? reply.text);
     // Tapping the mic or closing the panel cuts the speech short and has
     // already moved things on.
     if (turn !== this.turn || this.voice.mode() !== 'speaking') {
       return;
     }
-    this.voice.setState({ mode: reply.confirm ? 'confirm' : 'listening' });
+    // The mic opens again after a yes or no question too, so the answer can
+    // be said as well as tapped.
+    this.voice.setState({ mode: reply.listen === false ? restMode : 'listening' });
     this.syncMic();
   }
 
-  private async reply(text: string): Promise<Reply | 'search'> {
+  private async reply(text: string): Promise<Reply | 'search' | null> {
+    if (this.step) {
+      return this.step.ready() ? this.stepReply(this.step, text) : { text: 'One moment, this page is still loading.' };
+    }
     if (this.router.url.split(/[?#]/)[0] !== '/') {
-      return { text: 'I can only help with searching for buses from the home page for now.' };
+      return { text: 'I can help you book from the home page. Start a search there and I will take you through it.' };
     }
 
     // The two buttons under a finished search need no thinking about.
-    if (this.ready() && /^\W*(search buses|yes)\W*$/i.test(text)) {
+    if (this.ready() && /^\W*(search buses|search|yes)\W*$/i.test(text)) {
       return 'search';
     }
     if (this.ready() && /^\W*(edit|no)\W*$/i.test(text)) {
@@ -221,50 +301,127 @@ export class VoiceAssistantService {
       return { text: CHANGE_REPLY };
     }
 
-    if (this.model.enabled && Date.now() >= this.modelOffUntil) {
-      try {
-        return await this.modelReply(text);
-      } catch (error) {
-        console.warn('Voice assistant model unavailable, using built-in replies', error);
-        this.modelOffUntil = Date.now() + MODEL_REST_MS;
+    // A plain "from, to, date" is answered at once by the fixed rules. The
+    // model takes questions, and whatever the rules do not understand.
+    const modelOn = this.modelOn();
+    if (!modelOn || !ASKS_SOMETHING.test(text)) {
+      const reply = await this.ruleReply(text, modelOn);
+      if (reply) {
+        return this.remembered(text, reply);
       }
     }
+    try {
+      return await this.modelReply(text);
+    } catch (error) {
+      this.restModel(error);
+    }
+    return this.remembered(text, (await this.ruleReply(text, false)) as Reply | 'search');
+  }
 
-    const reply = await this.ruleReply(text);
-    if (reply !== 'search') {
-      // Kept so the model knows what was said once it is back.
+  /** Answers on a booking page: the page's own rules for short, plain
+   * answers, and the model, where the page allows it, for the rest. */
+  private async stepReply(step: VoiceStep, text: string): Promise<Reply | null> {
+    const model = this.modelOn() ? step.model : undefined;
+    const quick = text.trim().split(/\s+/).length <= QUICK_WORDS;
+
+    let ruled = false;
+    if (!model || quick) {
+      ruled = true;
+      const reply = await step.answer(text);
+      if (reply !== undefined) {
+        return model || step.model ? this.remembered(text, reply) : reply;
+      }
+    }
+    if (model) {
+      try {
+        return await this.stepModelReply(model, text);
+      } catch (error) {
+        this.restModel(error);
+      }
+      if (!ruled) {
+        const reply = await step.answer(text);
+        if (reply !== undefined) {
+          return this.remembered(text, reply);
+        }
+      }
+    }
+    return step.unsure();
+  }
+
+  private modelOn(): boolean {
+    return this.model.enabled && Date.now() >= this.modelOffUntil;
+  }
+
+  private restModel(error: unknown): void {
+    console.warn('Voice assistant model unavailable, using built-in replies', error);
+    this.modelOffUntil = Date.now() + MODEL_REST_MS;
+  }
+
+  /** Keeps an exchange the fixed rules handled, so the model knows what
+   * was said when it next answers. */
+  private remembered<T extends Reply | 'search' | null>(text: string, reply: T): T {
+    if (reply && reply !== 'search') {
       this.chat.push({ role: 'user', content: text.slice(0, MAX_USER_CHARS) }, { role: 'assistant', content: reply.text });
     }
     return reply;
   }
 
-  /** Lets the model answer, running the tools it asks for along the way. */
+  /** Lets the model answer on Home, running the tools it asks for. */
   private async modelReply(text: string): Promise<Reply | 'search'> {
+    const reply = await this.askModel(text, 'search', undefined, (name, args) => this.runTool(name, args));
+    if (reply === null) {
+      return 'search';
+    }
+    // The words are the model's. The quick replies and buttons still come
+    // from what the trip is missing.
+    return { ...(await this.nextQuestion()), text: reply };
+  }
+
+  /** Lets the model answer on a booking page, with that page in front of
+   * it and that page's tools. */
+  private async stepModelReply(model: VoiceStepModel, text: string): Promise<Reply | null> {
+    let farewell: Reply | null = null;
+    const context = () => JSON.stringify(model.context()).slice(0, MAX_CONTEXT_CHARS);
+    const reply = await this.askModel(text, model.name, context, async (name, args) => {
+      const result = await model.runTool(name, args);
+      farewell = result.reply ?? farewell;
+      return result;
+    });
+    return reply === null ? farewell : { ...model.prompts(), text: reply };
+  }
+
+  /** Asks the model, running each tool it asks for, until it has words to
+   * say. Null when a tool moved to another page instead. */
+  private async askModel(
+    text: string,
+    step: ModelStep,
+    context: (() => string) | undefined,
+    run: (name: string, args: Record<string, unknown>) => Promise<VoiceToolResult>,
+  ): Promise<string | null> {
     const start = this.chat.length;
     this.chat.push({ role: 'user', content: text.slice(0, MAX_USER_CHARS) });
     try {
-      for (let step = 0; step < MAX_MODEL_STEPS; step++) {
-        const message = await this.model.ask(this.recentChat(), todayDateString());
+      for (let ask = 0; ask < MAX_MODEL_STEPS; ask++) {
+        const message = await this.model.ask(this.recentChat(), todayDateString(), step, context?.());
         if (!message.tool_calls?.length) {
-          this.chat.push({ role: 'assistant', content: message.content });
-          // The words are the model's. The quick replies and buttons still
-          // come from what the trip is missing.
-          return { ...(await this.nextQuestion()), text: message.content };
+          const content = tidyWords(message.content);
+          this.chat.push({ role: 'assistant', content });
+          return content;
         }
 
         this.chat.push({ role: 'assistant', content: message.content ?? '', tool_calls: message.tool_calls });
-        let search = false;
+        let leaving = false;
         for (const call of message.tool_calls) {
-          const result = await this.runTool(call);
-          search ||= call.function.name === 'show_results' && result['ok'] === true;
+          const { leaving: left, reply: _reply, ...result } = await this.runCall(call, run);
+          leaving ||= !!left;
           this.chat.push({
             role: 'tool',
             tool_call_id: call.id,
             content: JSON.stringify(result).slice(0, MAX_TOOL_RESULT_CHARS),
           });
         }
-        if (search) {
-          return 'search';
+        if (leaving) {
+          return null;
         }
       }
       throw new Error('The assistant used too many steps');
@@ -284,7 +441,10 @@ export class VoiceAssistantService {
   }
 
   /** Runs one tool the model asked for and returns what to tell it. */
-  private async runTool(call: ToolCall): Promise<Record<string, unknown>> {
+  private async runCall(
+    call: ToolCall,
+    run: (name: string, args: Record<string, unknown>) => Promise<VoiceToolResult>,
+  ): Promise<VoiceToolResult> {
     let args: Record<string, unknown> = {};
     try {
       const parsed: unknown = JSON.parse(call.function.arguments || '{}');
@@ -294,23 +454,27 @@ export class VoiceAssistantService {
     } catch {
       // Treated as no arguments.
     }
-    const word = (value: unknown) => (typeof value === 'string' ? value.trim() : '');
-
     try {
-      switch (call.function.name) {
-        case 'get_cities':
-          return await this.citiesTool(word(args['from']));
-        case 'set_trip':
-          return await this.setTripTool(word(args['from']), word(args['to']), word(args['date']));
-        case 'find_buses':
-          return await this.busesTool();
-        case 'show_results':
-          return this.ready() ? { ok: true } : { ok: false, missing: this.missing() };
-        default:
-          return { error: 'Unknown tool' };
-      }
+      return await run(call.function.name, args);
     } catch (error) {
       return { error: tripErrorMessage(error, 'The booking service could not be reached.') };
+    }
+  }
+
+  /** The Home search tools. */
+  private async runTool(name: string, args: Record<string, unknown>): Promise<VoiceToolResult> {
+    const word = (value: unknown) => (typeof value === 'string' ? value.trim() : '');
+    switch (name) {
+      case 'get_cities':
+        return this.citiesTool(word(args['from']));
+      case 'set_trip':
+        return this.setTripTool(word(args['from']), word(args['to']), word(args['date']));
+      case 'find_buses':
+        return this.busesTool();
+      case 'show_results':
+        return this.ready() ? { ok: true, leaving: true } : { ok: false, missing: this.missing() };
+      default:
+        return { error: 'Unknown tool' };
     }
   }
 
@@ -425,8 +589,9 @@ export class VoiceAssistantService {
   }
 
   /** The built-in replies: fixed wording, and only cities, dates and short
-   * answers are understood. */
-  private async ruleReply(text: string): Promise<Reply | 'search'> {
+   * answers are understood. With `onlyIfUnderstood`, gives nothing back
+   * when it did not understand, so the model can answer instead. */
+  private async ruleReply(text: string, onlyIfUnderstood: boolean): Promise<Reply | 'search' | undefined> {
     const wasReady = this.ready();
     const understood = await this.readTrip(text);
     if (wasReady && !understood) {
@@ -436,6 +601,9 @@ export class VoiceAssistantService {
       if (saysYes(text)) {
         return 'search';
       }
+    }
+    if (!understood && onlyIfUnderstood) {
+      return undefined;
     }
 
     const question = await this.nextQuestion();
@@ -581,7 +749,10 @@ export class VoiceAssistantService {
     if (!origin || !destination || !date) {
       return;
     }
-    this.voice.closePanel();
+    // The panel stays open: the results page carries the conversation on.
+    this.trip = {};
+    this.chat = [];
+    this.voice.setState({ mode: 'idle', filledFields: [], fieldText: {} });
     this.router.navigate(['/results'], {
       queryParams: {
         origin: origin.name,

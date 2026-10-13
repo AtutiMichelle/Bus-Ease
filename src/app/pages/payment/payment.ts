@@ -8,6 +8,8 @@ import { TripApiError, tripErrorMessage } from '../../trips/trip-errors';
 import { TripSummary } from '../../components/trip-summary/trip-summary';
 import { environment } from '../../../environment';
 import { normalizeKenyanPhone } from '../../utils/validation';
+import { VoiceStepsService } from '../../voice/voice-steps.service';
+import { PaymentVoiceStep } from '../../voice/steps/payment-step';
 
 type Phase = 'ready' | 'starting' | 'awaiting' | 'rejected' | 'timeout' | 'error' | 'expired';
 
@@ -94,10 +96,27 @@ export class Payment {
       this.startCountdown();
     }
 
+    // Lets the voice assistant take the payment through.
+    const leaveVoiceStep = inject(VoiceStepsService).enter(
+      new PaymentVoiceStep({
+        payable: () => !!this.hold() && !this.draft()?.ticketNumber,
+        phase: () => this.phase(),
+        phone: () => this.phone(),
+        setPhone: (value) => this.phone.set(value),
+        totalPrice: () => this.totalPrice(),
+        remainingSeconds: () => this.remainingSeconds(),
+        errorMessage: () => this.errorMessage(),
+        pay: () => void this.pay(),
+        checkAgain: () => void this.checkAgain(),
+        backToSeats: () => this.backToSeatSelection(),
+      }),
+    );
+
     inject(DestroyRef).onDestroy(() => {
       this.destroyed = true;
       this.stopCountdown();
       this.stopPolling();
+      leaveVoiceStep();
     });
   }
 

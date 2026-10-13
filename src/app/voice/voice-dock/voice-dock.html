@@ -1,5 +1,5 @@
 @if (voice.open()) {
-  <app-voice-panel [sheet]="anchor() === 'viewport'" />
+  <app-voice-panel [sheet]="anchor() === 'viewport'" [compact]="anchor() === 'slot'" />
 }
 
 <div class="dock-bar">

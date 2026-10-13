@@ -1,8 +1,10 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
 import { BookingDraftService } from '../../services/booking-draft.service';
 import { TRIP_PROVIDER } from '../../trips/trip-provider.token';
+import { VoiceStepsService } from '../../voice/voice-steps.service';
+import { TicketVoiceStep } from '../../voice/steps/ticket-step';
 
 @Component({
   imports: [RouterLink, DecimalPipe],
@@ -42,6 +44,12 @@ export class Ticket {
     const params = this.route.snapshot.queryParamMap;
     this.ticketNumber.set(params.get('ticket') ?? '');
     this.reference.set(params.get('reference') ?? '');
+
+    // Lets the voice assistant say the booking went through.
+    const leaveVoiceStep = inject(VoiceStepsService).enter(
+      new TicketVoiceStep({ ticketNumber: () => this.ticketNumber(), reference: () => this.reference() }),
+    );
+    inject(DestroyRef).onDestroy(leaveVoiceStep);
   }
 
   /** Opens the API's printable ticket in a new tab. The tab is opened

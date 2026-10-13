@@ -397,6 +397,17 @@
   padding-bottom: 82px;
 }
 
+/* The open chat never covers the seats. Where the screen is too narrow for
+   it to sit beside this panel (see voice-dock.css), it takes a short strip
+   of its own between the seat map and the footer, and the seat map scrolls
+   in the room that is left. */
+@media (max-width: 899px) {
+  .voice-slot.voice-open {
+    height: auto;
+    border-top: 1px solid var(--color-border, #e4dfd6);
+  }
+}
+
 .panel-footer {
   flex: none;
   border-top: 1px solid var(--color-border, #e4dfd6);

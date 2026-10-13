@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { DecimalPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -12,6 +12,8 @@ import { todayDateString } from '../../utils/date';
 import { FilterState, emptyFilterState, matchesFilters } from '../../utils/bus-filters';
 import { amenityIcon } from '../../utils/amenity-icons';
 import { VoiceStateService } from '../../voice/voice-state.service';
+import { VoiceStepsService } from '../../voice/voice-steps.service';
+import { ResultsVoiceStep } from '../../voice/steps/results-step';
 
 /** Shown in place of an operator logo that's missing or fails to load. */
 const FALLBACK_LOGO = 'logos/operator-fallback.svg';
@@ -107,6 +109,24 @@ export class Results {
     effect(() => {
       this.load(this.origin(), this.destination(), this.originId(), this.destinationId(), this.journeyDate());
     });
+
+    // Lets the voice assistant pick a bus from the cards on this page.
+    const leaveVoiceStep = inject(VoiceStepsService).enter(
+      new ResultsVoiceStep({
+        loading: () => this.loading(),
+        errorMessage: () => this.errorMessage(),
+        trips: () => this.filteredTrips(),
+        highlight: (card) => this.voice.setState({ selectedCard: card }),
+        openSeats: (trip) => this.selectTrip(trip),
+        changeDate: (date) =>
+          this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { journeyDate: date, busId: null },
+            queryParamsHandling: 'merge',
+          }),
+      }),
+    );
+    inject(DestroyRef).onDestroy(leaveVoiceStep);
   }
 
   /** Links that only carry city names (Popular Routes, old bookmarks) are

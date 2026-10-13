@@ -9,8 +9,11 @@ import { VoicePanel } from '../voice-panel/voice-panel';
  * sits in a slim bar across the bottom instead, so page content scrolls
  * behind the bar and is never half hidden under a floating button.
  *
- * `slot` pins it to the bottom right of the nearest positioned ancestor,
- * for a full-height side panel that has its own footer to stay clear of. */
+ * `slot` is for a full-height side panel, such as the seat map, whose
+ * content must stay in view while the user answers. The mic sits at the
+ * bottom right of the nearest positioned ancestor. The open chat goes
+ * beside the side panel on a wide screen, and on a narrow one becomes a
+ * short strip in the slot itself, so it never covers what is being chosen. */
 @Component({
   imports: [VoiceFab, VoicePanel],
   selector: 'app-voice-dock',
@@ -18,6 +21,7 @@ import { VoicePanel } from '../voice-panel/voice-panel';
   templateUrl: './voice-dock.html',
   host: {
     '[class.in-slot]': "anchor() === 'slot'",
+    '[class.open]': 'voice.open()',
   },
 })
 export class VoiceDock {

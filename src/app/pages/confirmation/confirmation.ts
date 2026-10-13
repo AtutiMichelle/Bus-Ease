@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -9,6 +9,8 @@ import { tripErrorMessage } from '../../trips/trip-errors';
 import { TripPassenger } from '../../models/booking.model';
 import { TripSummary } from '../../components/trip-summary/trip-summary';
 import { isValidEmail, isValidIdNumber, normalizeKenyanPhone } from '../../utils/validation';
+import { VoiceStepsService } from '../../voice/voice-steps.service';
+import { DetailsVoiceStep } from '../../voice/steps/details-step';
 
 type PassengerField = 'fullName' | 'idNumber';
 
@@ -100,6 +102,23 @@ export class Confirmation {
     const user = this.authService.user();
     this.contactEmail.set(draft.contact?.email ?? user?.email ?? '');
     this.contactPhone.set(draft.contact?.phone ?? (user?.user_metadata?.['phone'] as string | undefined) ?? '');
+
+    // Lets the voice assistant fill in this form.
+    const leaveVoiceStep = inject(VoiceStepsService).enter(
+      new DetailsVoiceStep({
+        passengers: () => this.passengers(),
+        setPassenger: (index, field, value) => this.updatePassenger(index, field, value),
+        email: () => this.contactEmail(),
+        setEmail: (value) => this.contactEmail.set(value),
+        phone: () => this.contactPhone(),
+        setPhone: (value) => this.contactPhone.set(value),
+        totalPrice: () => this.totalPrice(),
+        holdMinutes: this.holdMinutes,
+        reserve: () => this.confirmBooking(),
+        errorMessage: () => this.errorMessage(),
+      }),
+    );
+    inject(DestroyRef).onDestroy(leaveVoiceStep);
   }
 
   nameError(p: TripPassenger): string {

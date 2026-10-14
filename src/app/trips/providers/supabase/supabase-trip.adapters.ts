@@ -1,6 +1,6 @@
-import { Bus, BusClassOption } from '../models/bus.model';
-import { LayoutSeat, SeatLayout, Trip, TripSearchContext } from '../models/trip.model';
-import { Seat } from '../services/bus.service';
+import { Bus, BusClassOption } from '../../../models/bus.model';
+import { LayoutSeat, SeatLayout, Trip, TripSearchContext } from '../../../models/trip.model';
+import { Seat } from '../../../services/bus.service';
 
 /** Seat type keys, matching the ones the Travler API uses, so the rest of
  * the app sees one vocabulary whichever source is live. */

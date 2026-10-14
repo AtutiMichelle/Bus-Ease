@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { environment } from '../../environment';
+import { environment } from '../../../../environment';
 import {
   BoardingDroppingPoints,
   BookingHold,
@@ -12,8 +12,8 @@ import {
   SeatLayout,
   Trip,
   TripSearchContext,
-} from '../models/trip.model';
-import { BookingRequest, TripProvider } from '../trips/trip-provider';
+} from '../../../models/trip.model';
+import { BookingRequest, TripProvider } from '../../trip-provider';
 import {
   BOOKING_HOLD_MINUTES,
   adaptBooking,

@@ -1,7 +1,7 @@
 import { Component, WritableSignal, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
-import { AdminDashboardService } from '../../../services/admin-dashboard.service';
+import { AdminDashboardService } from '../../services/admin-dashboard.service';
 import {
   DeparturesData,
   KpiCardData,
@@ -11,7 +11,7 @@ import {
   TopRoutesData,
   WeekSummary,
   WidgetState,
-} from '../../../models/admin-dashboard.model';
+} from '../../models/admin-dashboard.model';
 import { ICONS } from '../../admin-nav';
 import { AdminIcon } from '../../icon/admin-icon';
 import { KpiCard } from '../kpi-card/kpi-card';

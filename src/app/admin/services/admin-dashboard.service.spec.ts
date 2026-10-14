@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { AdminDashboardService } from './admin-dashboard.service';
-import { Supabase } from './supabase';
+import { Supabase } from '../../services/supabase';
 
 /** Answers each admin_* database function with the given payload, or fails
  * it, so the service's mapping can be checked without a database. */

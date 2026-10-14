@@ -1,7 +1,7 @@
 import { Component, HostListener, OnInit, computed, inject, input, output, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AdminTripsService } from '../../../services/admin-trips.service';
+import { AdminTripsService } from '../../services/admin-trips.service';
 import {
   AMENITY_OPTIONS,
   AdminOperator,
@@ -12,7 +12,7 @@ import {
   SEAT_CLASS_NAMES,
   TripCreateValue,
   TripUpdateValue,
-} from '../../../models/admin-fleet.model';
+} from '../../models/admin-fleet.model';
 import { BusClassOption } from '../../../models/bus.model';
 
 interface ClassField {

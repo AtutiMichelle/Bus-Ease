@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Supabase } from './supabase';
+import { Supabase } from '../../services/supabase';
 import {
   BookingStatusTag,
   DASHBOARD_LIST_LIMIT,
@@ -16,7 +16,7 @@ import {
   TopRoutesData,
   WeekSummary,
 } from '../models/admin-dashboard.model';
-import { compactAmount } from '../utils/money';
+import { compactAmount } from '../../utils/money';
 
 /** Raw shapes returned by the admin_* database functions (see
  * supabase/sql/2026-09-21-admin-dashboard.sql and the other 2026-09-21-admin-*.sql

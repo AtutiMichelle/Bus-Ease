@@ -1,4 +1,4 @@
-import { Bus, BusClassOption } from './bus.model';
+import { Bus, BusClassOption } from '../../models/bus.model';
 
 export type BusType = Bus['busType'];
 

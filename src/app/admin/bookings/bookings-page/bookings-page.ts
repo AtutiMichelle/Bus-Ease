@@ -1,7 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AdminBookingsService } from '../../../services/admin-bookings.service';
-import { BookingStatusTag, RecentBooking } from '../../../models/admin-dashboard.model';
+import { AdminBookingsService } from '../../services/admin-bookings.service';
+import { BookingStatusTag, RecentBooking } from '../../models/admin-dashboard.model';
 import { BookingsTable } from '../../dashboard/bookings-table/bookings-table';
 import { AdminPagination } from '../../shared/pagination/pagination';
 

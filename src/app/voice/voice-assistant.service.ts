@@ -23,6 +23,9 @@ interface TripRequest {
 
 type Reply = VoiceReply;
 
+/** How long a reply stays up to be read, for each letter in it. */
+const READING_MS_PER_LETTER = 60;
+
 /** The model's words in the plain form the rest of the app uses, so they
  * read and sound the same: "3,520" for an amount it wrote with a space,
  * and ordinary hyphens and quotes. */
@@ -268,20 +271,31 @@ export class VoiceAssistantService {
       ...(this.step ? {} : this.searchFields()),
     });
     this.syncMic();
-    if (!spoken) {
+    const shownAt = Date.now();
+    if (spoken) {
+      await this.speech.speak(reply.say ?? reply.text);
+      // Tapping the mic or closing the panel cuts the speech short and has
+      // already moved things on.
+      if (turn !== this.turn || this.voice.mode() !== 'speaking') {
+        return;
+      }
+      // The mic opens again after a yes or no question too, so the answer
+      // can be said as well as tapped.
+      this.voice.setState({ mode: reply.listen === false ? restMode : 'listening' });
+      this.syncMic();
+    }
+    if (!reply.handover) {
       return;
     }
 
-    await this.speech.speak(reply.say ?? reply.text);
-    // Tapping the mic or closing the panel cuts the speech short and has
-    // already moved things on.
-    if (turn !== this.turn || this.voice.mode() !== 'speaking') {
-      return;
+    // A typed reply, or speech the browser would not play, still gets time
+    // to be read before the panel goes.
+    const readingMs = reply.text.length * READING_MS_PER_LETTER - (Date.now() - shownAt);
+    await new Promise((resolve) => setTimeout(resolve, readingMs));
+    // Typing, tapping the mic or closing the panel has already moved on.
+    if (turn === this.turn && this.voice.open() && this.voice.mode() === restMode) {
+      this.voice.closePanel();
     }
-    // The mic opens again after a yes or no question too, so the answer can
-    // be said as well as tapped.
-    this.voice.setState({ mode: reply.listen === false ? restMode : 'listening' });
-    this.syncMic();
   }
 
   private async reply(text: string): Promise<Reply | 'search' | null> {

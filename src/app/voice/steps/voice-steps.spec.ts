@@ -1,4 +1,3 @@
-import { TripPassenger } from '../../models/booking.model';
 import { LayoutSeat, StopPoint, Trip } from '../../models/trip.model';
 import { DetailsVoiceStep } from './details-step';
 import { PaymentPhase, PaymentVoiceStep } from './payment-step';
@@ -264,178 +263,78 @@ describe('SeatsVoiceStep', () => {
 });
 
 describe('DetailsVoiceStep', () => {
-  function setUp(passengerCount = 1, email = '', phone = '') {
-    const state = {
-      passengers: Array.from(
-        { length: passengerCount },
-        (_, index): TripPassenger => ({ seatName: String(index + 5), seatType: 'normal', fullName: '', idNumber: '', price: 1700 }),
-      ),
-      email,
-      phone,
-      reserved: 0,
-      error: '',
-    };
-    const step = new DetailsVoiceStep({
-      passengers: () => state.passengers,
-      setPassenger: (index, field, value) => (state.passengers[index] = { ...state.passengers[index], [field]: value }),
-      email: () => state.email,
-      setEmail: (value) => (state.email = value),
-      phone: () => state.phone,
-      setPhone: (value) => (state.phone = value),
-      totalPrice: () => passengerCount * 1700,
-      holdMinutes: 10,
-      reserve: async () => {
-        state.reserved++;
-      },
-      errorMessage: () => state.error,
-    });
-    return { state, step };
-  }
-
-  it('asks for each detail in turn, then reserves on yes', async () => {
-    const { state, step } = setUp();
-    expect(step.intro().text).toBe("I need a few details for the ticket. What is the passenger's full name?");
-    expect((await step.answer('my name is john kamau'))?.text).toBe('What is the ID or passport number?');
-    expect(step.patient()).toBe(true);
-    const afterId = await step.answer('12 34 56 78');
-    expect(afterId?.text).toBe('ID 12345678. Which email address should the ticket go to?');
-    expect(afterId?.say).toContain('I D 1 2 3 4 5 6 7 8.');
-    expect((await step.answer('john at gmail dot com'))?.text).toBe('john@gmail.com. What is your mobile number?');
-
-    const confirm = await step.answer('zero seven one two 345 678');
-    expect(confirm?.text).toBe(
-      '0712 345 678. All set: John Kamau, seat 5, KES 1,700 in total. Reserve for 10 minutes and go to payment?',
+  it('hands the form over to the user and does not listen', async () => {
+    const step = new DetailsVoiceStep({ passengerCount: () => 1 });
+    const intro = step.intro();
+    expect(intro.text).toBe(
+      "Over to you for this part. Please fill in the passenger's full name and ID or passport number, then your email and phone number. When you are done, tap Confirm Booking to go to payment.",
     );
-    expect(step.patient()).toBe(false);
-    expect(state.passengers[0]).toMatchObject({ fullName: 'John Kamau', idNumber: '12345678' });
-    expect(state.email).toBe('john@gmail.com');
-    expect(state.phone).toBe('0712 345 678');
-    expect(state.reserved).toBe(0);
-
-    expect(await step.answer('yes')).toBeNull();
-    expect(state.reserved).toBe(1);
+    expect(intro.listen).toBe(false);
+    expect(intro.handover).toBe(true);
   });
 
-  it('keeps a number that came in pieces and asks for the rest', async () => {
-    const { state, step } = setUp();
-    await step.answer('Jane Wanjiru');
-    const part = await step.answer('one two three four');
-    expect(part?.text).toBe('I have 1234 so far. Say the rest, or say start over.');
-    expect(state.passengers[0].idNumber).toBe('');
-
-    expect((await step.answer('five six seven eight'))?.text).toContain('ID 12345678.');
-    expect(state.passengers[0].idNumber).toBe('12345678');
-  });
-
-  it('starts a number over on request, and takes it whole when said again in full', async () => {
-    const { state, step } = setUp(1, 'jane@example.com');
-    await step.answer('Jane Wanjiru');
-    await step.answer('99');
-    expect((await step.answer('start over'))?.text).toBe('What is the ID or passport number?');
-    await step.answer('12345678');
-    expect(state.passengers[0].idNumber).toBe('12345678');
-
-    await step.answer('0712');
-    await step.answer('0712 345 678');
-    expect(state.phone).toBe('0712 345 678');
-  });
-
-  it('skips details that are already filled in and names the seat when there are several', async () => {
-    const { step } = setUp(2, 'jane@example.com', '0712345678');
-    expect(step.intro().text).toContain("What is the passenger's full name for seat 5?");
-    await step.answer('Jane Wanjiru');
-    await step.answer('12345678');
-    expect((await step.answer('Peter Otieno'))?.text).toBe('What is the ID or passport number for seat 6?');
-    expect((await step.answer('A1234567'))?.text).toContain('All set: 2 passengers, seats 5, 6');
-  });
-
-  it('changes one detail on request and reports a failed reservation', async () => {
-    const { state, step } = setUp(1, 'jane@example.com', '0712345678');
-    await step.answer('Jane Wanjiru');
-    await step.answer('12345678');
-
-    expect((await step.answer('Edit'))?.text).toContain('What would you like to change?');
-    expect((await step.answer('email'))?.text).toBe('Which email address should the ticket go to?');
-    await step.answer('jane at work dot co dot ke');
-    expect(state.email).toBe('jane@work.co.ke');
-
-    state.error = 'Seat 5 was just taken.';
-    expect((await step.answer('reserve seats'))?.text).toBe('Seat 5 was just taken. Shall I try again?');
+  it('takes no details by voice, and speaks of each passenger when there are several', async () => {
+    const step = new DetailsVoiceStep({ passengerCount: () => 2 });
+    const reply = await step.answer();
+    expect(reply.text).toContain("I can't take these details for you. Please fill in each passenger's full name");
+    expect(reply.listen).toBe(false);
   });
 });
 
 describe('PaymentVoiceStep', () => {
   function setUp(phone = '0712345678') {
-    const state = { phase: 'ready' as PaymentPhase, phone, paid: 0, checked: 0, back: 0 };
+    const state = { phase: 'ready' as PaymentPhase, phone, payable: true, error: '' };
     const step = new PaymentVoiceStep({
-      payable: () => true,
+      payable: () => state.payable,
       phase: () => state.phase,
       phone: () => state.phone,
-      setPhone: (value) => (state.phone = value),
       totalPrice: () => 1700,
-      remainingSeconds: () => 540,
-      errorMessage: () => '',
-      pay: () => state.paid++,
-      checkAgain: () => state.checked++,
-      backToSeats: () => state.back++,
+      errorMessage: () => state.error,
     });
     return { state, step };
   }
 
-  it('reads the amount and number back, and pays only on the word pay', async () => {
-    const { state, step } = setUp();
+  it('hands the payment over to the user and does not listen', async () => {
+    const { step } = setUp();
     const intro = step.intro();
     expect(intro?.text).toBe(
-      'Your seats are held for 9 more minutes. The total is KES 1,700, on M-Pesa number 0712 345 678. Say pay to send the request.',
+      'Over to you for the payment. The total is KES 1,700. Check your M-Pesa number on the page, then tap Pay to send the request.',
     );
-    expect(intro?.say).toContain('0 7 1 2 3 4 5 6 7 8');
-
-    expect((await step.answer('yes'))?.text).toBe('To send the M-Pesa request, say pay, or tap the button.');
-    await step.answer('okay sure');
-    await step.answer('no');
-    expect(state.paid).toBe(0);
-
-    expect(await step.answer('pay now')).toBeNull();
-    expect(state.paid).toBe(1);
+    expect(intro?.listen).toBe(false);
+    expect(intro?.handover).toBe(true);
+    expect(intro?.actions).toBeUndefined();
   });
 
-  it('needs the word pay after a failed payment too', async () => {
-    const { state, step } = setUp();
-    state.phase = 'rejected';
-    expect(step.intro()?.text).toBe('The payment did not go through. Say pay to try again.');
-    await step.answer('yes');
-    expect(state.paid).toBe(0);
-    await step.answer('Try again');
-    expect(state.paid).toBe(1);
+  it('never pays by voice', async () => {
+    const { step } = setUp();
+    for (const said of ['pay', 'yes', 'pay now', '0722 111 222']) {
+      const reply = await step.answer();
+      expect(reply?.text, said).toBe("I can't make the payment for you. Please use the buttons on the page.");
+      expect(reply?.listen).toBe(false);
+    }
   });
 
-  it('takes a new number and asks again before paying', async () => {
-    const { state, step } = setUp('');
-    expect(step.intro()?.text).toContain('Which M-Pesa number');
-    const reply = await step.answer('zero seven two two 111 222');
-    expect(state.phone).toBe('0722 111 222');
-    expect(reply?.text).toContain('on M-Pesa number 0722 111 222. Say pay to send the request.');
-    expect(state.paid).toBe(0);
-  });
-
-  it('checks rather than pays again after a timeout, and never pays while waiting', async () => {
+  it('says what is happening as the payment moves along', async () => {
     const { state, step } = setUp();
     state.phase = 'awaiting';
-    await step.answer('yes');
-    expect(state.paid).toBe(0);
+    expect(step.intro()?.text).toBe('An M-Pesa request has been sent to 0712 345 678. Enter your PIN on your phone to pay KES 1,700.');
+    expect(step.intro()?.say).toContain('0 7 1 2 3 4 5 6 7 8');
+    expect((await step.answer())?.text).toContain('An M-Pesa request has been sent');
+    expect(step.intro()?.handover).toBeUndefined();
 
+    state.phase = 'rejected';
+    expect(step.intro()?.text).toBe('The payment did not go through. Tap Try again on the page to send a new request.');
     state.phase = 'timeout';
-    step.intro();
-    expect(await step.answer('yes')).toBeNull();
-    expect(state).toMatchObject({ paid: 0, checked: 1 });
-    await step.answer('Pay again');
-    expect(state.paid).toBe(1);
+    expect(step.intro()?.text).toContain('tap Check again on the page');
+    state.phase = 'expired';
+    expect(step.intro()?.text).toContain('Tap Reselect seats on the page');
+    state.phase = 'starting';
+    expect(step.intro()).toBeNull();
   });
 
-  it('goes back to the seats once the hold has run out', async () => {
+  it('says so when there is nothing to pay for', () => {
     const { state, step } = setUp();
-    state.phase = 'expired';
-    await step.answer('yes');
-    expect(state).toMatchObject({ paid: 0, back: 1 });
+    state.payable = false;
+    expect(step.intro()?.text).toBe('There is no booking waiting for payment on this page.');
   });
 });

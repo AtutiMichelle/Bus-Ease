@@ -96,19 +96,15 @@ export class Payment {
       this.startCountdown();
     }
 
-    // Lets the voice assistant take the payment through.
+    // The voice assistant hands the payment over to the user, and says
+    // what is happening as it moves along.
     const leaveVoiceStep = inject(VoiceStepsService).enter(
       new PaymentVoiceStep({
         payable: () => !!this.hold() && !this.draft()?.ticketNumber,
         phase: () => this.phase(),
         phone: () => this.phone(),
-        setPhone: (value) => this.phone.set(value),
         totalPrice: () => this.totalPrice(),
-        remainingSeconds: () => this.remainingSeconds(),
         errorMessage: () => this.errorMessage(),
-        pay: () => void this.pay(),
-        checkAgain: () => void this.checkAgain(),
-        backToSeats: () => this.backToSeatSelection(),
       }),
     );
 

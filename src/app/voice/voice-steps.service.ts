@@ -13,6 +13,9 @@ export interface VoiceReply {
   confirm?: boolean;
   /** False when no answer is expected, so the mic stays off afterwards. */
   listen?: boolean;
+  /** True when the assistant is leaving the page to the user, so the panel
+   * closes once the reply has been read and is out of the way of the form. */
+  handover?: boolean;
 }
 
 /** The quick replies and buttons that go under a reply. */

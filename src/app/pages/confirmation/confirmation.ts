@@ -103,20 +103,9 @@ export class Confirmation {
     this.contactEmail.set(draft.contact?.email ?? user?.email ?? '');
     this.contactPhone.set(draft.contact?.phone ?? (user?.user_metadata?.['phone'] as string | undefined) ?? '');
 
-    // Lets the voice assistant fill in this form.
+    // The voice assistant hands this form over to the user.
     const leaveVoiceStep = inject(VoiceStepsService).enter(
-      new DetailsVoiceStep({
-        passengers: () => this.passengers(),
-        setPassenger: (index, field, value) => this.updatePassenger(index, field, value),
-        email: () => this.contactEmail(),
-        setEmail: (value) => this.contactEmail.set(value),
-        phone: () => this.contactPhone(),
-        setPhone: (value) => this.contactPhone.set(value),
-        totalPrice: () => this.totalPrice(),
-        holdMinutes: this.holdMinutes,
-        reserve: () => this.confirmBooking(),
-        errorMessage: () => this.errorMessage(),
-      }),
+      new DetailsVoiceStep({ passengerCount: () => this.passengers().length }),
     );
     inject(DestroyRef).onDestroy(leaveVoiceStep);
   }

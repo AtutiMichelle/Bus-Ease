@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { TripApiError } from '../trips/trip-errors';
+import { TripApiError } from '../../trip-errors';
 import { TravlerErrorBody } from './travler.types';
 
 /** Thrown by TravlerApiService for any failed call. `message` is always safe

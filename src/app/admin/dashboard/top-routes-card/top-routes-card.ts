@@ -1,6 +1,6 @@
 import { Component, computed, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { DeltaDirection, TopRoutesData, WidgetState } from '../../../models/admin-dashboard.model';
+import { DeltaDirection, TopRoutesData, WidgetState } from '../../models/admin-dashboard.model';
 import { NAV_MAIN } from '../../admin-nav';
 import { WidgetError } from '../widget-error/widget-error';
 import { formatKsh } from '../../../utils/money';

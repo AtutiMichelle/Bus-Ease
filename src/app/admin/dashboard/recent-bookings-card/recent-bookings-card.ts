@@ -1,7 +1,7 @@
 import { Component, computed, input, output } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { BookingStatusTag, DASHBOARD_LIST_LIMIT, RecentBooking } from '../../../models/admin-dashboard.model';
+import { BookingStatusTag, DASHBOARD_LIST_LIMIT, RecentBooking } from '../../models/admin-dashboard.model';
 import { WidgetError } from '../widget-error/widget-error';
 
 /** The dashboard's latest-bookings preview: always at most 5 rows of a fixed

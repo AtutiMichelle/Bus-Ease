@@ -97,7 +97,7 @@ function toAccountBooking(saved: SavedBooking): AccountBooking {
   styleUrl: './account.css',
   templateUrl: './account.html',
 })
-export class AccountPageComponent {
+export class AccountPage {
   private authService = inject(AuthService);
   private bookingService = inject(BookingService);
   private walletService = inject(WalletService);

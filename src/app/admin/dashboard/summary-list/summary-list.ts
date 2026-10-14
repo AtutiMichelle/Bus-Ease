@@ -1,5 +1,5 @@
 import { Component, computed, input, output } from '@angular/core';
-import { WeekSummary, WidgetState } from '../../../models/admin-dashboard.model';
+import { WeekSummary, WidgetState } from '../../models/admin-dashboard.model';
 import { ICONS, IconName } from '../../admin-nav';
 import { AdminIcon } from '../../icon/admin-icon';
 import { WidgetError } from '../widget-error/widget-error';

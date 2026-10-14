@@ -5,7 +5,7 @@ import { EmergencyContact, NotificationSettings } from '../models/account.model'
  * Emergency contact and notification preferences have no backing table in
  * Supabase yet, so this holds them in memory only (resets on reload) until
  * that schema exists. Profile and booking data come from AuthService /
- * BookingService instead — see AccountPageComponent.
+ * BookingService instead. See AccountPage.
  */
 @Injectable({ providedIn: 'root' })
 export class AccountPreferencesService {

@@ -1,5 +1,5 @@
-import { Bus } from '../models/bus.model';
-import { Seat } from '../services/bus.service';
+import { Bus } from '../../../models/bus.model';
+import { Seat } from '../../../services/bus.service';
 import { seatLayoutFromSeats, tripFromBus } from './supabase-trip.adapters';
 
 const context = { fromCityId: 'Nairobi', toCityId: 'Mombasa', from: 'Nairobi', to: 'Mombasa', date: '2026-10-10' };

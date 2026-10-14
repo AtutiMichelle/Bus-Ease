@@ -1,4 +1,4 @@
-import type { IconName } from '../admin/admin-nav';
+import type { IconName } from '../admin-nav';
 
 /** Shared visual tone for admin dashboard cards/rows. Maps to a tinted
  * background plus a matching icon/text color from the admin tokens in

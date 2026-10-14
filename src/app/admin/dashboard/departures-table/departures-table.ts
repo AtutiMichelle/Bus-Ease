@@ -1,6 +1,6 @@
 import { Component, computed, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { DASHBOARD_LIST_LIMIT, Departure, DepartureStatus } from '../../../models/admin-dashboard.model';
+import { DASHBOARD_LIST_LIMIT, Departure, DepartureStatus } from '../../models/admin-dashboard.model';
 import { NAV_MAIN } from '../../admin-nav';
 import { WidgetError } from '../widget-error/widget-error';
 

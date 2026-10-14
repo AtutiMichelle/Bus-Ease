@@ -1,7 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AdminCustomersService } from '../../../services/admin-customers.service';
-import { AdminCustomer } from '../../../models/admin-customer.model';
+import { AdminCustomersService } from '../../services/admin-customers.service';
+import { AdminCustomer } from '../../models/admin-customer.model';
 import { AdminIcon } from '../../icon/admin-icon';
 import { WidgetError } from '../../dashboard/widget-error/widget-error';
 import { AdminPagination } from '../../shared/pagination/pagination';

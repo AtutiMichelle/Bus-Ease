@@ -9,6 +9,11 @@
 // before Travler is called. The shapes match what BusEase sends (see
 // src/app/travler/travler.types.ts). A new field has to be added here before
 // it reaches Travler.
+//
+// BusEase sells one operator's trips (Coast Bus). Which one is a setting,
+// not something the browser sends: `fixed` adds the operator and the
+// fields every call needs, and `reply` drops any other operator's buses
+// from search results.
 
 const INVALID = Symbol('invalid');
 type Field = (value: unknown) => unknown;
@@ -95,8 +100,19 @@ export interface Limit {
   windowSeconds: number;
 }
 
+/** Settings the function reads from its secrets and hands to the rules. */
+export interface UpstreamConfig {
+  /** Travler's company id for the one operator BusEase sells, e.g. "34". */
+  companyId: string;
+}
+
 export interface Endpoint {
   schema: Schema;
+  /** Fields the function adds to the checked body itself. They win over
+   * anything the caller sent under the same name. */
+  fixed?: (config: UpstreamConfig) => Record<string, unknown>;
+  /** Changes Travler's answer before it goes back to the browser. */
+  reply?: (body: unknown, config: UpstreamConfig) => unknown;
   limits: Limit[];
   /** The body field holding the phone number, for 'phone' limits. */
   phoneField?: string;
@@ -114,25 +130,73 @@ const TEN_MINUTES = 600;
 
 const paymentLeg = object({ sponsorTrip: oneOf(true, false), discountId: nullable(text(64)) });
 
+/** Travler's delay markers, copied from the search result. */
+const delayedFlag = integer(0, 9);
+const delayedDate = integer(0, 99_999_999_999);
+
+const WEB = { sourcetype: 'web' };
+
+/** Every search filter Travler expects, left open, as in the API guide.
+ * Travler answers with an HTML error page when any of them is missing. */
+const SEARCH_DEFAULTS = {
+  avg_rating: null,
+  departure_time: 'asc',
+  fare: null,
+  seat_type: '',
+  travels: '',
+  boarding_points: [],
+  dropping_points: [],
+  bus_with_amenities: [],
+  high_rating: true,
+  bus_with_live_tracking: false,
+  cabs: false,
+  hot_deals: false,
+  on_time: false,
+  bus_type: [],
+  time_range: [],
+  record_type: 'data',
+  currencyId: '1',
+  delayBus: true,
+  ...WEB,
+};
+
+/** Keeps only the operator's own buses, and takes out each bus's operator
+ * token: the browser has no use for it, and booking adds it server-side. */
+function onlyOperatorBuses(body: unknown, config: UpstreamConfig): unknown {
+  if (!isPlainObject(body) || !Array.isArray(body.data)) {
+    return body;
+  }
+  const data = body.data
+    .filter((bus) => isPlainObject(bus) && String(bus.company_id) === config.companyId)
+    .map(({ token: _token, ...bus }) => bus);
+  return { ...body, data, available_buses_count: data.length };
+}
+
 // Paths are case sensitive and deliberately inconsistent: they match the API as-is.
 export const ENDPOINTS: Record<string, Endpoint> = {
   '/common/getCity': {
-    schema: { city_id: nullable(id), city_type: oneOf('source', 'destination') },
+    // city_id is 0 for the list of source cities.
+    schema: { city_id: id, city_type: oneOf('source', 'destination') },
+    fixed: () => WEB,
     limits: [{ scope: 'ip', max: 120, windowSeconds: MINUTE }],
     refuseWithoutLimiter: false,
   },
   '/Trips/filterBuses': {
-    schema: { source_city_id: id, destination_city_id: id, travel_date: date, passenger_count: integer(1, 10) },
+    schema: { source_city_id: id, destination_city_id: id, travel_date: date },
+    fixed: (config) => ({ ...SEARCH_DEFAULTS, company_id: [config.companyId] }),
+    reply: onlyOperatorBuses,
     limits: [{ scope: 'ip', max: 60, windowSeconds: MINUTE }],
     refuseWithoutLimiter: false,
   },
   '/trips/getTripSeatsPrice': {
-    schema: { bus_id: id, route_id: id, travel_date: date },
+    schema: { source_city_id: id, destination_city_id: id, travel_date: date, bus_id: id, delayedFlag, delayedDate },
+    fixed: () => WEB,
     limits: [{ scope: 'ip', max: 120, windowSeconds: MINUTE }],
     refuseWithoutLimiter: false,
   },
   '/trips/getBoardingDroppingPoints': {
-    schema: { bus_id: id, route_id: id },
+    schema: { source: id, destination: id, trip: id, booking_date: date, delayedFlag, delayedDate },
+    fixed: () => WEB,
     limits: [{ scope: 'ip', max: 120, windowSeconds: MINUTE }],
     refuseWithoutLimiter: false,
   },
@@ -198,4 +262,9 @@ export const ENDPOINTS: Record<string, Endpoint> = {
 
 export function validateBody(endpoint: Endpoint, body: unknown): Validation {
   return clean(endpoint.schema, body);
+}
+
+/** The body as it goes to Travler: the checked fields plus the fixed ones. */
+export function upstreamBody(endpoint: Endpoint, body: Record<string, unknown>, config: UpstreamConfig) {
+  return { ...body, ...endpoint.fixed?.(config) };
 }

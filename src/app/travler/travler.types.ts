@@ -1,6 +1,10 @@
 /* Raw Travler API shapes, exactly as the API sends and expects them.
  * Nothing outside src/app/travler should import these; pages use the clean
- * models in src/app/models instead (see travler.adapters.ts). */
+ * models in src/app/models instead (see travler.adapters.ts).
+ *
+ * Requests leave out the fields the `travler` edge function fills in itself
+ * (sourcetype, the operator, the search filters): see
+ * supabase/functions/travler/rules.ts. */
 
 export interface TravlerErrorBody {
   code?: string;
@@ -20,12 +24,13 @@ export interface TravlerEnvelope<T> {
 /* POST /common/getCity */
 
 export interface TravlerCityRequest {
-  city_id: string | number | null;
+  /** 0 for the list of source cities. */
+  city_id: string | number;
   city_type: 'source' | 'destination';
 }
 
 export interface TravlerCity {
-  city_id: number | string;
+  id: number | string;
   city_name: string;
 }
 
@@ -35,7 +40,6 @@ export interface TravlerFilterBusesRequest {
   source_city_id: string;
   destination_city_id: string;
   travel_date: string;
-  passenger_count: number;
 }
 
 export interface TravlerTripPrice {
@@ -48,7 +52,9 @@ export interface TravlerTrip {
   bus_id: string | number;
   company_name: string;
   company_id: string | number;
-  token: string;
+  /** The operator's token. The edge function takes it out before the
+   * result reaches the browser. */
+  token?: string;
   bus_type: string;
   route_id: string | number;
   /** Comma separated amenity ids, e.g. "1,2,3". No lookup endpoint yet. */
@@ -67,7 +73,12 @@ export interface TravlerTrip {
   ticket_amount?: string;
   company_logo?: string | null;
   isPromotional?: boolean;
-  travel_date: string;
+  /** Not sent by the real API; the search date is used instead. */
+  travel_date?: string;
+  /** Delay markers, sent back on the seat and stop lookups. */
+  delayedFlag?: number;
+  /** Unix seconds. */
+  delayedDate?: number | null;
 }
 
 /* POST /trips/getTripSeatsPrice
@@ -75,9 +86,12 @@ export interface TravlerTrip {
  * at the top level beside `data`. */
 
 export interface TravlerSeatLayoutRequest {
-  bus_id: string;
-  route_id: string;
+  source_city_id: string;
+  destination_city_id: string;
   travel_date: string;
+  bus_id: string;
+  delayedFlag: number;
+  delayedDate: number;
 }
 
 export interface TravlerSeatPrice {
@@ -97,7 +111,8 @@ export interface TravlerSeat {
   seat_type: string;
   seat_type_id: string | number;
   seat_color?: string;
-  /** true means the seat is already taken. */
+  /** true means the seat is already taken. The driver and door cells
+   * (seat_type "driver" and "door") come marked true as well. */
   selection_status: boolean;
 }
 
@@ -110,22 +125,32 @@ export interface TravlerSeatLayoutResponse {
   error?: TravlerErrorBody;
 }
 
-/* POST /trips/getBoardingDroppingPoints */
+/* POST /trips/getBoardingDroppingPoints
+ * Also its own shape: the two lists sit at the top level, not in `data`. */
 
 export interface TravlerPointsRequest {
-  bus_id: string;
-  route_id: string;
+  source: string;
+  destination: string;
+  /** The bus id. */
+  trip: string;
+  booking_date: string;
+  delayedFlag: number;
+  delayedDate: number;
 }
 
 export interface TravlerPoint {
   id: string | number;
   name: string;
-  time: string;
+  /** Boarding points only, e.g. "09:30 PM". */
+  departureTime?: string | null;
 }
 
-export interface TravlerPoints {
-  boarding: TravlerPoint[];
-  dropping: TravlerPoint[];
+export interface TravlerPointsResponse {
+  isSuccess: boolean;
+  boarding?: TravlerPoint[];
+  dropping?: TravlerPoint[];
+  msg?: string;
+  error?: TravlerErrorBody;
 }
 
 /* POST /Ticket/RoundBooking */

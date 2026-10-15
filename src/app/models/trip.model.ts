@@ -47,6 +47,9 @@ export interface Trip {
   /** e.g. "Direct" or "Highway". */
   routeKind?: string;
   isPromotional: boolean;
+  /** Travler's delay markers for this trip, sent back on the seat and stop
+   * lookups. Not set for BusEase's own buses. */
+  delay?: { flag: number; date: number };
 }
 
 export interface LayoutSeat {

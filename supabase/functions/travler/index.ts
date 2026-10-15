@@ -1,15 +1,18 @@
 // supabase/functions/travler/index.ts
 //
 // Sits between BusEase and the Travler booking API, so the real API address
-// and partner key stay server-side instead of shipping in the browser bundle.
+// and key stay server-side instead of shipping in the browser bundle.
 //
 // The app calls <supabase-url>/functions/v1/travler/<travler path>, e.g.
-// .../travler/Trips/filterBuses, with the same JSON body it would send to
-// Travler. Only the endpoints BusEase actually uses are forwarded; anything
-// else is refused, so this can't be used as an open relay. Each call is
-// checked against the body shape and the rate limits in rules.ts before it
-// goes anywhere. Travler's status code and JSON body are passed back as they
-// are, so the app's own error handling keeps working. Every refusal made
+// .../travler/Trips/filterBuses, with the JSON body it would send to
+// Travler, less the fields this function fills in itself (the operator,
+// sourcetype and the search filters, see rules.ts). Only the endpoints
+// BusEase actually uses are forwarded; anything else is refused, so this
+// can't be used as an open relay. Each call is checked against the body
+// shape and the rate limits in rules.ts before it goes anywhere. Travler's
+// status code and JSON body are passed back, with search results cut down
+// to the one operator BusEase sells, so the app's own error handling keeps
+// working. Every refusal made
 // here uses the same { isSuccess: false, msg, error: { code } } shape
 // Travler errors use; a rate-limited call answers 429 with
 // error: { code: 'RATE_LIMITED', retryAfter } (seconds).
@@ -18,11 +21,13 @@
 // Needs the rate_limits table and rate_limit_check() from
 // supabase/sql/2026-10-06-travler-rate-limits.sql to already exist.
 // Needs these secrets (supabase secrets set NAME=value):
-//   TRAVLER_API_URL  base URL including /globalApi, e.g. https://api.example/globalApi
-//   TRAVLER_API_KEY  partner key, sent as a Bearer token (optional until Travler issues one)
-//   ALLOWED_ORIGINS  same comma-separated list the login function uses
+//   TRAVLER_API_URL     base URL including /globalApi, e.g. https://api.example/globalApi
+//   TRAVLER_API_KEY     the key from section 2.2 of the API guide, sent as the
+//                       Authorization header as-is (no "Bearer ")
+//   TRAVLER_COMPANY_ID  Travler's id for the operator BusEase sells (34 is Coast Bus)
+//   ALLOWED_ORIGINS     same comma-separated list the login function uses
 
-import { ENDPOINTS, type Endpoint, validateBody } from './rules.ts';
+import { ENDPOINTS, type Endpoint, upstreamBody, validateBody } from './rules.ts';
 
 const UPSTREAM_TIMEOUT_MS = 20_000;
 const LIMITER_TIMEOUT_MS = 3_000;
@@ -150,11 +155,16 @@ Deno.serve(async (req) => {
     return fail('Unknown booking endpoint', 'NOT_FOUND', 404, headers);
   }
 
+  // All three are needed. Without the company id a search would list every
+  // operator's buses, so a missing one stops the call rather than guessing.
   const baseUrl = (Deno.env.get('TRAVLER_API_URL') ?? '').replace(/\/+$/, '');
-  if (!baseUrl) {
-    console.error('TRAVLER_API_URL is not set');
+  const apiKey = Deno.env.get('TRAVLER_API_KEY')?.trim() ?? '';
+  const companyId = Deno.env.get('TRAVLER_COMPANY_ID')?.trim() ?? '';
+  if (!baseUrl || !apiKey || !companyId) {
+    console.error('TRAVLER_API_URL, TRAVLER_API_KEY or TRAVLER_COMPANY_ID is not set');
     return fail('The booking service is not configured', 'UPSTREAM_NOT_CONFIGURED', 503, headers);
   }
+  const config = { companyId };
 
   // Refused on the declared size first, so an oversized upload isn't read in.
   if (Number(req.headers.get('content-length') ?? 0) > MAX_BODY_BYTES) {
@@ -185,18 +195,13 @@ Deno.serve(async (req) => {
     });
   }
 
-  const upstreamHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
-  const apiKey = Deno.env.get('TRAVLER_API_KEY');
-  if (apiKey) {
-    upstreamHeaders['Authorization'] = `Bearer ${apiKey}`;
-  }
-
   let upstream: Response;
   try {
     upstream = await fetch(`${baseUrl}${path}`, {
       method: 'POST',
-      headers: upstreamHeaders,
-      body: JSON.stringify(checked.body),
+      // The API guide has the key go in as it is, with no "Bearer " prefix.
+      headers: { 'Content-Type': 'application/json', Authorization: apiKey },
+      body: JSON.stringify(upstreamBody(endpoint, checked.body, config)),
       signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
     });
   } catch (error) {
@@ -210,14 +215,14 @@ Deno.serve(async (req) => {
   // Travler answers in JSON, errors included, and those go back with their
   // real status. Anything else (a gateway's HTML error page, say) is not
   // something to hand to a browser, so it becomes a plain failure here.
-  const upstreamBody = await upstream.text();
+  let answer: unknown;
   try {
-    JSON.parse(upstreamBody);
+    answer = JSON.parse(await upstream.text());
   } catch {
     console.error(`travler ${path} answered ${upstream.status} with a non-JSON body`);
     return fail('The booking service gave an unexpected answer', 'UPSTREAM_BAD_RESPONSE', 502, headers);
   }
-  return new Response(upstreamBody, {
+  return new Response(JSON.stringify(endpoint.reply ? endpoint.reply(answer, config) : answer), {
     status: upstream.status,
     headers: { ...headers, 'Content-Type': 'application/json' },
   });

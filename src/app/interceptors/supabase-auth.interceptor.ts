@@ -7,12 +7,12 @@ import { AuthService } from '../services/auth.service';
 const FUNCTIONS_URL = `${environment.supabase.url.replace(/\/+$/, '')}/functions/v1/`;
 
 /** Adds the Supabase credentials to calls going to our own edge functions
- * (the `travler` proxy in production). Supabase needs the project key on
+ * (the `travler` proxy, for one). Supabase needs the project key on
  * every call; the signed-in user's token goes along too, so a function can
  * tell who is calling. Guests are sent with the project key alone.
  *
  * Every other address is left untouched, so the key and token never leave
- * for a server that isn't ours (the local Travler mock, for one). */
+ * for a server that isn't ours. */
 export const supabaseAuthInterceptor: HttpInterceptorFn = (req, next) => {
   if (!req.url.startsWith(FUNCTIONS_URL)) {
     return next(req);

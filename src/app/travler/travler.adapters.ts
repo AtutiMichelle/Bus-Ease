@@ -20,7 +20,7 @@ import {
   TravlerPaymentCheck,
   TravlerPaymentInit,
   TravlerPoint,
-  TravlerPoints,
+  TravlerPointsResponse,
   TravlerPrint,
   TravlerSeatLayoutResponse,
   TravlerTrip,
@@ -64,36 +64,51 @@ function seatTypeLabel(type: string): string {
   return trimmed ? trimmed[0].toUpperCase() + trimmed.slice(1) : 'Seat';
 }
 
-/** "09:00 AM" -> 9, "12:15 AM" -> 0. Falls back to a 24-hour "HH:MM". */
-function parseHour(time: string): number {
-  const match = time.trim().match(/^(\d{1,2}):\d{2}\s*([AaPp][Mm])?$/);
+/** "09:00 PM" -> 1260 minutes after midnight, "12:15 AM" -> 15. Also reads
+ * a 24-hour "HH:MM". Null when the time can't be read. */
+function parseMinutes(time: string): number | null {
+  const match = time.trim().match(/^(\d{1,2}):(\d{2})\s*([AaPp][Mm])?$/);
   if (!match) {
-    return 0;
+    return null;
   }
-  const hour = Number(match[1]) % 24;
-  const meridiem = match[2]?.toUpperCase();
+  let hour = Number(match[1]) % 24;
+  const meridiem = match[3]?.toUpperCase();
   if (meridiem === 'AM') {
-    return hour % 12;
+    hour %= 12;
+  } else if (meridiem === 'PM') {
+    hour = (hour % 12) + 12;
   }
-  if (meridiem === 'PM') {
-    return (hour % 12) + 12;
-  }
-  return hour;
+  return hour * 60 + Number(match[2]);
 }
 
-/** "06:20" -> "6h 20m", matching how durations read elsewhere in the app. */
-function formatJourneyTime(raw: string): string {
-  const match = raw.trim().match(/^(\d{1,3}):(\d{1,2})/);
-  if (!match) {
-    return raw;
+/** "09:00 AM" -> 9, "12:15 AM" -> 0. */
+function parseHour(time: string): number {
+  return Math.floor((parseMinutes(time) ?? 0) / 60);
+}
+
+function formatDuration(minutes: number): string {
+  return `${Math.floor(minutes / 60)}h ${String(minutes % 60).padStart(2, '0')}m`;
+}
+
+/** Trip length as "8h 45m", matching how durations read elsewhere in the
+ * app. Worked out from the departure and arrival times, since Travler's
+ * total_journey_time doesn't match them and changes from one search to the
+ * next. An arrival at or before the departure time is the next day. Falls
+ * back to total_journey_time ("HH:MM") when the times can't be read. */
+function journeyTime(departure: string, arrival: string, reported: string): string {
+  const start = parseMinutes(departure);
+  const end = parseMinutes(arrival);
+  if (start !== null && end !== null) {
+    return formatDuration(end > start ? end - start : end - start + 24 * 60);
   }
-  return `${Number(match[1])}h ${match[2].padStart(2, '0')}m`;
+  const match = reported.trim().match(/^(\d{1,3}):(\d{1,2})/);
+  return match ? formatDuration(Number(match[1]) * 60 + Number(match[2])) : reported;
 }
 
 const CLASS_RANK: Record<string, number> = { VIP: 0, Business: 1, Normal: 2 };
 
 export function adaptCity(raw: TravlerCity): City {
-  return { id: toId(raw.city_id), name: raw.city_name.trim() };
+  return { id: toId(raw.id), name: raw.city_name.trim() };
 }
 
 export function adaptTrip(raw: TravlerTrip, context: TripSearchContext): Trip {
@@ -123,7 +138,7 @@ export function adaptTrip(raw: TravlerTrip, context: TripSearchContext): Trip {
     departureTime: raw.departure_time,
     departureHour: parseHour(raw.departure_time),
     arrivalTime: raw.arrival_time,
-    duration: formatJourneyTime(raw.total_journey_time ?? ''),
+    duration: journeyTime(raw.departure_time, raw.arrival_time, raw.total_journey_time ?? ''),
     busType: raw.bus_type?.trim() ?? '',
     seatsAvailable: toNumber(raw.available_seat_count) ?? 0,
     fromPrice: lowest ?? 0,
@@ -135,8 +150,13 @@ export function adaptTrip(raw: TravlerTrip, context: TripSearchContext): Trip {
     ratingCount: ratingCount ?? undefined,
     routeKind: raw.highWayDirectRoute?.trim() || undefined,
     isPromotional: !!raw.isPromotional,
+    delay: { flag: toNumber(raw.delayedFlag) ?? 0, date: toNumber(raw.delayedDate) ?? 0 },
   };
 }
+
+/** Cells in the seat data that aren't seats. The seat map draws its own
+ * door marker and front of the bus. */
+const NOT_SEATS = new Set(['driver', 'door']);
 
 /** The seat layout response has its own shape: priceList and seatsBooked
  * sit at the top level beside the seats, and there's no `msg`. */
@@ -149,13 +169,15 @@ export function adaptSeatLayout(raw: TravlerSeatLayoutResponse): SeatLayout {
     }
   }
 
-  const positioned = (raw.data ?? []).map((seat) => ({
-    seat,
-    left: toNumber(seat.left) ?? 0,
-    top: toNumber(seat.top) ?? 0,
-    width: toNumber(seat.seat_width) ?? 36,
-    height: toNumber(seat.seat_height) ?? 36,
-  }));
+  const positioned = (raw.data ?? [])
+    .filter((seat) => !NOT_SEATS.has(seat.seat_type?.trim().toLowerCase() ?? ''))
+    .map((seat) => ({
+      seat,
+      left: toNumber(seat.left) ?? 0,
+      top: toNumber(seat.top) ?? 0,
+      width: toNumber(seat.seat_width) ?? 36,
+      height: toNumber(seat.seat_height) ?? 36,
+    }));
 
   // Shift the layout so the first seat sits at 0,0; the raw offsets leave
   // empty room for the driver's area, which the seat map draws separately.
@@ -189,10 +211,10 @@ export function adaptSeatLayout(raw: TravlerSeatLayoutResponse): SeatLayout {
 }
 
 function adaptPoint(raw: TravlerPoint): StopPoint {
-  return { id: toId(raw.id), name: raw.name?.trim() ?? '', time: raw.time?.trim() ?? '' };
+  return { id: toId(raw.id), name: raw.name?.trim() ?? '', time: raw.departureTime?.trim() ?? '' };
 }
 
-export function adaptPoints(raw: TravlerPoints | undefined): BoardingDroppingPoints {
+export function adaptPoints(raw: TravlerPointsResponse | undefined): BoardingDroppingPoints {
   return {
     boarding: (raw?.boarding ?? []).map(adaptPoint),
     dropping: (raw?.dropping ?? []).map(adaptPoint),

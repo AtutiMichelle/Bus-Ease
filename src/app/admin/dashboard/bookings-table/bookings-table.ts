@@ -1,7 +1,7 @@
 import { Component, input, output } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { RecentBooking } from '../../../models/admin-dashboard.model';
+import { RecentBooking } from '../../models/admin-dashboard.model';
 import { WidgetError } from '../widget-error/widget-error';
 
 function formatBookedAt(iso: string): string {

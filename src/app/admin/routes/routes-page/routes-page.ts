@@ -1,7 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AdminRoutesService } from '../../../services/admin-routes.service';
-import { AdminRoute } from '../../../models/admin-fleet.model';
+import { AdminRoutesService } from '../../services/admin-routes.service';
+import { AdminRoute } from '../../models/admin-fleet.model';
 import { RouteForm } from '../route-form/route-form';
 import { ConfirmDialog } from '../../shared/confirm-dialog/confirm-dialog';
 import { AdminIcon } from '../../icon/admin-icon';

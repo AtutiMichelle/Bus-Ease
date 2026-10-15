@@ -1,7 +1,7 @@
 import { Component, HostListener, OnInit, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AdminRoutesService } from '../../../services/admin-routes.service';
-import { AdminRoute, RouteFormValue } from '../../../models/admin-fleet.model';
+import { AdminRoutesService } from '../../services/admin-routes.service';
+import { AdminRoute, RouteFormValue } from '../../models/admin-fleet.model';
 
 /** Create/edit modal for one route. A null `route` input means create.
  * Owns its own save call (like AuthModal owns its own sign-in call), so the

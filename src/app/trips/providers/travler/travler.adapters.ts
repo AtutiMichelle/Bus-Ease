@@ -1,4 +1,4 @@
-import { BusClassOption } from '../models/bus.model';
+import { BusClassOption } from '../../../models/bus.model';
 import {
   BoardingDroppingPoints,
   BookingHold,
@@ -13,7 +13,7 @@ import {
   StopPoint,
   Trip,
   TripSearchContext,
-} from '../models/trip.model';
+} from '../../../models/trip.model';
 import {
   TravlerBooking,
   TravlerCity,

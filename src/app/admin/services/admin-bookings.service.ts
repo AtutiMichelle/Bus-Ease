@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Supabase } from './supabase';
+import { Supabase } from '../../services/supabase';
 import { RecentBooking } from '../models/admin-dashboard.model';
 
 interface AdminBookingRow {

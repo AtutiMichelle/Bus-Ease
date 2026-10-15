@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { WeekSummary } from '../../../models/admin-dashboard.model';
+import { WeekSummary } from '../../models/admin-dashboard.model';
 import { SummaryList } from './summary-list';
 
 const UNTRACKED: WeekSummary = {

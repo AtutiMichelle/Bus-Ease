@@ -1,5 +1,5 @@
 import { Component, input } from '@angular/core';
-import { DeltaDirection, KpiCardData } from '../../../models/admin-dashboard.model';
+import { DeltaDirection, KpiCardData } from '../../models/admin-dashboard.model';
 import { ICONS } from '../../admin-nav';
 import { AdminIcon } from '../../icon/admin-icon';
 

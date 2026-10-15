@@ -7,8 +7,8 @@
 // Request bodies are rebuilt from the fields listed here: anything else the
 // caller sends is dropped, and a missing or wrong-shaped field is refused
 // before Travler is called. The shapes match what BusEase sends (see
-// src/app/travler/travler.types.ts). A new field has to be added here before
-// it reaches Travler.
+// src/app/trips/providers/travler/travler.types.ts). A new field has to be
+// added here before it reaches Travler.
 //
 // BusEase sells one operator's trips (Coast Bus). Which one is a setting,
 // not something the browser sends: `fixed` adds the operator and the

@@ -1,5 +1,5 @@
 import { Component, computed, input, output } from '@angular/core';
-import { PaymentSplitData, WidgetState } from '../../../models/admin-dashboard.model';
+import { PaymentSplitData, WidgetState } from '../../models/admin-dashboard.model';
 import { WidgetError } from '../widget-error/widget-error';
 import { formatKsh } from '../../../utils/money';
 

@@ -1,5 +1,5 @@
 /* Raw Travler API shapes, exactly as the API sends and expects them.
- * Nothing outside src/app/travler should import these; pages use the clean
+ * Nothing outside src/app/trips/providers/travler should import these; pages use the clean
  * models in src/app/models instead (see travler.adapters.ts).
  *
  * Requests leave out the fields the `travler` edge function fills in itself

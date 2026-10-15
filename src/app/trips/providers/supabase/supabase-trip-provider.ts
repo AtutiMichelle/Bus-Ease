@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
-import { Supabase } from '../services/supabase';
-import { BusService } from '../services/bus.service';
-import { BookingService } from '../services/booking.service';
+import { Supabase } from '../../../services/supabase';
+import { BusService } from '../../../services/bus.service';
+import { BookingService } from '../../../services/booking.service';
 import {
   BoardingDroppingPoints,
   BookingHold,
@@ -12,10 +12,10 @@ import {
   SeatLayout,
   Trip,
   TripSearchContext,
-} from '../models/trip.model';
-import { getGuestToken } from '../utils/guest-token';
-import { BookingRequest, TripProvider } from './trip-provider';
-import { TripApiError } from './trip-errors';
+} from '../../../models/trip.model';
+import { getGuestToken } from '../../../utils/guest-token';
+import { BookingRequest, TripProvider } from '../../trip-provider';
+import { TripApiError } from '../../trip-errors';
 import { seatLayoutFromSeats, tripFromBus } from './supabase-trip.adapters';
 
 /** reserve_seats holds seats for this long. */

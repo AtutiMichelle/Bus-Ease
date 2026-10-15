@@ -185,9 +185,9 @@
   grid-row: 1 / -1;
   display: grid;
   grid-template-rows: subgrid;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
-  padding: 14px 14px 14px 18px;
+  padding: 10px 14px 10px 18px;
   box-sizing: border-box;
 }
 
@@ -324,13 +324,17 @@
   gap: 4px;
 }
 
-.bus-info-right,
 .time-block-end {
   flex: 0 0 250px;
   min-width: 0;
 }
 
 .bus-info-right {
+  /* Narrower than .time-block-end: "seats left" only needs ~85px, and the
+     rest of a 250px column was empty space squeezing the bus type text
+     beside it into 4+ lines. The center column takes the difference. */
+  flex: 0 0 120px;
+  min-width: 0;
   display: flex;
   justify-content: flex-end;
 }
@@ -347,8 +351,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 58px;
-  height: 58px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
   overflow: hidden;
   background-color: var(--color-soft-bg, #e8f1fc);
@@ -598,7 +602,7 @@
   box-sizing: border-box;
   background-color: var(--color-soft-bg, #e8f1fc);
   border-radius: 0 12px 12px 0;
-  padding: 14px 16px 14px 14px;
+  padding: 10px 16px 10px 14px;
 }
 
 .route-type-badge {

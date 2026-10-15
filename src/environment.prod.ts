@@ -10,8 +10,9 @@ export const environment = {
   tripProvider: 'travler' as 'travler' | 'supabase',
 
   /** The `travler` edge function, which forwards to the real Travler API.
-   * The real API address and key are Supabase secrets (TRAVLER_API_URL,
-   * TRAVLER_API_KEY), see supabase/functions/travler/index.ts. */
+   * The real API address, key and operator are Supabase secrets
+   * (TRAVLER_API_URL, TRAVLER_API_KEY, TRAVLER_COMPANY_ID), see
+   * supabase/functions/travler/index.ts. */
   travlerApiUrl: 'https://ienhcalrkdjfdamzqgaq.supabase.co/functions/v1/travler',
 
   /** The `assistant` edge function, which asks the AI model for the voice

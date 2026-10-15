@@ -9,9 +9,10 @@ export const environment = {
    * at travlerApiUrl) or 'supabase' (BusEase's own buses tables). */
   tripProvider: 'travler' as 'travler' | 'supabase',
 
-  /** Travler booking API. In development this is the local mock server
-   * (run it separately with `npm start` in the mock project). */
-  travlerApiUrl: 'http://localhost:4010/globalApi',
+  /** The `travler` edge function, which forwards to the real Travler API,
+   * same as production. ALLOWED_ORIGINS has to include http://localhost:4200
+   * for calls from `ng serve` to get through. */
+  travlerApiUrl: 'https://ienhcalrkdjfdamzqgaq.supabase.co/functions/v1/travler',
 
   /** The `assistant` edge function, which asks the AI model for the voice
    * assistant's replies. The model key is a Supabase secret (GROQ_API_KEY),

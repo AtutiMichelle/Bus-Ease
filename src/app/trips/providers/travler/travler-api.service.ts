@@ -37,7 +37,7 @@ import {
   TravlerPaymentCheckRequest,
   TravlerPaymentInit,
   TravlerPaymentInitRequest,
-  TravlerPoints,
+  TravlerPointsResponse,
   TravlerPointsRequest,
   TravlerPrint,
   TravlerPrintRequest,
@@ -81,7 +81,7 @@ export class TravlerApiService implements TripProvider {
     }
     const request: TravlerCityRequest = sourceCityId
       ? { city_id: sourceCityId, city_type: 'destination' }
-      : { city_id: null, city_type: 'source' };
+      : { city_id: 0, city_type: 'source' };
     const pending = this.post<TravlerEnvelope<TravlerCity[]>>('/common/getCity', request, "We couldn't load the list of cities.")
       .then((res) => (res.data ?? []).map(adaptCity));
     this.cityCache.set(key, pending);
@@ -90,13 +90,13 @@ export class TravlerApiService implements TripProvider {
     return pending;
   }
 
-  /** POST /Trips/filterBuses */
-  async searchTrips(context: TripSearchContext, passengerCount = 1): Promise<Trip[]> {
+  /** POST /Trips/filterBuses. Travler takes no passenger count: the seat
+   * map shows what is free. */
+  async searchTrips(context: TripSearchContext): Promise<Trip[]> {
     const request: TravlerFilterBusesRequest = {
       source_city_id: context.fromCityId,
       destination_city_id: context.toCityId,
       travel_date: context.date,
-      passenger_count: passengerCount,
     };
     const res = await this.post<TravlerEnvelope<TravlerTrip[]>>(
       '/Trips/filterBuses',
@@ -108,7 +108,14 @@ export class TravlerApiService implements TripProvider {
 
   /** POST /trips/getTripSeatsPrice */
   async getSeatLayout(trip: Trip): Promise<SeatLayout> {
-    const request: TravlerSeatLayoutRequest = { bus_id: trip.id, route_id: trip.routeId, travel_date: trip.date };
+    const request: TravlerSeatLayoutRequest = {
+      source_city_id: trip.fromCityId,
+      destination_city_id: trip.toCityId,
+      travel_date: trip.date,
+      bus_id: trip.id,
+      delayedFlag: trip.delay?.flag ?? 0,
+      delayedDate: trip.delay?.date ?? 0,
+    };
     const res = await this.post<TravlerSeatLayoutResponse>(
       '/trips/getTripSeatsPrice',
       request,
@@ -119,13 +126,20 @@ export class TravlerApiService implements TripProvider {
 
   /** POST /trips/getBoardingDroppingPoints */
   async getBoardingDroppingPoints(trip: Trip): Promise<BoardingDroppingPoints> {
-    const request: TravlerPointsRequest = { bus_id: trip.id, route_id: trip.routeId };
-    const res = await this.post<TravlerEnvelope<TravlerPoints>>(
+    const request: TravlerPointsRequest = {
+      source: trip.fromCityId,
+      destination: trip.toCityId,
+      trip: trip.id,
+      booking_date: trip.date,
+      delayedFlag: trip.delay?.flag ?? 0,
+      delayedDate: trip.delay?.date ?? 0,
+    };
+    const res = await this.post<TravlerPointsResponse>(
       '/trips/getBoardingDroppingPoints',
       request,
       "We couldn't load boarding and drop-off points. Please try again.",
     );
-    return adaptPoints(res.data);
+    return adaptPoints(res);
   }
 
   /** POST /Ticket/RoundBooking. Holds the seats unpaid for 10 minutes. */

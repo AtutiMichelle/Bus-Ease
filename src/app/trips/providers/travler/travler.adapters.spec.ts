@@ -1,4 +1,4 @@
-import { adaptSeatLayout, adaptTrip, paymentStateFor, toId, toNumber } from './travler.adapters';
+import { adaptCity, adaptPoints, adaptSeatLayout, adaptTrip, paymentStateFor, toId, toNumber } from './travler.adapters';
 import { TravlerSeat, TravlerSeatLayoutResponse, TravlerTrip } from './travler.types';
 
 const context = { fromCityId: '1', toCityId: '2', from: 'Nairobi', to: 'Mombasa', date: '2026-09-30' };
@@ -66,6 +66,36 @@ describe('travler adapters', () => {
     expect(trip.rating).toBe(4.4);
     expect(trip.ratingCount).toBe(118);
     expect(trip.from).toBe('Nairobi');
+    expect(trip.delay).toEqual({ flag: 0, date: 0 });
+  });
+
+  it('works out the trip length from the times, not the reported journey time', () => {
+    const overnight = adaptTrip(rawTrip({ departure_time: '10:00 PM', arrival_time: '06:45 AM', total_journey_time: '01:23' }), context);
+    expect(overnight.duration).toBe('8h 45m');
+    const sameDay = adaptTrip(rawTrip({ departure_time: '08:00 AM', arrival_time: '04:30 PM' }), context);
+    expect(sameDay.duration).toBe('8h 30m');
+    const unreadable = adaptTrip(rawTrip({ departure_time: 'soon', total_journey_time: '07:05' }), context);
+    expect(unreadable.duration).toBe('7h 05m');
+  });
+
+  it('keeps the delay markers and falls back to the search date', () => {
+    const trip = adaptTrip(rawTrip({ travel_date: undefined, delayedFlag: 0, delayedDate: 1792443600 }), context);
+    expect(trip.date).toBe('2026-09-30');
+    expect(trip.delay).toEqual({ flag: 0, date: 1792443600 });
+  });
+
+  it('reads city ids from the id field', () => {
+    expect(adaptCity({ id: '3', city_name: ' NAIROBI ' })).toEqual({ id: '3', name: 'NAIROBI' });
+  });
+
+  it('reads stops from the top of the response, with boarding times', () => {
+    const points = adaptPoints({
+      isSuccess: true,
+      boarding: [{ id: '4016', name: 'Accra Road, CoastBus booking office', departureTime: '09:30 PM' }],
+      dropping: [{ id: '3068', name: 'Mwembe Tayari ' }],
+    });
+    expect(points.boarding).toEqual([{ id: '4016', name: 'Accra Road, CoastBus booking office', time: '09:30 PM' }]);
+    expect(points.dropping).toEqual([{ id: '3068', name: 'Mwembe Tayari', time: '' }]);
   });
 
   it('reads the seat layout shape, prices seats by type and marks taken seats', () => {
@@ -99,6 +129,22 @@ describe('travler adapters', () => {
     expect(layout.bookedCount).toBe(1);
     expect(layout.width).toBe(240 - 102 + 37);
     expect(layout.height).toBe(252 + 36);
+  });
+
+  it('leaves the driver and door cells out of the seats', () => {
+    const layout = adaptSeatLayout({
+      isSuccess: true,
+      priceList: { normal: [{ currencyType: 'KES', currencyId: '1', price: '1300.00', tax: 0 }] },
+      data: [
+        rawSeat({ seat_id: '14734', seat_name: 'Driver', seat_type: 'driver', left: '52', top: '15', selection_status: true }),
+        rawSeat({ seat_id: '14735', seat_name: 'Door', seat_type: 'door', left: '28', top: '253', selection_status: true }),
+        rawSeat({ seat_id: '14690', seat_name: 'A1', left: '159', top: '253' }),
+      ],
+      seatsBooked: 0,
+    });
+    expect(layout.seats.map((seat) => seat.name)).toEqual(['A1']);
+    expect(layout.seats[0].left).toBe(0);
+    expect(layout.seats[0].status).toBe('available');
   });
 
   it('maps payment statuses', () => {

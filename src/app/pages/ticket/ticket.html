@@ -50,7 +50,7 @@
 
         @if (booking(); as b) {
           <div class="ticket-route">
-            <p class="route-cities">{{ b.trip.from }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i> {{ b.trip.to }}</p>
+            <p class="route-cities">{{ b.trip.from | cityName }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i> {{ b.trip.to | cityName }}</p>
             <p class="route-date">{{ b.trip.date }}</p>
           </div>
 

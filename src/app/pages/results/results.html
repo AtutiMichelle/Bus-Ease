@@ -12,7 +12,7 @@
     <div class="results-status-inner">
       <p class="results-count"><i class="fa-solid fa-bus" aria-hidden="true"></i> {{ filteredTrips().length }} {{ filteredTrips().length === 1 ? 'trip' : 'trips' }} found</p>
       <p class="results-subtitle">
-        {{ origin() || 'Anywhere' }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i> {{ destination() || 'Anywhere' }}
+        {{ (origin() | cityName) || 'Anywhere' }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i> {{ (destination() | cityName) || 'Anywhere' }}
         <span class="meta-dot" aria-hidden="true"></span>
         {{ formattedDate() }}
       </p>
@@ -37,13 +37,13 @@
       <div class="state-panel">
         <i class="fa-solid fa-route state-icon" aria-hidden="true"></i>
         <p class="state-title">No trips found</p>
-        <p class="state-subtitle">We don't have trips from {{ origin() || 'there' }} to {{ destination() || 'there' }} yet. Try another route.</p>
+        <p class="state-subtitle">We don't have trips from {{ (origin() | cityName) || 'there' }} to {{ (destination() | cityName) || 'there' }} yet. Try another route.</p>
       </div>
     } @else if (trips().length === 0) {
       <div class="state-panel">
         <i class="fa-regular fa-face-frown state-icon" aria-hidden="true"></i>
         <p class="state-title">No trips found</p>
-        <p class="state-subtitle">Nothing is running from {{ origin() }} to {{ destination() }} on {{ formattedDate() }}. Try a different date.</p>
+        <p class="state-subtitle">Nothing is running from {{ origin() | cityName }} to {{ destination() | cityName }} on {{ formattedDate() }}. Try a different date.</p>
       </div>
     } @else if (filteredTrips().length === 0) {
       <div class="state-panel">
@@ -119,7 +119,7 @@
           <div class="bus-times">
             <div class="time-block time-block-start">
               <p class="time">{{ trip.departureTime }}</p>
-              <p class="time-label">{{ trip.from }}</p>
+              <p class="time-label">{{ trip.from | cityName }}</p>
             </div>
             <div class="duration-block">
               <div class="duration-track">
@@ -133,7 +133,7 @@
             </div>
             <div class="time-block time-block-end">
               <p class="time">{{ trip.arrivalTime }}</p>
-              <p class="time-label">{{ trip.to }}</p>
+              <p class="time-label">{{ trip.to | cityName }}</p>
             </div>
           </div>
         </div>

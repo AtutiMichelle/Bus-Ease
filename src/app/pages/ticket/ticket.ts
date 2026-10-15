@@ -5,9 +5,10 @@ import { BookingDraftService } from '../../services/booking-draft.service';
 import { TRIP_PROVIDER } from '../../trips/trip-provider.token';
 import { VoiceStepsService } from '../../voice/voice-steps.service';
 import { TicketVoiceStep } from '../../voice/steps/ticket-step';
+import { CityNamePipe } from '../../utils/city-name';
 
 @Component({
-  imports: [RouterLink, DecimalPipe],
+  imports: [RouterLink, DecimalPipe, CityNamePipe],
   selector: 'app-ticket',
   styleUrl: './ticket.css',
   templateUrl: './ticket.html',

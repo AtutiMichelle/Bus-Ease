@@ -14,6 +14,7 @@ import { amenityIcon } from '../../utils/amenity-icons';
 import { VoiceStateService } from '../../voice/voice-state.service';
 import { VoiceStepsService } from '../../voice/voice-steps.service';
 import { ResultsVoiceStep } from '../../voice/steps/results-step';
+import { CityNamePipe } from '../../utils/city-name';
 
 /** Shown in place of an operator logo that's missing or fails to load. */
 const FALLBACK_LOGO = 'logos/operator-fallback.svg';
@@ -24,7 +25,7 @@ interface ResolvedRoute {
 }
 
 @Component({
-  imports: [SearchBar, SeatPanel, FilterPanel, DecimalPipe],
+  imports: [SearchBar, SeatPanel, FilterPanel, DecimalPipe, CityNamePipe],
   selector: 'app-results',
   styleUrl: './results.css',
   templateUrl: './results.html',

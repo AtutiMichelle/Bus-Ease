@@ -26,6 +26,7 @@ import { VoiceStateService } from '../../voice/voice-state.service';
 import { VoiceDock } from '../../voice/voice-dock/voice-dock';
 import { VoiceStepsService } from '../../voice/voice-steps.service';
 import { SeatsVoiceStep } from '../../voice/steps/seats-step';
+import { CityNamePipe } from '../../utils/city-name';
 
 /** No one, logged in or not, can select more than this many seats in one booking. */
 const MAX_SEATS_PER_BOOKING = 6;
@@ -54,7 +55,7 @@ interface LegendEntry {
   selector: 'app-seat-panel',
   styleUrl: './seat-panel.css',
   templateUrl: './seat-panel.html',
-  imports: [FormsModule, DecimalPipe, VoiceDock],
+  imports: [FormsModule, DecimalPipe, VoiceDock, CityNamePipe],
 })
 export class SeatPanel {
   trip = input.required<Trip>();

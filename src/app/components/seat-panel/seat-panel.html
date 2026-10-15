@@ -8,12 +8,12 @@
       <p class="trip-operator">{{ trip().operator }}</p>
 
       <div class="trip-route">
-        <span class="trip-route-city">{{ trip().from }}</span>
+        <span class="trip-route-city">{{ trip().from | cityName }}</span>
         <span class="trip-route-line" aria-hidden="true">
           <span class="trip-route-dot"></span>
           <span class="trip-route-dot"></span>
         </span>
-        <span class="trip-route-city">{{ trip().to }}</span>
+        <span class="trip-route-city">{{ trip().to | cityName }}</span>
       </div>
 
       <p class="trip-meta">{{ trip().departureTime }} – {{ trip().arrivalTime }} · {{ trip().duration }}</p>

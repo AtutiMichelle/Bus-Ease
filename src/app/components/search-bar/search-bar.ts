@@ -7,12 +7,13 @@ import { tripErrorMessage } from '../../trips/trip-errors';
 import { City } from '../../models/trip.model';
 import { VoiceStateService } from '../../voice/voice-state.service';
 import { VoiceMicButton } from '../../voice/voice-mic-button/voice-mic-button';
+import { CityNamePipe, cityName } from '../../utils/city-name';
 
 /** How many city suggestions to show at once. */
 const MAX_SUGGESTIONS = 8;
 
 @Component({
-  imports: [FormsModule, VoiceMicButton],
+  imports: [FormsModule, VoiceMicButton, CityNamePipe],
   selector: 'app-search-bar',
   styleUrl: './search-bar.css',
   templateUrl: './search-bar.html',
@@ -128,8 +129,8 @@ export class SearchBar {
       const destinationId = this.destinationId();
       const iso = this.date() || todayDateString();
       untracked(() => {
-        this.originValue.set(origin);
-        this.destinationValue.set(destination);
+        this.originValue.set(cityName(origin));
+        this.destinationValue.set(cityName(destination));
         this.originCityId.set(originId);
         this.destinationCityId.set(destinationId);
         this.dateValue.set(iso);
@@ -140,7 +141,7 @@ export class SearchBar {
         } else if (this.sourceCities().length > 0) {
           // The city list is already in, so loadSourceCities won't resolve
           // this name for us.
-          this.onOriginInput(origin);
+          this.onOriginInput(cityName(origin));
         }
       });
     });
@@ -150,11 +151,11 @@ export class SearchBar {
     effect(() => {
       const { origin, destination, date } = this.voice.fieldText();
       untracked(() => {
-        if (origin && origin !== this.originValue()) {
-          this.onOriginInput(origin);
+        if (origin && cityName(origin) !== this.originValue()) {
+          this.onOriginInput(cityName(origin));
         }
-        if (destination && destination !== this.destinationValue()) {
-          this.onDestinationInput(destination);
+        if (destination && cityName(destination) !== this.destinationValue()) {
+          this.onDestinationInput(cityName(destination));
         }
         if (date && date !== this.dateValue()) {
           this.selectDate(date);
@@ -241,13 +242,13 @@ export class SearchBar {
   }
 
   selectOrigin(city: City): void {
-    this.originValue.set(city.name);
+    this.originValue.set(cityName(city.name));
     this.setOriginId(city.id);
     this.showOriginSuggestions.set(false);
   }
 
   selectDestination(city: City): void {
-    this.destinationValue.set(city.name);
+    this.destinationValue.set(cityName(city.name));
     this.destinationCityId.set(city.id);
     this.showDestinationSuggestions.set(false);
   }

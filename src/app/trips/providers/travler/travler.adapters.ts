@@ -122,8 +122,10 @@ export function adaptTrip(raw: TravlerTrip, context: TripSearchContext): Trip {
     .sort((a, b) => CLASS_RANK[a.className] - CLASS_RANK[b.className]);
 
   const lowest = prices.length > 0 ? Math.min(...prices.map((p) => p.amount)) : toNumber(raw.ticket_amount);
-  const rating = toNumber(raw.avg_rating);
+  // A bus nobody has reviewed comes back as "0.0" from "0" reviews. That's
+  // no rating at all, not a score of zero, so it's left unset.
   const ratingCount = toNumber(raw.rating_count);
+  const rating = ratingCount === 0 ? null : toNumber(raw.avg_rating);
 
   return {
     id: toId(raw.bus_id),

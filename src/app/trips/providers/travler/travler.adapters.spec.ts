@@ -84,6 +84,12 @@ describe('travler adapters', () => {
     expect(trip.delay).toEqual({ flag: 0, date: 1792443600 });
   });
 
+  it('leaves the rating out for a bus with no reviews', () => {
+    const unrated = adaptTrip(rawTrip({ avg_rating: '0.0', rating_count: '0' }), context);
+    expect(unrated.rating).toBeUndefined();
+    expect(unrated.ratingCount).toBe(0);
+  });
+
   it('reads city ids from the id field', () => {
     expect(adaptCity({ id: '3', city_name: ' NAIROBI ' })).toEqual({ id: '3', name: 'NAIROBI' });
   });

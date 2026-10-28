@@ -1,7 +1,6 @@
 import {
   Component,
   DestroyRef,
-  ElementRef,
   HostListener,
   computed,
   effect,
@@ -10,7 +9,6 @@ import {
   output,
   signal,
   untracked,
-  viewChild,
 } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -31,18 +29,75 @@ import { CityNamePipe } from '../../utils/city-name';
 /** No one, logged in or not, can select more than this many seats in one booking. */
 const MAX_SEATS_PER_BOOKING = 6;
 
-/** Seats never grow past this multiple of the layout's own size, so a
- * small bus in a wide panel doesn't turn into giant buttons. */
-const MAX_SCALE = 1.4;
+/** Seat edges closer than this share of a seat land in the same grid track. */
+const ALIGN_TOLERANCE = 0.5;
 
-interface PlacedSeat {
+/** Empty space wider than this share of a seat between two tracks is an aisle. */
+const AISLE_GAP = 0.5;
+
+type TrackKind = 'seat' | 'aisle';
+
+interface Span {
+  start: number;
+  size: number;
+}
+
+interface GridCell {
   seat: LayoutSeat;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+  row: number;
+  rowSpan: number;
+  col: number;
+  colSpan: number;
+}
+
+interface PlacedSeat extends GridCell {
   selected: boolean;
   disabled: boolean;
+}
+
+/** Lines seats up into grid tracks along one axis, adding an aisle track at each wide gap. */
+function gridAxis(spans: Span[]): { kinds: TrackKind[]; place: (span: Span) => { line: number; span: number } } {
+  const unit = Math.min(...spans.map((s) => s.size));
+  const tolerance = unit * ALIGN_TOLERANCE;
+  const starts: number[] = [];
+  for (const start of spans.map((s) => s.start).sort((a, b) => a - b)) {
+    if (starts.length === 0 || start - starts[starts.length - 1] > tolerance) {
+      starts.push(start);
+    }
+  }
+
+  const kinds: TrackKind[] = [];
+  const trackOf: number[] = [];
+  starts.forEach((start, i) => {
+    if (i > 0 && start - starts[i - 1] - unit > unit * AISLE_GAP) {
+      kinds.push('aisle');
+    }
+    trackOf.push(kinds.length);
+    kinds.push('seat');
+  });
+
+  const lastStartBefore = (edge: number) => starts.filter((start) => start <= edge).length - 1;
+  const place = ({ start, size }: Span) => {
+    const first = lastStartBefore(start + tolerance);
+    const last = Math.max(first, lastStartBefore(start + size - tolerance));
+    return { line: trackOf[first] + 1, span: trackOf[last] - trackOf[first] + 1 };
+  };
+  return { kinds, place };
+}
+
+/** Track sizes for grid-template-*, with runs of one kind folded into repeat(). */
+function trackTemplate(kinds: TrackKind[], seat: string, aisle: string): string {
+  const parts: string[] = [];
+  for (let i = 0; i < kinds.length; ) {
+    let end = i;
+    while (end < kinds.length && kinds[end] === kinds[i]) {
+      end++;
+    }
+    const size = kinds[i] === 'seat' ? seat : aisle;
+    parts.push(end - i > 1 ? `repeat(${end - i}, ${size})` : size);
+    i = end;
+  }
+  return parts.join(' ');
 }
 
 interface LegendEntry {
@@ -82,9 +137,6 @@ export class SeatPanel {
   readonly maxSeats = MAX_SEATS_PER_BOOKING;
   isGuest = computed(() => !this.authService.user());
 
-  private seatMap = viewChild<ElementRef<HTMLElement>>('seatMap');
-  private mapWidth = signal(0);
-
   selectedSeats = computed(() => {
     const byId = new Map((this.layout()?.seats ?? []).map((seat) => [seat.id, seat]));
     return this.selectedIds()
@@ -112,49 +164,47 @@ export class SeatPanel {
     return !!layout && layout.width > layout.height;
   });
 
-  private naturalWidth = computed(() => {
+  /** The seat map as grid rows and columns, worked out from the layout's seat positions. */
+  seatGrid = computed(() => {
     const layout = this.layout();
-    return layout ? (this.upright() ? layout.height : layout.width) : 0;
-  });
-
-  private scale = computed(() => {
-    const natural = this.naturalWidth();
-    const available = this.mapWidth();
-    return natural > 0 && available > 0 ? Math.min(MAX_SCALE, available / natural) : 1;
-  });
-
-  mapHeight = computed(() => {
-    const layout = this.layout();
-    return layout ? (this.upright() ? layout.width : layout.height) * this.scale() : 0;
-  });
-
-  labelSize = computed(() => Math.max(10, Math.min(15, 12 * this.scale())));
-
-  placedSeats = computed<PlacedSeat[]>(() => {
-    const layout = this.layout();
-    if (!layout) {
-      return [];
+    if (!layout || layout.seats.length === 0) {
+      return { rows: '', columns: '', cells: [] as GridCell[] };
     }
-    const scale = this.scale();
     const upright = this.upright();
-    const selected = new Set(this.selectedIds());
-    return layout.seats.map((seat) => {
+    const spans = layout.seats.map((seat) => ({
+      seat,
       // Rotating a left-facing bus 90° clockwise: the left edge becomes the
       // top, and the bottom (door side) becomes the left.
-      const x = upright ? layout.height - (seat.top + seat.height) : seat.left;
-      const y = upright ? seat.left : seat.top;
-      const width = upright ? seat.height : seat.width;
-      const height = upright ? seat.width : seat.height;
-      return {
-        seat,
-        x: x * scale,
-        y: y * scale,
-        width: width * scale,
-        height: height * scale,
-        selected: selected.has(seat.id),
-        disabled: seat.status === 'taken' || seat.price === null,
-      };
+      x: { start: upright ? layout.height - (seat.top + seat.height) : seat.left, size: upright ? seat.height : seat.width },
+      y: { start: upright ? seat.left : seat.top, size: upright ? seat.width : seat.height },
+    }));
+    const columns = gridAxis(spans.map((s) => s.x));
+    const rows = gridAxis(spans.map((s) => s.y));
+    const cells = spans.map(({ seat, x, y }): GridCell => {
+      const col = columns.place(x);
+      const row = rows.place(y);
+      return { seat, row: row.line, rowSpan: row.span, col: col.line, colSpan: col.span };
     });
+
+    // A column with seats in under half the rows (a back bench's middle seat) is the aisle.
+    const seatRows = rows.kinds.filter((kind) => kind === 'seat').length;
+    const columnKinds = columns.kinds.map((kind, i): TrackKind =>
+      kind === 'seat' && cells.filter((cell) => cell.col === i + 1).length < seatRows / 2 ? 'aisle' : kind,
+    );
+    return {
+      rows: trackTemplate(rows.kinds, 'var(--seat-row)', 'var(--gap-row)'),
+      columns: trackTemplate(columnKinds, 'var(--seat-col)', 'var(--aisle-col)'),
+      cells,
+    };
+  });
+
+  placedSeats = computed<PlacedSeat[]>(() => {
+    const selected = new Set(this.selectedIds());
+    return this.seatGrid().cells.map((cell) => ({
+      ...cell,
+      selected: selected.has(cell.seat.id),
+      disabled: cell.seat.status === 'taken' || cell.seat.price === null,
+    }));
   });
 
   canContinue = computed(() => this.selectedIds().length > 0 && !!this.boardingId() && !!this.droppingId());
@@ -194,21 +244,6 @@ export class SeatPanel {
     effect(() => {
       const trip = this.trip();
       untracked(() => this.load(trip));
-    });
-
-    // Scale the seat map to whatever width the panel gives it.
-    effect((onCleanup) => {
-      const element = this.seatMap()?.nativeElement;
-      if (!element) {
-        return;
-      }
-      this.mapWidth.set(element.clientWidth);
-      if (typeof ResizeObserver === 'undefined') {
-        return;
-      }
-      const observer = new ResizeObserver((entries) => this.mapWidth.set(entries[0].contentRect.width));
-      observer.observe(element);
-      onCleanup(() => observer.disconnect());
     });
   }
 

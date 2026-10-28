@@ -6,7 +6,8 @@
 // The app calls <supabase-url>/functions/v1/travler/<travler path>, e.g.
 // .../travler/Trips/filterBuses, with the JSON body it would send to
 // Travler, less the fields this function fills in itself (the operator,
-// sourcetype and the search filters, see rules.ts). Only the endpoints
+// sourcetype, the search filters and, for a booking, the trip token, route
+// and prices it looks up from Travler, see rules.ts). Only the endpoints
 // BusEase actually uses are forwarded; anything else is refused, so this
 // can't be used as an open relay. Each call is checked against the body
 // shape and the rate limits in rules.ts before it goes anywhere. Travler's
@@ -27,7 +28,7 @@
 //   TRAVLER_COMPANY_ID  Travler's id for the operator BusEase sells (34 is Coast Bus)
 //   ALLOWED_ORIGINS     same comma-separated list the login function uses
 
-import { ENDPOINTS, type Endpoint, upstreamBody, validateBody } from './rules.ts';
+import { ENDPOINTS, type Endpoint, type Prepared, upstreamBody, validateBody } from './rules.ts';
 
 const UPSTREAM_TIMEOUT_MS = 20_000;
 const LIMITER_TIMEOUT_MS = 3_000;
@@ -195,15 +196,38 @@ Deno.serve(async (req) => {
     });
   }
 
-  let upstream: Response;
-  try {
-    upstream = await fetch(`${baseUrl}${path}`, {
+  const callTravler = (upstreamPath: string, body: unknown) =>
+    fetch(`${baseUrl}${upstreamPath}`, {
       method: 'POST',
       // The API guide has the key go in as it is, with no "Bearer " prefix.
       headers: { 'Content-Type': 'application/json', Authorization: apiKey },
-      body: JSON.stringify(upstreamBody(endpoint, checked.body, config)),
+      body: JSON.stringify(body),
       signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
     });
+
+  let outgoing: Record<string, unknown>;
+  if (endpoint.prepare) {
+    let prepared: Prepared;
+    try {
+      prepared = await endpoint.prepare(checked.body, config, async (lookupPath, lookupBody) => {
+        const response = await callTravler(lookupPath, upstreamBody(ENDPOINTS[lookupPath], lookupBody, config));
+        return JSON.parse(await response.text());
+      });
+    } catch (error) {
+      console.error(`travler ${path} lookup failed`, error);
+      return fail('The booking service could not be reached', 'UPSTREAM_UNAVAILABLE', 502, headers);
+    }
+    if (!prepared.ok) {
+      return fail(prepared.message, prepared.code, prepared.status, headers);
+    }
+    outgoing = prepared.body;
+  } else {
+    outgoing = upstreamBody(endpoint, checked.body, config);
+  }
+
+  let upstream: Response;
+  try {
+    upstream = await callTravler(path, outgoing);
   } catch (error) {
     const timedOut = error instanceof DOMException && error.name === 'TimeoutError';
     console.error(`travler ${path} failed`, error);

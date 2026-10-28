@@ -51,131 +51,131 @@
         <p class="state-title">No buses match your filters.</p>
         <p class="state-subtitle">Try clearing a filter to see more results.</p>
       </div>
-    }
-
-    @for (trip of filteredTrips(); track trip.id) {
-      <article class="bus-card" [class.voice-selected]="voice.selectedCard() === $index + 1">
-        <div class="bus-main">
-          <div class="bus-top-row">
-            <span class="bus-top-left">
-              @if (voice.supported()) {
-                <span class="voice-number" [class.voice-number-pulse]="voice.listening()" [title]="'Say number ' + ($index + 1)">
-                  <span class="sr-only">Say number</span> {{ $index + 1 }}
-                </span>
-              }
-              @if (trip.isPromotional) {
-                <span class="promo-badge">Promotional fare</span>
-              }
-            </span>
-            <!-- Demo-only; no cancellation-policy content/route to link to yet. -->
-            <button type="button" class="cancellation-link">Cancellation policy</button>
-          </div>
-
-          <div class="bus-divider-dashed" aria-hidden="true"></div>
-
-          <div class="bus-info-row">
-            <div class="bus-info-left">
-              <div class="bus-operator">
-                <span class="operator-avatar">
-                  <img [src]="logoFor(trip)" [alt]="trip.operator + ' logo'" (error)="onLogoError(trip)" />
-                </span>
-                <div class="bus-operator-text">
-                  <p class="operator-name">{{ trip.operator }}</p>
-                  @if (trip.rating !== undefined) {
-                    <span class="bus-rating-value">
-                      <i class="fa-solid fa-star" aria-hidden="true"></i>
-                      {{ trip.rating | number: '1.1-1' }}
-                      @if (trip.ratingCount) {
-                        <span class="bus-rating-count">({{ trip.ratingCount | number }})</span>
-                      }
-                    </span>
-                  }
-                </div>
-              </div>
-            </div>
-
-            <div class="bus-info-center">
-              @if (trip.busType) {
-                <span class="bus-seater">{{ trip.busType }}</span>
-              }
-              @if (cardAmenities(trip).length > 0) {
-                <span class="bus-amenity-icons">
-                  @for (amenity of cardAmenities(trip); track amenity) {
-                    <i class="fa-solid {{ amenityIcon(amenity) }}" [attr.aria-label]="amenity" [title]="amenity"></i>
-                  }
-                </span>
-              }
-            </div>
-
-            <div class="bus-info-right">
-              <span class="seats-left" [class.seats-low]="trip.seatsAvailable <= 5">
-                {{ trip.seatsAvailable }} {{ trip.seatsAvailable === 1 ? 'seat' : 'seats' }} left
+    } @else {
+      @for (trip of filteredTrips(); track trip.id) {
+        <article class="bus-card" [class.voice-selected]="voice.selectedCard() === $index + 1">
+          <div class="bus-main">
+            <div class="bus-top-row">
+              <span class="bus-top-left">
+                @if (voice.supported()) {
+                  <span class="voice-number" [class.voice-number-pulse]="voice.listening()" [title]="'Say number ' + ($index + 1)">
+                    <span class="sr-only">Say number</span> {{ $index + 1 }}
+                  </span>
+                }
+                @if (trip.isPromotional) {
+                  <span class="promo-badge">Promotional fare</span>
+                }
               </span>
+              <!-- Demo-only; no cancellation-policy content/route to link to yet. -->
+              <button type="button" class="cancellation-link">Cancellation policy</button>
             </div>
-          </div>
-
-          <div class="bus-divider-dashed" aria-hidden="true"></div>
-
-          <div class="bus-times">
-            <div class="time-block time-block-start">
-              <p class="time">{{ trip.departureTime }}</p>
-              <p class="time-label">{{ trip.from | cityName }}</p>
-            </div>
-            <div class="duration-block">
-              <div class="duration-track">
-                <p class="duration">{{ trip.duration }}</p>
-                <div class="duration-line">
-                  <span class="route-dot route-dot-start" aria-hidden="true"></span>
-                  <span class="route-dot route-dot-end" aria-hidden="true"></span>
+  
+            <div class="bus-divider-dashed" aria-hidden="true"></div>
+  
+            <div class="bus-info-row">
+              <div class="bus-info-left">
+                <div class="bus-operator">
+                  <span class="operator-avatar">
+                    <img [src]="logoFor(trip)" [alt]="trip.operator + ' logo'" (error)="onLogoError(trip)" />
+                  </span>
+                  <div class="bus-operator-text">
+                    <p class="operator-name">{{ trip.operator }}</p>
+                    @if (trip.rating !== undefined) {
+                      <span class="bus-rating-value">
+                        <i class="fa-solid fa-star" aria-hidden="true"></i>
+                        {{ trip.rating | number: '1.1-1' }}
+                        @if (trip.ratingCount) {
+                          <span class="bus-rating-count">({{ trip.ratingCount | number }})</span>
+                        }
+                      </span>
+                    }
+                  </div>
                 </div>
-                <span class="route-bus" aria-hidden="true"><i class="fa-solid fa-bus"></i></span>
+              </div>
+  
+              <div class="bus-info-center">
+                @if (trip.busType) {
+                  <span class="bus-seater">{{ trip.busType }}</span>
+                }
+                @if (cardAmenities(trip).length > 0) {
+                  <span class="bus-amenity-icons">
+                    @for (amenity of cardAmenities(trip); track amenity) {
+                      <i class="fa-solid {{ amenityIcon(amenity) }}" [attr.aria-label]="amenity" [title]="amenity"></i>
+                    }
+                  </span>
+                }
+              </div>
+  
+              <div class="bus-info-right">
+                <span class="seats-left" [class.seats-low]="trip.seatsAvailable <= 5">
+                  {{ trip.seatsAvailable }} {{ trip.seatsAvailable === 1 ? 'seat' : 'seats' }} left
+                </span>
               </div>
             </div>
-            <div class="time-block time-block-end">
-              <p class="time">{{ trip.arrivalTime }}</p>
-              <p class="time-label">{{ trip.to | cityName }}</p>
+  
+            <div class="bus-divider-dashed" aria-hidden="true"></div>
+  
+            <div class="bus-times">
+              <div class="time-block time-block-start">
+                <p class="time">{{ trip.departureTime }}</p>
+                <p class="time-label">{{ trip.from | cityName }}</p>
+              </div>
+              <div class="duration-block">
+                <div class="duration-track">
+                  <p class="duration">{{ trip.duration }}</p>
+                  <div class="duration-line">
+                    <span class="route-dot route-dot-start" aria-hidden="true"></span>
+                    <span class="route-dot route-dot-end" aria-hidden="true"></span>
+                  </div>
+                  <span class="route-bus" aria-hidden="true"><i class="fa-solid fa-bus"></i></span>
+                </div>
+              </div>
+              <div class="time-block time-block-end">
+                <p class="time">{{ trip.arrivalTime }}</p>
+                <p class="time-label">{{ trip.to | cityName }}</p>
+              </div>
             </div>
           </div>
-        </div>
-
-        <div class="ticket-divider" aria-hidden="true">
-          <span class="ticket-notch ticket-notch-top"></span>
-          <span class="ticket-notch ticket-notch-mid"></span>
-          <span class="ticket-notch ticket-notch-bottom"></span>
-        </div>
-
-        <div class="bus-price-cta">
-          @if (trip.routeKind) {
-            <span class="route-type-badge">{{ trip.routeKind }}</span>
-          }
-
-          <div class="class-price-list">
-            @for (cls of trip.classes; track cls.className) {
-              <div class="class-price-row">
-                <span class="class-chip">{{ cls.className }}</span>
-                <span class="class-price"><span class="price-currency">KES</span>{{ cls.price | number }}</span>
-              </div>
-            } @empty {
-              <div class="class-price-row">
-                <span class="class-chip">From</span>
-                <span class="class-price"><span class="price-currency">KES</span>{{ trip.fromPrice | number }}</span>
-              </div>
-            }
+  
+          <div class="ticket-divider" aria-hidden="true">
+            <span class="ticket-notch ticket-notch-top"></span>
+            <span class="ticket-notch ticket-notch-mid"></span>
+            <span class="ticket-notch ticket-notch-bottom"></span>
           </div>
-
-          <button
-            type="button"
-            class="select-seats-btn"
-            [disabled]="trip.seatsAvailable <= 0"
-            (click)="selectTrip(trip)"
-          >
-            {{ trip.seatsAvailable > 0 ? 'Select Seats' : 'Sold out' }}
-            @if (trip.seatsAvailable > 0) {
-              <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+  
+          <div class="bus-price-cta">
+            @if (trip.routeKind) {
+              <span class="route-type-badge">{{ trip.routeKind }}</span>
             }
-          </button>
-        </div>
-      </article>
+  
+            <div class="class-price-list">
+              @for (cls of trip.classes; track cls.className) {
+                <div class="class-price-row">
+                  <span class="class-chip">{{ cls.className }}</span>
+                  <span class="class-price"><span class="price-currency">KES</span>{{ cls.price | number }}</span>
+                </div>
+              } @empty {
+                <div class="class-price-row">
+                  <span class="class-chip">From</span>
+                  <span class="class-price"><span class="price-currency">KES</span>{{ trip.fromPrice | number }}</span>
+                </div>
+              }
+            </div>
+  
+            <button
+              type="button"
+              class="select-seats-btn"
+              [disabled]="trip.seatsAvailable <= 0"
+              (click)="selectTrip(trip)"
+            >
+              {{ trip.seatsAvailable > 0 ? 'Select Seats' : 'Sold out' }}
+              @if (trip.seatsAvailable > 0) {
+                <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+              }
+            </button>
+          </div>
+        </article>
+      }
     }
     </div>
 

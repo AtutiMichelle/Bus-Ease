@@ -104,7 +104,11 @@
             </span>
           </div>
 
-          <div #seatMap class="seat-map" [style.height.px]="mapHeight()" [style.font-size.px]="labelSize()">
+          <div
+            class="seat-map"
+            [style.grid-template-rows]="seatGrid().rows"
+            [style.grid-template-columns]="seatGrid().columns"
+          >
             @for (placed of placedSeats(); track placed.seat.id) {
               <button
                 type="button"
@@ -112,10 +116,8 @@
                 [class.available]="!placed.disabled && !placed.selected"
                 [class.selected]="placed.selected"
                 [class.booked]="placed.disabled"
-                [style.left.px]="placed.x"
-                [style.top.px]="placed.y"
-                [style.width.px]="placed.width"
-                [style.height.px]="placed.height"
+                [style.grid-row]="placed.row + ' / span ' + placed.rowSpan"
+                [style.grid-column]="placed.col + ' / span ' + placed.colSpan"
                 [disabled]="placed.disabled"
                 [attr.aria-pressed]="placed.selected"
                 [attr.aria-label]="seatLabel(placed)"

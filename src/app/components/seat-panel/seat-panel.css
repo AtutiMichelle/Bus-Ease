@@ -11,6 +11,7 @@
   top: 0;
   right: 0;
   height: 100vh;
+  height: 100dvh;
   width: min(480px, 100%);
   background-color: var(--color-surface, #fff);
   box-shadow: -24px 0 64px rgba(18, 41, 77, 0.35);
@@ -124,10 +125,12 @@
 
 .panel-body {
   flex: 1 1 auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
+  /* Last resort for very short screens; normally only the seat map scrolls. */
   overflow-y: auto;
-  padding: 10px 20px;
+  padding: 8px 16px 10px;
 }
 
 .stops-row {
@@ -135,7 +138,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-bottom: clamp(10px, 1.3vh, 16px);
+  margin-bottom: clamp(6px, 1vh, 12px);
 }
 
 .field {
@@ -191,9 +194,12 @@
 
 .guest-hint {
   flex: none;
-  margin: 0 0 clamp(10px, 1.3vh, 16px);
-  font-size: clamp(0.76rem, 1.6vh, 0.86rem);
+  margin: 0 0 clamp(6px, 0.8vh, 10px);
+  font-size: clamp(0.74rem, 1.5vh, 0.82rem);
   color: var(--color-text-muted, #6b6b6b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .footer-notice {
@@ -206,8 +212,8 @@
   flex: none;
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: clamp(10px, 1.3vh, 16px);
+  gap: 5px;
+  margin-bottom: clamp(6px, 0.8vh, 10px);
   flex-wrap: nowrap;
   overflow-x: auto;
   scrollbar-width: thin;
@@ -218,20 +224,20 @@
 .legend-pill {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   flex: none;
-  font-size: clamp(0.76rem, 1.6vh, 0.86rem);
+  font-size: clamp(0.72rem, 1.4vh, 0.8rem);
   white-space: nowrap;
   color: var(--color-text-muted, #6b6b6b);
   background-color: var(--color-soft-bg, #e8f1fc);
   border-radius: 999px;
-  padding: clamp(4px, 0.5vh, 6px) clamp(10px, 1.3vh, 14px) clamp(4px, 0.5vh, 6px) clamp(8px, 1vh, 10px);
+  padding: 3px 9px 3px 7px;
 }
 
 .legend-swatch {
-  width: clamp(12px, 1.6vh, 14px);
-  height: clamp(12px, 1.6vh, 14px);
-  border-radius: 4px;
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
   display: inline-block;
 }
 
@@ -261,18 +267,23 @@
 
 
 .bus-shell {
-  flex: none;
+  /* Takes the room left over and shrinks with it; never grows past its seats. */
+  flex: 0 1 auto;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
   border: 2px solid var(--color-border, #e4dfd6);
-  border-radius: 16px;
-  padding: 10px 12px 14px;
+  border-radius: 14px;
+  padding: 6px 8px 8px;
 }
 
 .bus-shell-front {
+  flex: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
+  margin-bottom: clamp(4px, 0.7vh, 8px);
+  padding-bottom: 4px;
   border-bottom: 1px dashed var(--color-border, #e4dfd6);
 }
 
@@ -285,8 +296,8 @@
 }
 
 .front-marker {
-  width: clamp(34px, 4.4vh, 44px);
-  height: clamp(26px, 3.4vh, 36px);
+  width: clamp(30px, 4vh, 40px);
+  height: clamp(22px, 3vh, 30px);
   border-radius: 999px;
   display: flex;
   align-items: center;
@@ -308,15 +319,35 @@
   height: clamp(20px, 2.6vh, 28px);
 }
 
-/* Seats are placed from the layout's own left/top positions, scaled in
-   the component to this box's width. */
+/* Rows and columns come from the layout (see seatGrid). Rows share the
+   height left in the panel and only scroll once they'd go under 32px. */
 .seat-map {
-  position: relative;
-  width: 100%;
+  --seat-row: minmax(32px, 52px);
+  --gap-row: minmax(4px, 12px);
+  --seat-col: minmax(0, 54px);
+  --aisle-col: minmax(10px, 34px);
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  gap: clamp(3px, 0.6vh, 6px) 6px;
+  justify-content: center;
+  align-content: start;
+  /* Room for the hover lift and focus ring inside the scroll box. */
+  padding: 3px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Keeps the right column clear of the voice mic in the bottom corner, on both sides so seats stay centred. */
+.panel-body.has-voice-mic .seat-map {
+  padding-inline: 52px;
 }
 
 .seat {
-  position: absolute;
+  container-type: size;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
   box-sizing: border-box;
   padding: 0;
   border-radius: 7px;
@@ -325,15 +356,29 @@
   align-items: center;
   justify-content: center;
   gap: 1px;
-  font-size: inherit;
   font-weight: 700;
   line-height: 1;
   cursor: pointer;
   transition: transform 0.15s, box-shadow 0.15s;
 }
 
+.seat i {
+  font-size: clamp(9px, 36cqh, 18px);
+}
+
 .seat-number {
-  font-size: 0.8em;
+  font-size: clamp(10px, 26cqh, 13px);
+}
+
+/* Short seats drop the icon and keep just the label. */
+@container (max-height: 37px) {
+  .seat i {
+    display: none;
+  }
+
+  .seat-number {
+    font-size: clamp(10px, 38cqh, 13px);
+  }
 }
 
 .seat.available {
@@ -383,18 +428,13 @@
   color: #0f7a43;
 }
 
-/* Zero-height row just above the footer. The voice mic hangs up from it, so
-   it sits over the bottom corner of the seat map and never over the total
-   or the Continue button, however tall the footer gets. */
+/* Zero-height row just above the footer. The voice mic hangs up from it into
+   the seat map's right gutter, so it never covers a seat, the total or the
+   Continue button, however tall the footer gets. */
 .voice-slot {
   position: relative;
   flex: none;
   height: 0;
-}
-
-/* Lets the last row of seats scroll clear of the mic. */
-.panel-body.has-voice-mic {
-  padding-bottom: 82px;
 }
 
 /* The open chat never covers the seats. Where the screen is too narrow for

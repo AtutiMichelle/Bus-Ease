@@ -28,13 +28,26 @@ export interface SelectedSeat {
   price: number;
 }
 
+export type PassengerGender = 'M' | 'F';
+
 /** One traveller in a booking, tied to the seat they will sit in. */
 export interface TripPassenger {
+  seatId: string;
   seatName: string;
   seatType: string;
-  fullName: string;
+  firstName: string;
+  lastName: string;
+  /** Empty until the passenger picks one. */
+  gender: PassengerGender | '';
+  /** Whole years, as typed. */
+  age: string;
+  nationality: string;
   idNumber: string;
   price: number;
+}
+
+export function passengerName(p: Pick<TripPassenger, 'firstName' | 'lastName'>): string {
+  return `${p.firstName} ${p.lastName}`.trim();
 }
 
 export interface BookingContact {

@@ -147,6 +147,9 @@ export class Results {
 
   private async load(origin: string, destination: string, originId: string, destinationId: string, journeyDate: string): Promise<void> {
     const token = ++this.loadToken;
+    // Drop the last search's buses so neither the page nor the voice assistant shows them.
+    this.trips.set([]);
+    this.voice.setState({ selectedCard: null });
     this.loading.set(true);
     this.errorMessage.set('');
     this.routeNotServed.set(false);

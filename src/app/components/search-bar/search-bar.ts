@@ -9,9 +9,6 @@ import { VoiceStateService } from '../../voice/voice-state.service';
 import { VoiceMicButton } from '../../voice/voice-mic-button/voice-mic-button';
 import { CityNamePipe, cityName } from '../../utils/city-name';
 
-/** How many city suggestions to show at once. */
-const MAX_SUGGESTIONS = 8;
-
 @Component({
   imports: [FormsModule, VoiceMicButton, CityNamePipe],
   selector: 'app-search-bar',
@@ -205,8 +202,7 @@ export class SearchBar {
 
   private matchCities(cities: City[], query: string): City[] {
     const q = query.trim().toLowerCase();
-    const matches = q ? cities.filter((city) => city.name.toLowerCase().startsWith(q)) : cities;
-    return matches.slice(0, MAX_SUGGESTIONS);
+    return q ? cities.filter((city) => city.name.toLowerCase().startsWith(q)) : cities;
   }
 
   private findCity(cities: City[], name: string): City | undefined {

@@ -15,10 +15,10 @@ import {
   TripSearchContext,
 } from '../../../models/trip.model';
 import {
-  TravlerBooking,
+  TravlerBookingResponse,
   TravlerCity,
   TravlerPaymentCheck,
-  TravlerPaymentInit,
+  TravlerPaymentInitResponse,
   TravlerPoint,
   TravlerPointsResponse,
   TravlerPrint,
@@ -223,23 +223,24 @@ export function adaptPoints(raw: TravlerPointsResponse | undefined): BoardingDro
   };
 }
 
-export function adaptBooking(raw: TravlerBooking, sentTotal: number): BookingHold {
-  const expiresAt = raw.expires_at ? new Date(raw.expires_at) : null;
-  const heldUntil =
-    expiresAt && !Number.isNaN(expiresAt.getTime())
-      ? expiresAt
-      : new Date(Date.now() + BOOKING_HOLD_MINUTES * 60_000);
+/** Travler gives no hold time, so the hold runs BOOKING_HOLD_MINUTES from
+ * now, and no total, so it's the seat layout prices the customer saw. The
+ * edge function prices the booking from the same layout. */
+export function adaptBooking(raw: TravlerBookingResponse, total: number): BookingHold {
   return {
     reference: toId(raw.booking_reference),
-    status: raw.status ?? '',
-    totalAmount: toNumber(raw.total_amount) ?? sentTotal,
-    currency: raw.currency || 'KES',
-    heldUntil: heldUntil.toISOString(),
+    status: 'pending_payment',
+    totalAmount: total,
+    currency: 'KES',
+    heldUntil: new Date(Date.now() + BOOKING_HOLD_MINUTES * 60_000).toISOString(),
+    ticketNumbers: (raw.ticket_number ?? []).map(toId).filter(Boolean),
   };
 }
 
-export function adaptPaymentStart(raw: TravlerPaymentInit): PaymentStart {
-  return { reference: toId(raw.payment_reference), status: raw.status ?? '' };
+/** Travler answers with the ticket number the prompt was sent for, which
+ * stands in as the payment reference. */
+export function adaptPaymentStart(raw: TravlerPaymentInitResponse, bookingReference: string): PaymentStart {
+  return { reference: toId(raw.ticketNumber) || bookingReference, status: raw.msg?.trim() ?? '' };
 }
 
 const PAYMENT_SUCCESS = new Set(['success', 'successful', 'completed', 'paid', 'confirmed']);

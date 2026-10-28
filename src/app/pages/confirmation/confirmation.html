@@ -57,8 +57,8 @@
                     }
                   </span>
                   <span class="seat-badge">{{ passenger.seatName }}</span>
-                  <span class="row-name" [class.placeholder]="!passenger.fullName">
-                    {{ passenger.fullName || 'Not filled in yet' }}
+                  <span class="row-name" [class.placeholder]="!passengerName(passenger)">
+                    {{ passengerName(passenger) || 'Not filled in yet' }}
                   </span>
                   <i class="fa-solid fa-chevron-down accordion-chevron" aria-hidden="true"></i>
                 </button>
@@ -67,23 +67,92 @@
                   <div class="accordion-row-body">
                     <div class="passenger-fields">
                       <div class="field">
-                        <label [for]="'name-' + i">Full name <span class="required-mark">*</span></label>
+                        <label [for]="'first-' + i">First name <span class="required-mark">*</span></label>
                         <input
-                          [id]="'name-' + i"
+                          [id]="'first-' + i"
                           type="text"
-                          placeholder="Jane Doe"
-                          autocomplete="name"
-                          [class.invalid]="submitted() && nameError(passenger)"
-                          [ngModel]="passenger.fullName"
-                          (ngModelChange)="updatePassenger(i, 'fullName', $event)"
-                          [name]="'name-' + i"
+                          placeholder="Jane"
+                          autocomplete="given-name"
+                          [class.invalid]="submitted() && firstNameError(passenger)"
+                          [ngModel]="passenger.firstName"
+                          (ngModelChange)="updatePassenger(i, 'firstName', $event)"
+                          [name]="'first-' + i"
                           required
                         />
-                        @if (submitted() && nameError(passenger)) {
-                          <p class="field-error">{{ nameError(passenger) }}</p>
+                        @if (submitted() && firstNameError(passenger)) {
+                          <p class="field-error">{{ firstNameError(passenger) }}</p>
                         }
                       </div>
-
+                      <div class="field">
+                        <label [for]="'last-' + i">Last name <span class="required-mark">*</span></label>
+                        <input
+                          [id]="'last-' + i"
+                          type="text"
+                          placeholder="Wanjiku"
+                          autocomplete="family-name"
+                          [class.invalid]="submitted() && lastNameError(passenger)"
+                          [ngModel]="passenger.lastName"
+                          (ngModelChange)="updatePassenger(i, 'lastName', $event)"
+                          [name]="'last-' + i"
+                          required
+                        />
+                        @if (submitted() && lastNameError(passenger)) {
+                          <p class="field-error">{{ lastNameError(passenger) }}</p>
+                        }
+                      </div>
+                      <div class="field">
+                        <label [for]="'gender-' + i">Gender <span class="required-mark">*</span></label>
+                        <select
+                          [id]="'gender-' + i"
+                          [class.invalid]="submitted() && genderError(passenger)"
+                          [ngModel]="passenger.gender"
+                          (ngModelChange)="updatePassenger(i, 'gender', $event)"
+                          [name]="'gender-' + i"
+                          required
+                        >
+                          <option value="" disabled>Choose</option>
+                          <option value="F">Female</option>
+                          <option value="M">Male</option>
+                        </select>
+                        @if (submitted() && genderError(passenger)) {
+                          <p class="field-error">{{ genderError(passenger) }}</p>
+                        }
+                      </div>
+                      <div class="field">
+                        <label [for]="'age-' + i">Age <span class="required-mark">*</span></label>
+                        <input
+                          [id]="'age-' + i"
+                          type="text"
+                          placeholder="30"
+                          autocomplete="off"
+                          inputmode="numeric"
+                          [class.invalid]="submitted() && ageError(passenger)"
+                          [ngModel]="passenger.age"
+                          (ngModelChange)="updatePassenger(i, 'age', $event)"
+                          [name]="'age-' + i"
+                          required
+                        />
+                        @if (submitted() && ageError(passenger)) {
+                          <p class="field-error">{{ ageError(passenger) }}</p>
+                        }
+                      </div>
+                      <div class="field">
+                        <label [for]="'nationality-' + i">Nationality <span class="required-mark">*</span></label>
+                        <input
+                          [id]="'nationality-' + i"
+                          type="text"
+                          placeholder="Kenyan"
+                          autocomplete="off"
+                          [class.invalid]="submitted() && nationalityError(passenger)"
+                          [ngModel]="passenger.nationality"
+                          (ngModelChange)="updatePassenger(i, 'nationality', $event)"
+                          [name]="'nationality-' + i"
+                          required
+                        />
+                        @if (submitted() && nationalityError(passenger)) {
+                          <p class="field-error">{{ nationalityError(passenger) }}</p>
+                        }
+                      </div>
                       <div class="field">
                         <label [for]="'id-' + i">ID / passport number <span class="required-mark">*</span></label>
                         <input

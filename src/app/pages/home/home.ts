@@ -107,12 +107,13 @@ export class Home implements OnInit, OnDestroy {
   ];
 
   /** Decorative departure-board display in the hero; cycles on an interval,
-   * not tied to real-time bus data. */
+   * not tied to real-time bus data. Routes and times are Coast Bus's daily
+   * departures as Travler listed them in October 2026. */
   departureBoard = [
-    { route: 'Nairobi → Mombasa', time: '14:20', status: 'BOARDING' },
-    { route: 'Nairobi → Kisumu', time: '09:45', status: 'ON TIME' },
-    { route: 'Nairobi → Eldoret', time: '11:10', status: 'ON TIME' },
-    { route: 'Mombasa → Malindi', time: '16:30', status: 'BOARDING' },
+    { route: 'Nairobi → Mombasa', time: '22:00', status: 'ON TIME' },
+    { route: 'Malaba → Mombasa', time: '12:00', status: 'BOARDING' },
+    { route: 'Mombasa → Kisumu', time: '14:00', status: 'ON TIME' },
+    { route: 'Nairobi → Malaba', time: '22:55', status: 'BOARDING' },
   ];
 
   departureIndex = signal(0);

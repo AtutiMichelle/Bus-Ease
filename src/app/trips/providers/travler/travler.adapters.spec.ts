@@ -1,4 +1,15 @@
-import { adaptCity, adaptPoints, adaptSeatLayout, adaptTrip, paymentStateFor, toId, toNumber } from './travler.adapters';
+import {
+  BOOKING_HOLD_MINUTES,
+  adaptBooking,
+  adaptCity,
+  adaptPaymentStart,
+  adaptPoints,
+  adaptSeatLayout,
+  adaptTrip,
+  paymentStateFor,
+  toId,
+  toNumber,
+} from './travler.adapters';
 import { TravlerSeat, TravlerSeatLayoutResponse, TravlerTrip } from './travler.types';
 
 const context = { fromCityId: '1', toCityId: '2', from: 'Nairobi', to: 'Mombasa', date: '2026-09-30' };
@@ -158,5 +169,37 @@ describe('travler adapters', () => {
     expect(paymentStateFor('FAILED')).toBe('rejected');
     expect(paymentStateFor('pending')).toBe('pending');
     expect(paymentStateFor('something-new')).toBe('pending');
+  });
+
+  it('reads a booking from the Create Booking answer', () => {
+    const before = Date.now();
+    const hold = adaptBooking(
+      {
+        isSuccess: true,
+        booking_reference: ' GUZ31NGRL3 ',
+        ticket_number: ['DEV57802078', ''],
+        alreadySeatBooked: [],
+        message: 'Ticket booked successfully.',
+      },
+      2600,
+    );
+    expect(hold).toMatchObject({
+      reference: 'GUZ31NGRL3',
+      status: 'pending_payment',
+      totalAmount: 2600,
+      currency: 'KES',
+      ticketNumbers: ['DEV57802078'],
+    });
+    const heldFor = new Date(hold.heldUntil).getTime() - before;
+    expect(heldFor).toBeGreaterThanOrEqual(BOOKING_HOLD_MINUTES * 60_000 - 1000);
+    expect(heldFor).toBeLessThanOrEqual(BOOKING_HOLD_MINUTES * 60_000 + 1000);
+  });
+
+  it('uses the ticket number from the payment prompt as its reference', () => {
+    expect(adaptPaymentStart({ isSuccess: true, ticketNumber: 'DEV57802078', msg: ' Sent ' }, 'GUZ31NGRL3')).toEqual({
+      reference: 'DEV57802078',
+      status: 'Sent',
+    });
+    expect(adaptPaymentStart({ isSuccess: true }, 'GUZ31NGRL3').reference).toBe('GUZ31NGRL3');
   });
 });

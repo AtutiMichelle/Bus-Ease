@@ -391,7 +391,8 @@
   font-style: italic;
 }
 
-.field input.invalid {
+.field input.invalid,
+.field select.invalid {
   border-color: var(--color-danger, #d64545);
 }
 

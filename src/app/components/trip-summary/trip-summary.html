@@ -1,6 +1,6 @@
 <aside class="trip-summary">
   <h2 class="summary-heading">Trip Summary</h2>
-  <p class="summary-route">{{ trip().from }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i> {{ trip().to }}</p>
+  <p class="summary-route">{{ trip().from | cityName }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i> {{ trip().to | cityName }}</p>
   <p class="summary-meta">{{ trip().date }} · {{ trip().departureTime }} · {{ trip().operator }}{{ trip().busType ? ' · ' + trip().busType : '' }}</p>
 
   @if (boardingPoint() || dropoffPoint()) {

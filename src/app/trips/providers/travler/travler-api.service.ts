@@ -25,18 +25,19 @@ import {
   adaptSeatLayout,
   adaptTrip,
 } from './travler.adapters';
-import { errorFromBody, toTravlerError } from './travler-errors';
+import { TravlerApiError, errorFromBody, toTravlerError } from './travler-errors';
 import {
-  TravlerBooking,
+  TravlerBookingPassenger,
   TravlerBookingRequest,
+  TravlerBookingResponse,
   TravlerCity,
   TravlerCityRequest,
   TravlerEnvelope,
   TravlerFilterBusesRequest,
   TravlerPaymentCheck,
   TravlerPaymentCheckRequest,
-  TravlerPaymentInit,
   TravlerPaymentInitRequest,
+  TravlerPaymentInitResponse,
   TravlerPointsResponse,
   TravlerPointsRequest,
   TravlerPrint,
@@ -142,59 +143,73 @@ export class TravlerApiService implements TripProvider {
     return adaptPoints(res);
   }
 
-  /** POST /Ticket/RoundBooking. Holds the seats unpaid for 10 minutes. */
+  /** POST /Ticket/RoundBooking, one way. Holds the seats unpaid for
+   * BOOKING_HOLD_MINUTES. Every passenger gets the contact phone and email. */
   async createBooking(booking: BookingRequest): Promise<BookingHold> {
+    const fallback = "We couldn't reserve your seats. Please try again.";
+    const { trip, contact } = booking;
     const request: TravlerBookingRequest = {
-      bus_id: booking.trip.id,
-      travel_date: booking.trip.date,
-      boarding_point_id: booking.boardingPointId,
-      dropping_point_id: booking.droppingPointId,
-      passengers: booking.passengers.map((p) => ({
-        name: p.fullName.trim(),
-        id_number: p.idNumber.trim(),
-        seat_number: p.seatName,
-        seat_type: p.seatType,
+      bus_id: trip.id,
+      booking_date: trip.date,
+      pickup_id: trip.fromCityId,
+      return_id: trip.toCityId,
+      source_city: trip.from,
+      dest_city: trip.to,
+      boardingPointId: booking.boarding.id,
+      droppingPointId: booking.dropping.id,
+      boardingPointname: booking.boarding.name,
+      droppingPointname: booking.dropping.name,
+      passenger: booking.passengers.map((p) => ({
+        seat_id: p.seatId,
+        name: p.firstName.trim(),
+        last_name: p.lastName.trim(),
+        // The details form won't submit without one.
+        gender: p.gender as TravlerBookingPassenger['gender'],
+        age: p.age.trim(),
+        mobileId: contact.phone.slice(0, 3),
+        mobile: contact.phone.slice(3),
+        nationality: p.nationality.trim(),
+        id_no: p.idNumber.trim(),
+        email: contact.email.trim(),
       })),
-      contact_email: booking.contact.email.trim(),
-      contact_phone: booking.contact.phone,
-      total_amount: booking.totalAmount,
+      c_email: contact.email.trim(),
+      contact_phone: contact.phone,
     };
-    const res = await this.post<TravlerEnvelope<TravlerBooking>>(
-      '/Ticket/RoundBooking',
-      request,
-      "We couldn't reserve your seats. Please try again.",
-    );
-    if (!res.data?.booking_reference) {
-      throw errorFromBody(res, "We couldn't reserve your seats. Please try again.");
+    const res = await this.post<TravlerBookingResponse>('/Ticket/RoundBooking', request, fallback);
+    if (res.alreadySeatBooked?.length) {
+      throw new TravlerApiError(
+        'One or more of your seats were just taken. Please pick different seats.',
+        'SEAT_UNAVAILABLE',
+        null,
+        res.message ?? null,
+      );
     }
-    return adaptBooking(res.data, booking.totalAmount);
+    if (!res.booking_reference) {
+      throw errorFromBody(res, fallback);
+    }
+    return adaptBooking(res, booking.totalAmount);
   }
 
   /** POST /paymentGateway/init. Sends the M-Pesa STK push to `phone` (2547XXXXXXXX). */
-  async startMpesaPayment(bookingReference: string, phone: string, totalAmount: number): Promise<PaymentStart> {
+  async startMpesaPayment(bookingReference: string, phone: string): Promise<PaymentStart> {
     const request: TravlerPaymentInitRequest = {
       bookingRef: bookingReference,
-      queryoption: 1,
+      queryoption: 2,
       queryvalue: phone,
-      requestType: 'STK_PUSH',
+      requestType: 'ticket',
       isWalletApply: false,
       additionalInfo: {
-        onward: { sponsorTrip: false, discountId: null },
-        return: { sponsorTrip: false, discountId: null },
+        onward: { sponsorTrip: false, discountId: 0 },
+        return: { sponsorTrip: false, discountId: 0 },
       },
-      total_amount: totalAmount,
       paymentMethod: 'mpesa',
-      sourcetype: 'web',
     };
-    const res = await this.post<TravlerEnvelope<TravlerPaymentInit>>(
+    const res = await this.post<TravlerPaymentInitResponse>(
       '/paymentGateway/init',
       request,
       "We couldn't start the M-Pesa payment. Please try again.",
     );
-    if (!res.data?.payment_reference) {
-      throw errorFromBody(res, "We couldn't start the M-Pesa payment. Please try again.");
-    }
-    return adaptPaymentStart(res.data);
+    return adaptPaymentStart(res, bookingReference);
   }
 
   /** POST /paymentGateway/checkMpesaPayment */

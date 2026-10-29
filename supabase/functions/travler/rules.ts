@@ -49,16 +49,9 @@ function oneOf(...allowed: unknown[]): Field {
   return (value) => (allowed.includes(value) ? value : INVALID);
 }
 
-function nullable(field: Field): Field {
-  return (value) => (value === null || value === undefined ? null : field(value));
-}
-
 function integer(min: number, max: number): Field {
   return (value) => (typeof value === 'number' && Number.isInteger(value) && value >= min && value <= max ? value : INVALID);
 }
-
-const amount: Field = (value) =>
-  typeof value === 'number' && Number.isFinite(value) && value > 0 && value <= 1_000_000 ? value : INVALID;
 
 function object(schema: Schema): Field {
   return (value) => {
@@ -106,11 +99,22 @@ export interface UpstreamConfig {
   companyId: string;
 }
 
+/** Calls another Travler endpoint from inside the function, with that
+ * endpoint's fixed fields added. Answers with Travler's JSON body as-is. */
+export type Lookup = (path: string, body: Record<string, unknown>) => Promise<unknown>;
+
+export type Prepared =
+  | { ok: true; body: Record<string, unknown> }
+  | { ok: false; message: string; code: string; status: number };
+
 export interface Endpoint {
   schema: Schema;
   /** Fields the function adds to the checked body itself. They win over
    * anything the caller sent under the same name. */
   fixed?: (config: UpstreamConfig) => Record<string, unknown>;
+  /** Builds the whole body Travler gets, in place of `fixed`, from the
+   * checked body plus what it looks up from Travler itself. */
+  prepare?: (body: Record<string, unknown>, config: UpstreamConfig, lookup: Lookup) => Promise<Prepared>;
   /** Changes Travler's answer before it goes back to the browser. */
   reply?: (body: unknown, config: UpstreamConfig) => unknown;
   limits: Limit[];
@@ -128,7 +132,7 @@ export interface Endpoint {
 const MINUTE = 60;
 const TEN_MINUTES = 600;
 
-const paymentLeg = object({ sponsorTrip: oneOf(true, false), discountId: nullable(text(64)) });
+const paymentLeg = object({ sponsorTrip: oneOf(false), discountId: integer(0, 0) });
 
 /** Travler's delay markers, copied from the search result. */
 const delayedFlag = integer(0, 9);
@@ -172,12 +176,168 @@ function onlyOperatorBuses(body: unknown, config: UpstreamConfig): unknown {
   return { ...body, data, available_buses_count: data.length };
 }
 
+/** Travler city ids each operator runs between, by company id. getCity
+ * takes no operator and lists every town on Travler, so the city lists are
+ * cut down to these. Coast Bus (34) found by live search on 2026-10-28:
+ * every pair of these towns had a bus. An operator not listed here gets
+ * Travler's full list. */
+const OPERATOR_TOWNS: Record<string, string[]> = {
+  // Bungoma, Chavakali, Kakamega, Kericho, Kisumu, Malaba, Mombasa, Mumias,
+  // Nairobi, Nakuru, Voi
+  '34': ['14', '271', '270', '228', '10', '7', '13', '272', '3', '15', '39'],
+};
+
+/** Travler's currency id for Kenyan shillings, the one SEARCH_DEFAULTS asks for. */
+const KES_ID = '1';
+
+/** Seat map cells nobody can buy. */
+const NOT_FOR_SALE = new Set(['driver', 'door', 'staff']);
+
+function refuse(message: string, code: string, status: number): Prepared {
+  return { ok: false, message, code, status };
+}
+
+function money(value: number): string {
+  return value.toFixed(2);
+}
+
+/** Builds Travler's Create Booking body (section 4.6 of the API guide).
+ * The browser sends only what the customer picked and typed. The trip token,
+ * route, times, delay markers and prices come from Travler's own search and
+ * seat layout, looked up here: the token never reaches the browser, and the
+ * customer can't change what a seat costs. */
+async function prepareBooking(body: Record<string, unknown>, config: UpstreamConfig, lookup: Lookup): Promise<Prepared> {
+  const route = { source_city_id: body.pickup_id, destination_city_id: body.return_id, travel_date: body.booking_date };
+
+  const search = await lookup('/Trips/filterBuses', route);
+  const buses = isPlainObject(search) && Array.isArray(search.data) ? search.data : [];
+  const bus = buses.find(
+    (item) => isPlainObject(item) && String(item.bus_id) === String(body.bus_id) && String(item.company_id) === config.companyId,
+  );
+  if (!isPlainObject(bus) || typeof bus.token !== 'string' || !bus.token) {
+    return refuse('This bus is no longer taking bookings. Please search again.', 'TRIP_UNAVAILABLE', 409);
+  }
+  const delayedFlag = Number(bus.delayedFlag) || 0;
+  const delayedDate = Number(bus.delayedDate) || 0;
+
+  const layout = await lookup('/trips/getTripSeatsPrice', { ...route, bus_id: body.bus_id, delayedFlag, delayedDate });
+  const seats = isPlainObject(layout) && Array.isArray(layout.data) ? layout.data.filter(isPlainObject) : [];
+  const priceList = isPlainObject(layout) && isPlainObject(layout.priceList) ? layout.priceList : {};
+
+  const wanted = body.passenger as Record<string, unknown>[];
+  if (new Set(wanted.map((p) => String(p.seat_id))).size !== wanted.length) {
+    return refuse('Each passenger needs a different seat.', 'VALIDATION_ERROR', 400);
+  }
+
+  let subTotal = 0;
+  let tax = 0;
+  const passenger: Record<string, unknown>[] = [];
+  for (const p of wanted) {
+    const seat = seats.find((s) => String(s.seat_id) === String(p.seat_id));
+    const type = String(seat?.seat_type ?? '').trim();
+    if (!seat || NOT_FOR_SALE.has(type.toLowerCase())) {
+      return refuse("One of the chosen seats can't be booked. Please pick your seats again.", 'INVALID_SEAT', 422);
+    }
+    const seatName = String(seat.seat_name ?? '').trim();
+    if (seat.selection_status === true) {
+      return refuse(`Seat ${seatName} has just been taken. Please pick another seat.`, 'SEAT_UNAVAILABLE', 409);
+    }
+    const prices = priceList[type] ?? priceList[type.toLowerCase()];
+    const entry = Array.isArray(prices) ? prices.find((e) => isPlainObject(e) && String(e.currencyId) === KES_ID) : undefined;
+    const price = isPlainObject(entry) ? Number(entry.price) : NaN;
+    if (!Number.isFinite(price) || price <= 0) {
+      return refuse(`Seat ${seatName} has no price yet. Please pick another seat.`, 'INVALID_SEAT', 422);
+    }
+    subTotal += price;
+    tax += Number(isPlainObject(entry) ? entry.tax : 0) || 0;
+    passenger.push({
+      seat_id: String(seat.seat_id),
+      seat_name: seatName,
+      seat_type: type,
+      ticketPrice: money(price),
+      flatTicketPrice: money(price),
+      currency: 'KES',
+      flat_sale: 0,
+      name: p.name,
+      last_name: p.last_name,
+      gender: p.gender,
+      age: p.age,
+      mobileId: p.mobileId,
+      mobile: p.mobile,
+      nationality: p.nationality,
+      id_no: p.id_no,
+      email: p.email,
+    });
+  }
+
+  const operator = String(bus.company_name ?? '').trim();
+  const onwardticket = {
+    booking_date: body.booking_date,
+    route_id: String(bus.route_id),
+    token: bus.token,
+    pickup_id: body.pickup_id,
+    return_id: body.return_id,
+    source_city: body.source_city,
+    dest_city: body.dest_city,
+    bus_title: operator,
+    company_logo: String(bus.company_logo ?? ''),
+    company_name: operator,
+    currency: 'KES',
+    departure_time: String(bus.departure_time ?? ''),
+    boardingPointId: body.boardingPointId,
+    droppingPointId: body.droppingPointId,
+    boardingPointname: body.boardingPointname,
+    droppingPointname: body.droppingPointname,
+    bus_id: String(body.bus_id),
+    currencyId: KES_ID,
+    ticket_cnt: passenger.length,
+    bs_number_of_seats: seats.filter((s) => !['driver', 'door'].includes(String(s.seat_type ?? '').trim().toLowerCase())).length,
+    // The guide's example sends "f" and doesn't say what else it can be.
+    available_Seats: 'f',
+    sub_total: subTotal,
+    tax: money(tax),
+    total: subTotal + tax,
+    is_luggage: false,
+    c_address: '',
+    c_city: '',
+    c_state: '',
+    c_zip: '',
+    c_country: '',
+    is_flat_offer: false,
+    passenger,
+    isPromotional: bus.isPromotional === true,
+    promotionalTripMsg: '',
+    seatSelectionLimit: String(bus.seatSelectionLimit ?? '0'),
+    delayedFlag,
+    delayedDate,
+    c_email: body.c_email,
+    selectedSeat: passenger.map((p) => p.seat_id),
+    insuranceId: '',
+    insuranceAmount: 0,
+    insurancePlanName: '',
+  };
+  return { ok: true, body: { ticketDetail: { onwardticket, returnticket: {}, bookedThrough: 'web' }, ...WEB } };
+}
+
+/** Keeps only the towns the operator runs to, sorted by name. */
+function onlyOperatorTowns(body: unknown, config: UpstreamConfig): unknown {
+  const towns = OPERATOR_TOWNS[config.companyId];
+  if (!towns || !isPlainObject(body) || !Array.isArray(body.data)) {
+    return body;
+  }
+  const data = body.data
+    .filter((city) => isPlainObject(city) && towns.includes(String(city.id)))
+    .sort((a, b) => String(a.city_name).trim().localeCompare(String(b.city_name).trim()));
+  return { ...body, data };
+}
+
 // Paths are case sensitive and deliberately inconsistent: they match the API as-is.
 export const ENDPOINTS: Record<string, Endpoint> = {
   '/common/getCity': {
     // city_id is 0 for the list of source cities.
     schema: { city_id: id, city_type: oneOf('source', 'destination') },
     fixed: () => WEB,
+    reply: onlyOperatorTowns,
     limits: [{ scope: 'ip', max: 120, windowSeconds: MINUTE }],
     refuseWithoutLimiter: false,
   },
@@ -203,23 +363,36 @@ export const ENDPOINTS: Record<string, Endpoint> = {
   '/Ticket/RoundBooking': {
     schema: {
       bus_id: id,
-      travel_date: date,
-      boarding_point_id: id,
-      dropping_point_id: id,
-      passengers: list(
+      booking_date: date,
+      pickup_id: id,
+      return_id: id,
+      source_city: text(60),
+      dest_city: text(60),
+      boardingPointId: id,
+      droppingPointId: id,
+      boardingPointname: text(120),
+      droppingPointname: text(120),
+      passenger: list(
         object({
-          name: text(100),
-          id_number: text(20, /^[A-Za-z0-9]{5,20}$/),
-          seat_number: text(8),
-          seat_type: text(20),
+          seat_id: id,
+          name: text(50),
+          last_name: text(50),
+          gender: oneOf('M', 'F'),
+          age: text(3, /^\d{1,3}$/),
+          mobileId: oneOf('254'),
+          mobile: text(9, /^[17]\d{8}$/),
+          nationality: text(40),
+          id_no: text(20, /^[A-Za-z0-9]{5,20}$/),
+          email,
         }),
         1,
         6,
       ),
-      contact_email: email,
+      c_email: email,
+      // Only for the per-phone limit below; Travler takes each passenger's mobile instead.
       contact_phone: phone,
-      total_amount: amount,
     },
+    prepare: prepareBooking,
     limits: [
       { scope: 'phone', max: 5, windowSeconds: TEN_MINUTES },
       { scope: 'ip', max: 30, windowSeconds: TEN_MINUTES },
@@ -230,16 +403,17 @@ export const ENDPOINTS: Record<string, Endpoint> = {
   '/paymentGateway/init': {
     schema: {
       bookingRef: text(64),
-      queryoption: oneOf(1),
+      // 2: queryvalue is a phone number.
+      queryoption: oneOf(2),
       queryvalue: phone,
-      requestType: oneOf('STK_PUSH'),
+      requestType: oneOf('ticket'),
       // Wallet payment isn't offered yet, so only `false` goes through.
       isWalletApply: oneOf(false),
+      // No sponsored trips or discounts yet, so both legs are always the defaults.
       additionalInfo: object({ onward: paymentLeg, return: paymentLeg }),
-      total_amount: amount,
       paymentMethod: oneOf('mpesa'),
-      sourcetype: oneOf('web'),
     },
+    fixed: () => WEB,
     limits: [
       { scope: 'phone', max: 5, windowSeconds: TEN_MINUTES },
       { scope: 'ip', max: 30, windowSeconds: TEN_MINUTES },

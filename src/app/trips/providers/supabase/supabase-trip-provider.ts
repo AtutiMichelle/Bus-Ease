@@ -14,6 +14,7 @@ import {
   TripSearchContext,
 } from '../../../models/trip.model';
 import { getGuestToken } from '../../../utils/guest-token';
+import { passengerName } from '../../../models/booking.model';
 import { BookingRequest, TripProvider } from '../../trip-provider';
 import { TripApiError } from '../../trip-errors';
 import { seatLayoutFromSeats, tripFromBus } from './supabase-trip.adapters';
@@ -166,7 +167,7 @@ export class SupabaseTripProvider implements TripProvider {
       seatNumbers,
       heldBy,
       // Supabase keeps a mobile per passenger; the contact number fills it.
-      passengers: booking.passengers.map((p) => ({ seatNumber: p.seatName, fullName: p.fullName, mobile: booking.contact.phone })),
+      passengers: booking.passengers.map((p) => ({ seatNumber: p.seatName, fullName: passengerName(p), mobile: booking.contact.phone })),
       contactEmail: booking.contact.email,
     };
     writePending(pending);

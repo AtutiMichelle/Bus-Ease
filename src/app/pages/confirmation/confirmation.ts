@@ -6,13 +6,20 @@ import { BookingDraftService } from '../../services/booking-draft.service';
 import { AuthService } from '../../services/auth.service';
 import { TRIP_PROVIDER } from '../../trips/trip-provider.token';
 import { tripErrorMessage } from '../../trips/trip-errors';
-import { TripPassenger } from '../../models/booking.model';
+import { TripPassenger, passengerName } from '../../models/booking.model';
 import { TripSummary } from '../../components/trip-summary/trip-summary';
 import { isValidEmail, isValidIdNumber, normalizeKenyanPhone } from '../../utils/validation';
 import { VoiceStepsService } from '../../voice/voice-steps.service';
 import { DetailsVoiceStep } from '../../voice/steps/details-step';
 
-type PassengerField = 'fullName' | 'idNumber';
+type PassengerField = 'firstName' | 'lastName' | 'gender' | 'age' | 'nationality' | 'idNumber';
+
+/** Most travellers are Kenyan, so the field starts filled in. */
+const DEFAULT_NATIONALITY = 'Kenyan';
+
+/** Travler takes up to 50 characters per name and 40 for nationality. */
+const MAX_NAME_LENGTH = 50;
+const MAX_NATIONALITY_LENGTH = 40;
 
 @Component({
   imports: [RouterLink, FormsModule, TripSummary, DecimalPipe],
@@ -31,6 +38,7 @@ export class Confirmation {
   private router = inject(Router);
 
   draft = this.bookingDraft.current;
+  readonly passengerName = passengerName;
 
   passengers = signal<TripPassenger[]>([]);
   contactEmail = signal('');
@@ -89,13 +97,21 @@ export class Confirmation {
     }
     const previous = new Map((draft.passengers ?? []).map((p) => [p.seatName, p]));
     this.passengers.set(
-      draft.seats.map((seat) => ({
-        seatName: seat.name,
-        seatType: seat.type,
-        fullName: previous.get(seat.name)?.fullName ?? '',
-        idNumber: previous.get(seat.name)?.idNumber ?? '',
-        price: seat.price,
-      })),
+      draft.seats.map((seat) => {
+        const before = previous.get(seat.name);
+        return {
+          seatId: seat.id,
+          seatName: seat.name,
+          seatType: seat.type,
+          firstName: before?.firstName ?? '',
+          lastName: before?.lastName ?? '',
+          gender: before?.gender ?? '',
+          age: before?.age ?? '',
+          nationality: before?.nationality ?? DEFAULT_NATIONALITY,
+          idNumber: before?.idNumber ?? '',
+          price: seat.price,
+        };
+      }),
     );
     this.expandedRows.set(new Set(draft.seats.map((_, i) => i)));
 
@@ -110,8 +126,32 @@ export class Confirmation {
     inject(DestroyRef).onDestroy(leaveVoiceStep);
   }
 
-  nameError(p: TripPassenger): string {
-    return p.fullName.trim().length >= 2 ? '' : 'Enter the passenger’s full name.';
+  firstNameError(p: TripPassenger): string {
+    return nameProblem(p.firstName, 'first name');
+  }
+
+  lastNameError(p: TripPassenger): string {
+    return nameProblem(p.lastName, 'last name');
+  }
+
+  genderError(p: TripPassenger): string {
+    return p.gender ? '' : 'Choose a gender.';
+  }
+
+  ageError(p: TripPassenger): string {
+    const age = p.age.trim();
+    if (!age) {
+      return 'Enter the passenger’s age.';
+    }
+    return /^\d{1,3}$/.test(age) && Number(age) <= 120 ? '' : 'Enter the age in whole years.';
+  }
+
+  nationalityError(p: TripPassenger): string {
+    const nationality = p.nationality.trim();
+    if (!nationality) {
+      return 'Enter a nationality.';
+    }
+    return nationality.length <= MAX_NATIONALITY_LENGTH ? '' : `Use ${MAX_NATIONALITY_LENGTH} characters or fewer.`;
   }
 
   idError(p: TripPassenger): string {
@@ -122,7 +162,14 @@ export class Confirmation {
   }
 
   isPassengerComplete(p: TripPassenger): boolean {
-    return !this.nameError(p) && !this.idError(p);
+    return (
+      !this.firstNameError(p) &&
+      !this.lastNameError(p) &&
+      !this.genderError(p) &&
+      !this.ageError(p) &&
+      !this.nationalityError(p) &&
+      !this.idError(p)
+    );
   }
 
   toggleExpand(index: number): void {
@@ -159,15 +206,22 @@ export class Confirmation {
 
     const phone = normalizeKenyanPhone(this.contactPhone()) ?? '';
     const contact = { email: this.contactEmail().trim(), phone };
-    const passengers = this.passengers().map((p) => ({ ...p, fullName: p.fullName.trim(), idNumber: p.idNumber.trim() }));
+    const passengers = this.passengers().map((p) => ({
+      ...p,
+      firstName: p.firstName.trim(),
+      lastName: p.lastName.trim(),
+      age: p.age.trim(),
+      nationality: p.nationality.trim(),
+      idNumber: p.idNumber.trim(),
+    }));
 
     this.errorMessage.set('');
     this.submitting.set(true);
     try {
       const hold = await this.tripProvider.createBooking({
         trip: draft.trip,
-        boardingPointId: draft.boarding.id,
-        droppingPointId: draft.dropping.id,
+        boarding: draft.boarding,
+        dropping: draft.dropping,
         passengers,
         contact,
         totalAmount: this.totalPrice(),
@@ -182,4 +236,12 @@ export class Confirmation {
       this.submitting.set(false);
     }
   }
+}
+
+function nameProblem(value: string, label: string): string {
+  const name = value.trim();
+  if (!name) {
+    return `Enter the passenger’s ${label}.`;
+  }
+  return name.length <= MAX_NAME_LENGTH ? '' : `Use ${MAX_NAME_LENGTH} characters or fewer.`;
 }

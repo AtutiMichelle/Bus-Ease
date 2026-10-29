@@ -17,6 +17,8 @@ const MESSAGES_BY_CODE: Record<string, string> = {
   SEAT_UNAVAILABLE: 'One or more of your seats were just taken. Please pick different seats.',
   SEATS_UNAVAILABLE: 'One or more of your seats were just taken. Please pick different seats.',
   BOOKING_EXPIRED: 'Your booking hold has expired. Please select your seats again.',
+  TRIP_UNAVAILABLE: 'This bus is no longer taking bookings. Please search again.',
+  INVALID_SEAT: "One of your seats can't be booked. Please pick your seats again.",
   NOT_FOUND: "We couldn't find what you were looking for. Please try again.",
   VALIDATION_ERROR: 'Some booking details look wrong. Please check them and try again.',
 };

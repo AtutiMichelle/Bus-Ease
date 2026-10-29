@@ -6,6 +6,7 @@ import {
   PaymentStatus,
   PrintableTicket,
   SeatLayout,
+  StopPoint,
   Trip,
   TripSearchContext,
 } from '../models/trip.model';
@@ -16,8 +17,8 @@ export type TripProviderName = 'travler' | 'supabase';
 
 export interface BookingRequest {
   trip: Trip;
-  boardingPointId: string;
-  droppingPointId: string;
+  boarding: StopPoint;
+  dropping: StopPoint;
   passengers: TripPassenger[];
   contact: BookingContact;
   totalAmount: number;

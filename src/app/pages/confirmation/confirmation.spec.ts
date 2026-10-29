@@ -56,9 +56,16 @@ describe('Confirmation', () => {
 
   /** Fills every field with valid answers. */
   function fillIn(page: Confirmation) {
-    page.updatePassenger(0, 'fullName', '  Jane Wanjiku ');
+    page.updatePassenger(0, 'firstName', '  Jane ');
+    page.updatePassenger(0, 'lastName', ' Wanjiku ');
+    page.updatePassenger(0, 'gender', 'F');
+    page.updatePassenger(0, 'age', ' 34 ');
     page.updatePassenger(0, 'idNumber', ' 12345678 ');
-    page.updatePassenger(1, 'fullName', 'Otieno Ouma');
+    page.updatePassenger(1, 'firstName', 'Otieno');
+    page.updatePassenger(1, 'lastName', 'Ouma');
+    page.updatePassenger(1, 'gender', 'M');
+    page.updatePassenger(1, 'age', '41');
+    page.updatePassenger(1, 'nationality', ' Ugandan ');
     page.updatePassenger(1, 'idNumber', 'A1234567');
     page.contactEmail.set(' jane@example.com ');
     page.contactPhone.set('0712 345 678');
@@ -91,17 +98,35 @@ describe('Confirmation', () => {
       pickedDraft({
         passengers: [
           {
+            seatId: 's1',
             seatName: '1',
             seatType: 'vip',
-            fullName: 'Otieno Ouma',
+            firstName: 'Otieno',
+            lastName: 'Ouma',
+            gender: 'M',
+            age: '41',
+            nationality: 'Ugandan',
             idNumber: 'A1234567',
             price: 2200,
           },
         ],
       }),
     );
-    expect(page.passengers()[1].fullName).toBe('Otieno Ouma');
-    expect(page.passengers()[0].fullName).toBe('');
+    expect(page.passengers()[1]).toMatchObject({ firstName: 'Otieno', lastName: 'Ouma', gender: 'M', nationality: 'Ugandan' });
+    expect(page.passengers()[0]).toMatchObject({ firstName: '', gender: '', nationality: 'Kenyan' });
+  });
+
+  it('asks for every detail Travler needs', () => {
+    const { page } = setUp();
+    const blank = page.passengers()[0];
+    expect(page.firstNameError(blank)).not.toBe('');
+    expect(page.lastNameError(blank)).not.toBe('');
+    expect(page.genderError(blank)).not.toBe('');
+    expect(page.ageError(blank)).not.toBe('');
+    expect(page.ageError({ ...blank, age: '3.5' })).not.toBe('');
+    expect(page.ageError({ ...blank, age: '7' })).toBe('');
+    expect(page.nationalityError({ ...blank, nationality: ' ' })).not.toBe('');
+    expect(page.isPassengerComplete(blank)).toBe(false);
   });
 
   it('starts the contact details from the signed-in account', () => {
@@ -141,20 +166,30 @@ describe('Confirmation', () => {
 
     expect(provider.createBooking).toHaveBeenCalledWith({
       trip: TRIP,
-      boardingPointId: 'b1',
-      droppingPointId: 'd1',
+      boarding: { id: 'b1', name: 'Town', time: '08:00 AM' },
+      dropping: { id: 'd1', name: 'Mombasa', time: '04:00 PM' },
       passengers: [
         {
+          seatId: 's7',
           seatName: '7',
           seatType: 'normal',
-          fullName: 'Jane Wanjiku',
+          firstName: 'Jane',
+          lastName: 'Wanjiku',
+          gender: 'F',
+          age: '34',
+          nationality: 'Kenyan',
           idNumber: '12345678',
           price: 1500,
         },
         {
+          seatId: 's1',
           seatName: '1',
           seatType: 'vip',
-          fullName: 'Otieno Ouma',
+          firstName: 'Otieno',
+          lastName: 'Ouma',
+          gender: 'M',
+          age: '41',
+          nationality: 'Ugandan',
           idNumber: 'A1234567',
           price: 2200,
         },

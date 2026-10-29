@@ -50,7 +50,7 @@
 
         @if (booking(); as b) {
           <div class="ticket-route">
-            <p class="route-cities">{{ b.trip.from }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i> {{ b.trip.to }}</p>
+            <p class="route-cities">{{ b.trip.from | cityName }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i> {{ b.trip.to | cityName }}</p>
             <p class="route-date">{{ b.trip.date }}</p>
           </div>
 
@@ -95,7 +95,7 @@
               @for (p of b.passengers; track p.seatName) {
                 <li>
                   <span class="passenger-seat">Seat {{ p.seatName }}</span>
-                  <span>{{ p.fullName }}</span>
+                  <span>{{ p.firstName }} {{ p.lastName }}</span>
                   <span class="passenger-id">ID {{ p.idNumber }}</span>
                 </li>
               }

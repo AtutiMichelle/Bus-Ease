@@ -9,6 +9,7 @@ import { findCities, isoPlusDays, parseDate, saysCancel, saysHello, saysNo, says
 import { ChatMessage, ModelStep, ToolCall, VoiceModelService } from './voice-model.service';
 import { VoiceAction, VoiceField, VoiceStateService } from './voice-state.service';
 import { VoiceReply, VoiceStep, VoiceStepModel, VoiceStepsService, VoiceToolResult } from './voice-steps.service';
+import { cityName } from '../utils/city-name';
 
 /** What the user has asked for so far. */
 interface TripRequest {
@@ -700,7 +701,7 @@ export class VoiceAssistantService {
       const sources = await this.trips.getCities();
       return {
         text: trip.destinationName
-          ? `Going to ${trip.destinationName}. Where are you leaving from?`
+          ? `Going to ${cityName(trip.destinationName)}. Where are you leaving from?`
           : 'Where are you leaving from?',
         chips: this.cityChips(sources),
       };
@@ -711,19 +712,19 @@ export class VoiceAssistantService {
       const destinations = (await this.trips.getCities(origin.id)).filter((city) => city.id !== origin.id);
       if (destinations.length === 0) {
         trip.origin = undefined;
-        return { text: `I couldn't find any buses leaving from ${origin.name}. Where else could you leave from?` };
+        return { text: `I couldn't find any buses leaving from ${cityName(origin.name)}. Where else could you leave from?` };
       }
       const missing = trip.destinationName;
       trip.destinationName = undefined;
       return {
         text: missing
-          ? `I couldn't find buses from ${origin.name} to ${missing}. Where would you like to go?`
-          : `Leaving from ${origin.name}. Where are you going?`,
+          ? `I couldn't find buses from ${cityName(origin.name)} to ${cityName(missing)}. Where would you like to go?`
+          : `Leaving from ${cityName(origin.name)}. Where are you going?`,
         chips: this.cityChips(destinations),
       };
     }
 
-    const route = `${origin.name} to ${trip.destination.name}`;
+    const route = `${cityName(origin.name)} to ${cityName(trip.destination.name)}`;
     if (!trip.date) {
       const today = todayDateString();
       return {
@@ -740,7 +741,7 @@ export class VoiceAssistantService {
   }
 
   private cityChips(cities: City[]): string[] {
-    return cities.slice(0, MAX_CHIPS).map((city) => city.name);
+    return cities.slice(0, MAX_CHIPS).map((city) => cityName(city.name));
   }
 
   /** What the search card should show for the trip so far. */

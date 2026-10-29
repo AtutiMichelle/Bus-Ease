@@ -153,70 +153,85 @@ export interface TravlerPointsResponse {
   error?: TravlerErrorBody;
 }
 
-/* POST /Ticket/RoundBooking */
+/* POST /Ticket/RoundBooking
+ * What the browser sends. The `travler` edge function turns it into the
+ * full Create Booking body from the API guide, adding the trip token, route,
+ * times and prices from Travler itself. */
 
 export interface TravlerBookingPassenger {
+  seat_id: string;
   name: string;
-  id_number: string;
-  seat_number: string;
-  seat_type: string;
+  last_name: string;
+  gender: 'M' | 'F';
+  age: string;
+  /** Country dialling code, "254". */
+  mobileId: string;
+  /** The number after the dialling code, 7XXXXXXXX or 1XXXXXXXX. */
+  mobile: string;
+  nationality: string;
+  id_no: string;
+  email: string;
 }
 
 export interface TravlerBookingRequest {
   bus_id: string;
-  travel_date: string;
-  boarding_point_id: string;
-  dropping_point_id: string;
-  passengers: TravlerBookingPassenger[];
-  contact_email: string;
+  booking_date: string;
+  /** Source and destination city ids. */
+  pickup_id: string;
+  return_id: string;
+  source_city: string;
+  dest_city: string;
+  boardingPointId: string;
+  droppingPointId: string;
+  boardingPointname: string;
+  droppingPointname: string;
+  passenger: TravlerBookingPassenger[];
+  c_email: string;
+  /** 2547XXXXXXXX. Only used by the edge function's per-phone limit. */
   contact_phone: string;
-  total_amount: number;
 }
 
-export interface TravlerBooking {
-  booking_reference: string;
-  status: string;
-  total_amount: number | string;
-  currency: string;
-  bus_id?: string;
-  travel_date?: string;
-  boarding_point_id?: string;
-  dropping_point_id?: string;
-  passengers?: TravlerBookingPassenger[];
-  contact_email?: string;
-  contact_phone?: string;
-  /** Not sent by the mock; used if the real API ever includes it. */
-  expires_at?: string;
+/** Not wrapped in `data`. */
+export interface TravlerBookingResponse {
+  isSuccess: boolean;
+  booking_reference?: string;
+  /** One per passenger. */
+  ticket_number?: string[];
+  /** Seats someone else took first, when the booking partly failed. */
+  alreadySeatBooked?: unknown[];
+  message?: string;
+  msg?: string;
+  error?: TravlerErrorBody;
 }
 
 /* POST /paymentGateway/init */
 
 export interface TravlerPaymentLegInfo {
-  sponsorTrip: boolean;
-  discountId: string | null;
+  sponsorTrip: false;
+  discountId: 0;
 }
 
 export interface TravlerPaymentInitRequest {
   bookingRef: string;
-  queryoption: 1;
+  /** 2: queryvalue is a phone number. */
+  queryoption: 2;
   /** Payer phone, 2547XXXXXXXX */
   queryvalue: string;
-  requestType: 'STK_PUSH';
+  requestType: 'ticket';
   isWalletApply: false;
   additionalInfo: {
     onward: TravlerPaymentLegInfo;
     return: TravlerPaymentLegInfo;
   };
-  total_amount: number;
   paymentMethod: 'mpesa';
-  sourcetype: 'web';
 }
 
-export interface TravlerPaymentInit {
-  payment_reference: string;
-  booking_reference?: string;
-  status: string;
-  gateway_reference: string | null;
+/** Not wrapped in `data`. Only says the prompt was sent, not that it was paid. */
+export interface TravlerPaymentInitResponse {
+  isSuccess: boolean;
+  ticketNumber?: string;
+  msg?: string;
+  error?: TravlerErrorBody;
 }
 
 /* POST /paymentGateway/checkMpesaPayment */

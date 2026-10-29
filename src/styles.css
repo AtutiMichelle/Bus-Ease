@@ -4,6 +4,8 @@
 
 html {
   height: 100%;
+  /* Lato runs larger than the old serif, so every rem size comes down a step. */
+  font-size: 93.75%;
 }
 
 body {

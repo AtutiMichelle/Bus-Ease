@@ -54,7 +54,7 @@ export interface Trip {
 
 export interface LayoutSeat {
   id: string;
-  /** Printed seat label, and the value the booking request sends as seat_number. */
+  /** Printed seat label. */
   name: string;
   /** The API's own seat type key (e.g. "normal", "vip"), sent back when booking. */
   type: string;
@@ -95,6 +95,8 @@ export interface BookingHold {
   currency: string;
   /** ISO timestamp when the unpaid hold lapses. */
   heldUntil: string;
+  /** One per passenger, for sources that issue them at booking time. */
+  ticketNumbers?: string[];
 }
 
 export interface PaymentStart {

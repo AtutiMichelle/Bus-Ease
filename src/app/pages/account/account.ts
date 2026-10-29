@@ -10,6 +10,7 @@ import { SavedBooking } from '../../models/booking.model';
 import { WalletTransaction } from '../../models/wallet.model';
 import { AccountPreferencesService } from '../../services/account-preferences.service';
 import { AccountBooking, BookingStatus, NotificationSettings } from '../../models/account.model';
+import { CityNamePipe } from '../../utils/city-name';
 
 type AccountTab = 'bookings' | 'wallet' | 'profile' | 'settings';
 type BookingFilter = 'all' | 'upcoming' | 'completed' | 'cancelled';
@@ -92,7 +93,7 @@ function toAccountBooking(saved: SavedBooking): AccountBooking {
 }
 
 @Component({
-  imports: [RouterLink, FormsModule, DecimalPipe],
+  imports: [RouterLink, FormsModule, DecimalPipe, CityNamePipe],
   selector: 'app-account',
   styleUrl: './account.css',
   templateUrl: './account.html',

@@ -21,7 +21,7 @@
         @for (city of originSuggestions(); track city.id) {
           <li>
             <button type="button" (mousedown)="$event.preventDefault()" (click)="selectOrigin(city)">
-              {{ city.name }}
+              {{ city.name | cityName }}
             </button>
           </li>
         }
@@ -57,7 +57,7 @@
         @for (city of destinationSuggestions(); track city.id) {
           <li>
             <button type="button" (mousedown)="$event.preventDefault()" (click)="selectDestination(city)">
-              {{ city.name }}
+              {{ city.name | cityName }}
             </button>
           </li>
         }

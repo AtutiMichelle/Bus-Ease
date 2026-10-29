@@ -185,9 +185,9 @@
   grid-row: 1 / -1;
   display: grid;
   grid-template-rows: subgrid;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
-  padding: 14px 14px 14px 18px;
+  padding: 10px 14px 10px 18px;
   box-sizing: border-box;
 }
 
@@ -324,13 +324,17 @@
   gap: 4px;
 }
 
-.bus-info-right,
 .time-block-end {
   flex: 0 0 250px;
   min-width: 0;
 }
 
 .bus-info-right {
+  /* Narrower than .time-block-end: "seats left" only needs ~85px, and the
+     rest of a 250px column was empty space squeezing the bus type text
+     beside it into 4+ lines. The center column takes the difference. */
+  flex: 0 0 120px;
+  min-width: 0;
   display: flex;
   justify-content: flex-end;
 }
@@ -347,13 +351,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 58px;
-  height: 58px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
   overflow: hidden;
   background-color: var(--color-soft-bg, #e8f1fc);
   color: var(--color-primary-light, #1e88e5);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 800;
   letter-spacing: 0.3px;
 }
@@ -381,7 +385,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 800;
   text-transform: uppercase;
   color: var(--color-primary, #12294d);
@@ -392,14 +396,14 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--color-text, #3a3a3a);
 }
 
 .bus-rating-value i {
   color: var(--color-accent-dark, #d68c0f);
-  font-size: 16px;
+  font-size: 15px;
 }
 
 .bus-rating-count {
@@ -409,7 +413,7 @@
 }
 
 .bus-seater {
-  font-size: 17px;
+  font-size: 14px;
   color: var(--color-text, #3a3a3a);
 }
 
@@ -420,7 +424,7 @@
 }
 
 .bus-amenity-icons i {
-  font-size: 15px;
+  font-size: 14px;
   color: var(--color-text, #3a3a3a);
 }
 
@@ -438,7 +442,7 @@
   margin: 0;
   font-family: 'IBM Plex Mono', 'Courier New', monospace;
   font-variant-numeric: tabular-nums;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 600;
   letter-spacing: 0.3px;
   white-space: nowrap;
@@ -447,7 +451,7 @@
 
 .time-label {
   margin: 3px 0 0 0;
-  font-size: 16px;
+  font-size: 15px;
   color: var(--color-text, #3a3a3a);
 }
 
@@ -541,7 +545,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 17px;
+  font-size: 16px;
   color: var(--color-text, #3a3a3a);
 }
 
@@ -598,7 +602,7 @@
   box-sizing: border-box;
   background-color: var(--color-soft-bg, #e8f1fc);
   border-radius: 0 12px 12px 0;
-  padding: 14px 16px 14px 14px;
+  padding: 10px 16px 10px 14px;
 }
 
 .route-type-badge {
@@ -651,7 +655,7 @@
 }
 
 .class-price {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 800;
   white-space: nowrap;
   color: var(--color-text, #3a3a3a);
@@ -682,7 +686,7 @@
   border: none;
   border-radius: 6px;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 15px;
   cursor: pointer;
   box-sizing: border-box;
   box-shadow: 0 6px 16px rgba(235, 31, 26, 0.25);

@@ -308,6 +308,27 @@
   }
 }
 
+/* Phones: tighter hero text so the Search button clears the browser's
+   bottom bar on first load. */
+@media (max-width: 600px) {
+  .departure-board {
+    margin-bottom: var(--space-2, 8px);
+  }
+
+  .ticket-headline h1 {
+    font-size: 1.75rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.1rem;
+  }
+
+  .hero-search-card {
+    margin-top: var(--space-3, 16px);
+    padding-top: var(--space-3, 16px);
+  }
+}
+
 /* Top Routes */
 /* Top Routes */
 .top-routes {

@@ -221,7 +221,8 @@
   border-radius: var(--radius-md, 8px);
   box-shadow: 0 12px 24px rgba(26, 58, 107, 0.18);
   z-index: 20;
-  max-height: 220px;
+  /* Shrinks to the space left above the phone keyboard, see fitSuggestions. */
+  max-height: var(--suggestion-max-height, 220px);
   overflow-y: auto;
   /* This list always sits on its own white surface regardless of the host's
      background, so pin --color-text back to a dark default here — otherwise
@@ -422,10 +423,18 @@ app-voice-mic-button {
     margin-top: 0;
   }
 
-  /* Stacked form: the mic goes full width and shows its text label. */
+  /* Stacked form: the mic goes full width and shows its text label, and
+     sits under Search so the main button stays higher up on phones. */
   :host(.ticket) app-voice-mic-button {
     --voice-mic-width: 100%;
     --voice-mic-label: inline;
     margin-top: 0;
+    order: 1;
+  }
+}
+
+@media (max-width: 600px) {
+  :host(.ticket) .search-form {
+    gap: 12px;
   }
 }

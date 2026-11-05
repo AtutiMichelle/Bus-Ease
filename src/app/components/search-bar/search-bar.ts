@@ -55,6 +55,11 @@ export class SearchBar {
 
   showCalendar = signal(false);
   private dateField = viewChild<ElementRef<HTMLElement>>('dateField');
+  private destinationInput = viewChild<ElementRef<HTMLInputElement>>('destinationInput');
+  private searchButton = viewChild<ElementRef<HTMLButtonElement>>('searchButton');
+  private host: ElementRef<HTMLElement> = inject(ElementRef);
+  /** Removes the keyboard listeners added while a city field has focus. */
+  private stopKeyboardWatch: (() => void) | null = null;
   calendarViewYear = signal(new Date().getFullYear());
   calendarViewMonth = signal(new Date().getMonth());
 
@@ -241,12 +246,100 @@ export class SearchBar {
     this.originValue.set(cityName(city.name));
     this.setOriginId(city.id);
     this.showOriginSuggestions.set(false);
+    // Straight on to "To". It's still disabled until the next render, so
+    // enable it here: focusing inside the tap keeps the phone keyboard open.
+    const next = this.destinationInput()?.nativeElement;
+    if (next) {
+      next.disabled = false;
+      next.focus();
+    }
   }
 
   selectDestination(city: City): void {
     this.destinationValue.set(cityName(city.name));
     this.destinationCityId.set(city.id);
     this.showDestinationSuggestions.set(false);
+    // On to the date: close the keyboard so the calendar isn't hidden by it.
+    (document.activeElement as HTMLElement | null)?.blur();
+    this.syncCalendarToSelection();
+    this.showCalendar.set(true);
+    this.scrollToTop(this.dateField()?.nativeElement.closest('.field'));
+  }
+
+  onCityFocus(field: 'origin' | 'destination', input: HTMLInputElement): void {
+    (field === 'origin' ? this.showOriginSuggestions : this.showDestinationSuggestions).set(true);
+    if (!this.isStacked()) {
+      return;
+    }
+    const fieldEl = input.closest<HTMLElement>('.field');
+    this.scrollToTop(fieldEl);
+    this.watchKeyboard(input, fieldEl);
+  }
+
+  onCityBlur(field: 'origin' | 'destination'): void {
+    (field === 'origin' ? this.showOriginSuggestions : this.showDestinationSuggestions).set(false);
+    this.stopKeyboardWatch?.();
+    this.stopKeyboardWatch = null;
+  }
+
+  /** Phones and small tablets, where the form is one column and the
+   * on-screen keyboard covers its lower half. Matches search-bar.css. */
+  private isStacked(): boolean {
+    return window.matchMedia?.('(max-width: 860px)').matches ?? false;
+  }
+
+  /** Brings a field up to just under the fixed header, leaving room below
+   * it for its dropdown or calendar. Phones and small tablets only. */
+  private scrollToTop(el: Element | null | undefined): void {
+    if (!el || !this.isStacked()) {
+      return;
+    }
+    const headerBottom = document.querySelector('.site-header')?.getBoundingClientRect().bottom ?? 0;
+    const top = el.getBoundingClientRect().top + window.scrollY - Math.max(headerBottom, 0) - 8;
+    const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: Math.max(top, 0), behavior: reducedMotion ? 'auto' : 'smooth' });
+  }
+
+  /** While a city field has focus, keep it in view as the keyboard opens and
+   * size its dropdown to the space left above the keyboard. */
+  private watchKeyboard(input: HTMLInputElement, fieldEl: HTMLElement | null): void {
+    this.stopKeyboardWatch?.();
+    const viewport = window.visualViewport;
+    const fit = () => this.fitSuggestions(input);
+    const onResize = () => {
+      this.scrollToTop(fieldEl);
+      fit();
+    };
+    viewport?.addEventListener('resize', onResize);
+    viewport?.addEventListener('scroll', fit);
+    window.addEventListener('scroll', fit, { passive: true });
+    fit();
+    this.stopKeyboardWatch = () => {
+      viewport?.removeEventListener('resize', onResize);
+      viewport?.removeEventListener('scroll', fit);
+      window.removeEventListener('scroll', fit);
+      this.host.nativeElement.style.removeProperty('--suggestion-max-height');
+    };
+  }
+
+  private fitSuggestions(input: HTMLInputElement): void {
+    const viewport = window.visualViewport;
+    const visibleBottom = viewport ? viewport.offsetTop + viewport.height : window.innerHeight;
+    // 6px gap above the list, 14px of its own padding and border, and 12px
+    // of breathing room above the keyboard.
+    const space = Math.floor(visibleBottom - input.getBoundingClientRect().bottom - 32);
+    const height = Math.max(120, Math.min(220, space));
+    this.host.nativeElement.style.setProperty('--suggestion-max-height', `${height}px`);
+  }
+
+  /** After the date, show the Search button. */
+  private scrollToSearch(): void {
+    const button = this.searchButton()?.nativeElement;
+    if (!button || !this.isStacked()) {
+      return;
+    }
+    const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    button.scrollIntoView({ block: 'center', behavior: reducedMotion ? 'auto' : 'smooth' });
   }
 
   get sameOriginDestination(): boolean {
@@ -275,6 +368,11 @@ export class SearchBar {
       const month = digits.slice(2, 4);
       const year = digits.slice(4, 8);
       this.dateValue.set(`${year}-${month}-${day}`);
+      // A full, valid date typed on a phone: close the keyboard and show Search.
+      if (this.isStacked()) {
+        inputEl.blur();
+        this.scrollToSearch();
+      }
     }
 
     // Wait for Angular to write the reformatted value into the DOM before
@@ -362,6 +460,14 @@ export class SearchBar {
     this.dateDisplayValue.set(this.isoToDisplay(iso));
     this.dateError.set(null);
     this.showCalendar.set(false);
+  }
+
+  /** A day tapped in the calendar. Voice uses selectDate, which doesn't scroll. */
+  pickDate(iso: string): void {
+    this.selectDate(iso);
+    if (this.dateValue() === iso) {
+      this.scrollToSearch();
+    }
   }
 
   private digitsToDisplay(digits: string): string {

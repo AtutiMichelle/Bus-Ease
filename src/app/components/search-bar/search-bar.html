@@ -4,13 +4,14 @@
     <div class="input-wrap" [class.voice-filled]="voice.filledFields().includes('origin')">
       <i class="field-icon fa-solid fa-location-dot" aria-hidden="true"></i>
       <input
+        #originInput
         id="sb-origin"
         type="text"
         placeholder="Leaving from…"
         [ngModel]="originValue()"
         (ngModelChange)="onOriginInput($event)"
-        (focus)="showOriginSuggestions.set(true)"
-        (blur)="showOriginSuggestions.set(false)"
+        (focus)="onCityFocus('origin', originInput)"
+        (blur)="onCityBlur('origin')"
         name="origin"
         autocomplete="off"
         required
@@ -39,14 +40,15 @@
     <div class="input-wrap" [class.voice-filled]="voice.filledFields().includes('destination')">
       <i class="field-icon fa-solid fa-location-dot" aria-hidden="true"></i>
       <input
+        #destinationInput
         id="sb-destination"
         type="text"
         [placeholder]="originCityId() ? 'Going to…' : 'Pick where you leave from first'"
         [disabled]="!originCityId()"
         [ngModel]="destinationValue()"
         (ngModelChange)="onDestinationInput($event)"
-        (focus)="showDestinationSuggestions.set(true)"
-        (blur)="showDestinationSuggestions.set(false)"
+        (focus)="onCityFocus('destination', destinationInput)"
+        (blur)="onCityBlur('destination')"
         name="destination"
         autocomplete="off"
         required
@@ -131,7 +133,7 @@
                   [class.selected]="cell.selected"
                   [class.today]="cell.isToday"
                   [disabled]="cell.disabled"
-                  (click)="selectDate(cell.iso)"
+                  (click)="pickDate(cell.iso)"
                 >
                   {{ cell.day }}
                 </button>
@@ -152,7 +154,7 @@
     <app-voice-mic-button />
   }
 
-  <button type="submit" class="search-cta" [disabled]="!canSearch">
+  <button #searchButton type="submit" class="search-cta" [disabled]="!canSearch">
     Search Buses
   </button>
 </form>

@@ -4,7 +4,9 @@ import { VoiceStateService } from '../voice-state.service';
 /** Square mic button that sits inline in a form row, next to its submit
  * button. Icon only by default. The parent can stretch it and show its text
  * label (for a stacked mobile form) by setting two custom properties:
- * `--voice-mic-width: 100%` and `--voice-mic-label: inline`. */
+ * `--voice-mic-width: 100%` and `--voice-mic-label: inline`. Its size and
+ * shape can be set with `--voice-mic-height`, `--voice-mic-border-width`,
+ * `--voice-mic-radius` and `--voice-mic-font-size`. */
 @Component({
   selector: 'app-voice-mic-button',
   styleUrl: './voice-mic-button.css',

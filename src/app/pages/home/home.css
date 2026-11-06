@@ -376,11 +376,25 @@
   box-shadow: 0 12px 28px rgba(26, 58, 107, 0.16);
 }
 
-.photo {
+.photo-wrap {
   position: relative;
+}
+
+.photo {
+  display: block;
+  width: 100%;
   height: 130px;
-  background-size: cover;
-  background-position: center;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Phone-only parts of the route card and the steps row, shown in the
+   max-width: 639px block at the end of this file. */
+.photo-tag,
+.route-hint,
+.route-arrow,
+.how-steps {
+  display: none;
 }
 
 .panel {
@@ -764,5 +778,234 @@
 
   .app-download-actions {
     justify-content: center;
+  }
+}
+/* Phones: the search is the main focus. The headline sits in a navy band
+   that runs on from the header, the card overlaps the band, the steps move
+   below the card, and Popular Routes becomes a single column. */
+@media (max-width: 639px) {
+  .hero-illustrated-content {
+    padding: 0 var(--space-3, 16px) var(--space-4, 24px);
+  }
+
+  .eticket-badge,
+  .trust-line,
+  .departure-board,
+  .hero-rule,
+  .hero-subtitle,
+  .how-it-works-compact {
+    display: none;
+  }
+
+  /* Full width, out past the container's 16px side padding. */
+  .ticket-headline {
+    position: relative;
+    margin: 0 calc(-1 * var(--space-3, 16px));
+    padding: 14px var(--space-3, 16px) 96px;
+    border-radius: 0 0 28px 28px;
+    background-color: var(--color-primary, #12294d);
+  }
+
+  /* The header's gradient, carried down so there's no seam at its bottom
+     edge, then faded out so the headline sits on plain navy. The stops line
+     up with the header's 120deg gradient along its 64px bottom edge. */
+  .ticket-headline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: linear-gradient(
+      90deg,
+      var(--color-primary, #12294d) -55.4px,
+      var(--color-primary-mid, #1c4a7a) calc(100% - 18.5px)
+    );
+    --band-fade: linear-gradient(
+      to bottom,
+      #000,
+      rgba(0, 0, 0, 0.5) 35%,
+      rgba(0, 0, 0, 0.2) 60%,
+      rgba(0, 0, 0, 0.06) 80%,
+      transparent
+    );
+    -webkit-mask-image: var(--band-fade);
+    mask-image: var(--band-fade);
+    pointer-events: none;
+  }
+
+  .ticket-headline h1 {
+    position: relative;
+    font-size: 29px;
+    font-weight: 900;
+    line-height: 1.15;
+    color: #fff;
+  }
+
+  /* A brighter red than --color-accent, only here, so it reads on navy. */
+  .ticket-headline h1 em {
+    display: block;
+    font-weight: 900;
+    color: #f0383d;
+  }
+
+  .hero-search-card {
+    margin-top: -78px;
+    padding: 20px var(--space-3, 16px);
+    border-radius: 20px;
+    box-shadow: 0 20px 44px rgba(30, 51, 84, 0.26);
+  }
+
+  .how-steps {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-2, 8px);
+    margin: 22px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Dashed line from the first circle's center to the last one's. */
+  .how-steps::before {
+    content: '';
+    position: absolute;
+    top: 16px;
+    left: calc(100% / 6);
+    right: calc(100% / 6);
+    border-top: 2px dashed var(--color-border, #e4dfd6);
+  }
+
+  .how-step {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2, 8px);
+    text-align: center;
+  }
+
+  .how-step-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background-color: var(--color-primary, #12294d);
+    /* Ring in the page color, so the line looks like it stops at the circle. */
+    box-shadow: 0 0 0 4px var(--color-bg, #faf8f5);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .how-step:last-child .how-step-circle {
+    background-color: var(--color-accent, #eb1f1a);
+  }
+
+  .how-step-title {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--color-primary, #12294d);
+  }
+
+  .top-routes {
+    padding: var(--space-4, 24px) 0 var(--space-5, 32px);
+    text-align: left;
+  }
+
+  .top-routes .section-container {
+    padding: 0 var(--space-3, 16px);
+  }
+
+  .top-routes h2 {
+    margin: 0 0 var(--space-3, 16px);
+    padding: 0;
+    font-size: 22px;
+    font-weight: 900;
+    text-align: left;
+  }
+
+  .route-cards {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .route-card {
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(18, 41, 77, 0.08);
+  }
+
+  /* No lift on tap, it sticks after the finger leaves on touch screens. */
+  .route-card:hover {
+    transform: none;
+    box-shadow: 0 6px 18px rgba(18, 41, 77, 0.08);
+  }
+
+  .photo {
+    height: 150px;
+  }
+
+  .photo-tag {
+    display: block;
+    position: absolute;
+    left: 12px;
+    bottom: 12px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background-color: #fff;
+    color: var(--color-primary, #12294d);
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(18, 41, 77, 0.18);
+  }
+
+  .panel {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3, 16px);
+    padding: 14px var(--space-3, 16px) var(--space-3, 16px);
+  }
+
+  .panel-text {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .route-cities {
+    margin: 0 0 2px;
+    font-size: 18px;
+    font-weight: 900;
+  }
+
+  .route-meta-row {
+    display: none;
+  }
+
+  .route-hint {
+    display: block;
+    margin: 0;
+    font-size: 14px;
+    color: var(--color-text-muted, #6b6b6b);
+  }
+
+  .route-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: color-mix(in srgb, var(--color-accent, #eb1f1a) 10%, #fff);
+    color: var(--color-accent, #eb1f1a);
+    font-size: 16px;
+  }
+
+  /* No all-routes page exists yet, so the link has nowhere to go. */
+  .see-all-link {
+    display: none;
   }
 }

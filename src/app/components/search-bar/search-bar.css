@@ -288,6 +288,11 @@
   cursor: not-allowed;
 }
 
+/* Shown on the Home card on phones only, see the max-width: 639px block. */
+.search-cta-icon {
+  display: none;
+}
+
 /* Voice mic, directly left of the search button and level with it. */
 app-voice-mic-button {
   align-self: flex-end;
@@ -436,5 +441,66 @@ app-voice-mic-button {
 @media (max-width: 600px) {
   :host(.ticket) .search-form {
     gap: 12px;
+  }
+}
+
+/* Phones, Home search card: bigger fields, and Search with a square mic
+   button beside it on one row. */
+@media (max-width: 639px) {
+  :host(.ticket) .search-form {
+    flex-direction: row;
+    flex-wrap: wrap;
+    column-gap: 10px;
+    row-gap: var(--space-3, 16px);
+  }
+
+  :host(.ticket) .field {
+    flex: 1 1 100%;
+  }
+
+  :host(.ticket) .field label {
+    font-size: 13px;
+    font-weight: 900;
+    color: var(--color-primary, #12294d);
+  }
+
+  :host(.ticket) .field input {
+    height: 52px;
+    border-radius: 10px;
+    /* 16px or more also stops iOS zooming in on focus. */
+    font-size: 16px;
+  }
+
+  :host(.ticket) .search-cta {
+    flex: 1 1 0;
+    min-width: 0;
+    width: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    height: 56px;
+    padding: 0 var(--space-3, 16px);
+    border-radius: 12px;
+    font-size: 17px;
+    font-weight: 700;
+    box-shadow: 0 10px 24px rgba(235, 31, 26, 0.28);
+  }
+
+  :host(.ticket) .search-cta:disabled {
+    box-shadow: 0 10px 24px rgba(235, 31, 26, 0.28);
+  }
+
+  :host(.ticket) .search-cta-icon {
+    display: inline-block;
+  }
+
+  :host(.ticket) app-voice-mic-button {
+    --voice-mic-width: 56px;
+    --voice-mic-height: 56px;
+    --voice-mic-border-width: 1.5px;
+    --voice-mic-radius: 12px;
+    --voice-mic-font-size: 20px;
+    --voice-mic-label: none;
   }
 }

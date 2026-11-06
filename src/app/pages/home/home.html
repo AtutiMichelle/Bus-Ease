@@ -53,6 +53,16 @@
         <app-voice-panel />
       </div>
     }
+
+    <!-- Phones: the steps sit below the search card instead of inside it. -->
+    <ol class="how-steps" aria-label="How it works">
+      @for (step of howItWorks; track step.title) {
+        <li class="how-step">
+          <span class="how-step-circle" aria-hidden="true">{{ $index + 1 }}</span>
+          <span class="how-step-title">{{ step.title }}</span>
+        </li>
+      }
+    </ol>
   </div>
 </section>
 
@@ -62,13 +72,20 @@
     <div class="route-cards">
       @for (route of topRoutes; track route.from + route.to) {
         <button type="button" class="route-card" (click)="selectRoute(route)">
-          <div class="photo" [style.background-image]="'url(' + cityPhoto(route.to) + ')'"></div>
+          <div class="photo-wrap">
+            <img class="photo" [src]="cityPhoto(route.to)" [alt]="route.to" loading="lazy" />
+            <span class="photo-tag">{{ route.character }}</span>
+          </div>
 
           <div class="panel">
-            <p class="route-cities">{{ route.from }} &rarr; {{ route.to }}</p>
-            <div class="route-meta-row">
-              <span class="route-character">{{ route.character }}</span>
+            <div class="panel-text">
+              <p class="route-cities">{{ route.from }} &rarr; {{ route.to }}</p>
+              <div class="route-meta-row">
+                <span class="route-character">{{ route.character }}</span>
+              </div>
+              <p class="route-hint">Tap to see today's buses</p>
             </div>
+            <span class="route-arrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
           </div>
         </button>
       }

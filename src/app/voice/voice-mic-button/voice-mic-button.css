@@ -11,15 +11,15 @@
   justify-content: center;
   gap: 10px;
   width: 100%;
-  height: 48px;
+  height: var(--voice-mic-height, 48px);
   padding: 0;
   box-sizing: border-box;
-  border: 2px solid var(--color-primary, #12294d);
-  border-radius: 6px;
+  border: var(--voice-mic-border-width, 2px) solid var(--color-primary, #12294d);
+  border-radius: var(--voice-mic-radius, 6px);
   background-color: var(--color-surface, #fff);
   color: var(--color-primary, #12294d);
   font-family: inherit;
-  font-size: 1.05rem;
+  font-size: var(--voice-mic-font-size, 1.05rem);
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.2s, border-color 0.2s, color 0.2s;
@@ -48,8 +48,8 @@
 .mic.listening::after {
   content: '';
   position: absolute;
-  inset: -2px;
-  border-radius: 6px;
+  inset: calc(-1 * var(--voice-mic-border-width, 2px));
+  border-radius: var(--voice-mic-radius, 6px);
   animation: mic-ring 1.6s ease-out infinite;
   pointer-events: none;
 }
